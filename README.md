@@ -21,3 +21,7 @@ git clone
 ### Contribution
 
 We are happy to have users contribute, however, in the early stages, the author will take a largely dictatorial approach to the software design.
+
+### Scripts
+
+Put custom built scripts in this directory. There are two scripts that gather climate data from the USDA and plot SWE and rain accumulation. These are examples of the flavors of scripts that should be added.
