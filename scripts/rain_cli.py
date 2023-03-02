@@ -9,7 +9,7 @@ startTime = time.time()
 
 
 today = date.today()
-day = "-".join(["0" + str(today.month), str(today.day)])
+day = "-".join(["0" + str(today.month), "0" + str(today.day)])
 
 print(day)
 
@@ -58,11 +58,13 @@ for idx, ax in enumerate(fig.axes):
         # df.loc[df['date'] == day][str(today.year)]
         # df.loc[df['date'] == day]["Median ('91-'20)"]
         normal = ((df.loc[df['date'] == day][str(today.year)] / df.loc[df['date'] == day]["Median ('91-'20)"]) * 100).values
+        print(normal)
         print(f"{normal[0]}%")
     except KeyError:
         day = "-".join([str(today.month), str(today.day)])
         normal = ((df.loc[df['date'] == day][str(today.year)] / df.loc[df['date'] == day]["Median ('91-'20)"]) * 100).values
-        print(normal[0])
+        print(normal)
+        print(f"{normal[0]}%")
     # might want a way to work around loop here for performance
     if not years:
         pass
