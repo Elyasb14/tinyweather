@@ -15,7 +15,7 @@ Tinyweather is maintained by the author of this document.
 ### Installation
 
 ```bash
-git clone 
+pip install tinyweather
 ```
 
 ### Contribution
