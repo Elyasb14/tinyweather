@@ -27,8 +27,6 @@ class Rg15:
         print(self.rain)
         print(self.rain + "hi")
 
-# device = rg15()
-# print(device.get_values())
 
 class BME680:
     def __init__(self) -> None:
