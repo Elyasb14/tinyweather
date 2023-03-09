@@ -17,7 +17,7 @@ class Rg15:
         self.totalacc = 0.0
         self.mmph = 0.0 # millimeters per hour
     
-    def get_data(self): return self.device.readline().decode()
+    def get_data(self): return device.readline().decode()
     
     def parse_values(self, data: str):
         pass
