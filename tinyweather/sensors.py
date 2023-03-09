@@ -2,30 +2,26 @@ import serial
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--device", "-d", default="/dev/ttyUSB0", help="serial device to use")
-parser.add_argument("--baudrate", "-b", default=9600, type=int, help="baudrate to use")
+parser.add_argument("--device", default="/dev/ttyUSB0", help="serial device to use")
+parser.add_argument("--baudrate", default=9600, type=int, help="baudrate to use")
 args = parser.parse_args()
 
 class Rg15:
     def __init__(self) -> None:
-        self.temp = "20c"
-        self.rain = "40in"
-        # self.device = serial.Serial(args.device, baudrate=args.baudrate)
-        # line format
-        # Acc  0.00 mm, EventAcc  0.00 mm, TotalAcc  1.11 mm, RInt  0.00 mmph
-        # TODO:
-        #   -add self.acc (mm)
-        #   -add self.eventacc (mm)
-        #   -add self.totalacc (mm)
-        #   -add self.rint(mmph)
-
-    def get_values(self):
-        # print(self.device)
-        print(self.temp)
+        self.device = serial.Serial(args.device, baudrate=args.baudrate)
+        self.device.write(b"p\n")
+        self.device.write(b"h\n")
+        self.device.write(b"m\n")
+        self.acc = 0.0
+        self.eventacc = 0.0
+        self.totalacc = 0.0
+        self.mmph = 0.0 # millimeters per hour
     
-    def parse_values(self):
-        print(self.rain)
-        print(self.rain + "hi")
+    def get_data(self): return self.device.readline().decode()
+    
+    def parse_values(self, data: str):
+        pass
+        
 
 
 class BME680:
