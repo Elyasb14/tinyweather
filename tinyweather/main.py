@@ -7,11 +7,12 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--device", default="/dev/tty.usbserial-0001", help="serial device to use")
 args = parser.parse_args()
 
+sensor = Rg15(args.device)
+# sensor.get_data()
 
 def main():
-    sensor = Rg15(args.device)
     data = sensor.parse_data()
-    print(type(data))
+    # print(type(data))
     print(data)
 
 if __name__ == "__main__":

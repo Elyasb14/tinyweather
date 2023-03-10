@@ -1,12 +1,17 @@
 import serial
-import typing
 
 valid_keys = {"Acc", "EventAcc", "TotalAcc", "RInt"}
 valid_units = {"mm", "mmph"}
 
 class Rg15(serial.Serial):
-    def __init__(self, dev: str):
+    def __init__(self, dev: str) -> None:
         super().__init__(dev, timeout=3)
+        
+    def reset(self):
+        self.write(b"o\n")
+    
+    def set_mode(self, mode: str): 
+        self.write(f"{mode}\n".encode())
 
     def get_data(self: serial.Serial) -> str:
         """reads data from rain gauge returns data as a string"""
