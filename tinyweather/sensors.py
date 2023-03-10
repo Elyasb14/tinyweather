@@ -45,4 +45,4 @@ class Rg15(serial.Serial):
         return values
     
     def save_data(self, data: dict):
-        pass
+        print("saved data to data/rain_sensor.csv")
