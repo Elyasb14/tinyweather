@@ -1,30 +1,28 @@
-<p align="center">
-  tinyweather
-</p>
+# ***tinyweather***
 
----------------------------
+Tinyweather is a python library for interfacing with environmental sensors and analyzing the data received. Right now we support the [RG-15 rain gauge](https://rainsensors.com/products/rg-15/) and the [Bosch BME680](https://www.adafruit.com/product/3660). We will add many more. In the future, we will have predictive models.
 
-Software for a home weather station.
-
-Tinyweather's main use case is to gather data from climate sensors in an easy to understand format that the user can then play with and analyze.
-
-We will have libraries for rain gauges and BME280/680s.
-
-Tinyweather is maintained by the author of this document.
-
-### Installation
+## ***Installation***
 
 ```bash
 pip install tinyweather
 ```
 
-### Contribution
+## ***Rain Gauge Example***
 
-We are happy to have users contribute, however, in the early stages, the author will take a largely dictatorial approach to the software design.
+```python
+from tinyweather import sensors
 
+sensor = Rg15(args.device)
 
----------
-# sensors.py
+print(sensor.get_data())
+print(sensor.parse_data())
+```
 
-sensors.py is a file that holds classes associated to each sensor attached to the weather station
+```bash
+Acc  0.00 mm, EventAcc  0.58 mm, TotalAcc  0.58 mm, RInt  0.00 mmph
 
+{'Acc (mm)': 0.0, 'EventAcc (mm)': 0.58, 'TotalAcc (mm)': 0.58, 'RInt (mm)': 0.0}
+```
+
+## ***BME680***
