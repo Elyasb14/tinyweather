@@ -22,8 +22,9 @@ pip install tinyweather
 
 We are happy to have users contribute, however, in the early stages, the author will take a largely dictatorial approach to the software design.
 
----
-## sensors.py
+
+---------
+# sensors.py
 
 sensors.py is a file that holds classes associated to each sensor attached to the weather station
 
