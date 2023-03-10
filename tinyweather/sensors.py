@@ -1,4 +1,7 @@
 import serial
+import pandas as pd
+import numpy as np
+
 
 valid_keys = {"Acc", "EventAcc", "TotalAcc", "RInt"}
 valid_units = {"mm", "mmph"}
@@ -7,11 +10,9 @@ class Rg15(serial.Serial):
     def __init__(self, dev: str) -> None:
         super().__init__(dev, timeout=3)
         
-    def reset(self):
-        self.write(b"o\n")
+    def reset_values(self): self.write(b"o\n")
     
-    def set_mode(self, mode: str): 
-        self.write(f"{mode}\n".encode())
+    def set_mode(self, mode: str): self.write(f"{mode}\n".encode())
 
     def get_data(self: serial.Serial) -> str:
         """reads data from rain gauge returns data as a string"""
@@ -37,5 +38,11 @@ class Rg15(serial.Serial):
                 value = float(word[1])
             except ValueError:
                 continue
-            values[key] = value
+            values[f"{key} (mm)"] = value
+        # time_info = datetime.datetime.now()
+        # values["date"] = time_info.date()
+        # values["time"] = time_info.time()
         return values
+    
+    def save_data(self, data: dict):
+        pass
