@@ -11,7 +11,7 @@ pip install tinyweather
 ## ***Rain Gauge Example***
 
 ```python
-from tinyweather import sensors
+from sensors import Rg15
 
 sensor = Rg15(args.device)
 

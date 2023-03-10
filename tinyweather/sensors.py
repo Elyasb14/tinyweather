@@ -1,7 +1,4 @@
 import serial
-import pandas as pd
-import numpy as np
-
 
 valid_keys = {"Acc", "EventAcc", "TotalAcc", "RInt"}
 valid_units = {"mm", "mmph"}
@@ -44,5 +41,4 @@ class Rg15(serial.Serial):
         # values["time"] = time_info.time()
         return values
     
-    def save_data(self, data: dict):
-        print("saved data to data/rain_sensor.csv")
+    def save_data(self, data: dict): print("saved data to data/rain_sensor.csv")
