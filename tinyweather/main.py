@@ -1,5 +1,4 @@
 from sensors import Rg15
-import time
 import argparse
 
 # adds cli flags
@@ -10,7 +9,7 @@ args = parser.parse_args()
 sensor = Rg15(args.device)
 
 def main():
-    sensor.save_data(sensor.parse_data())
+    print(sensor.parse_data())
     
 if __name__ == "__main__":
     main()
