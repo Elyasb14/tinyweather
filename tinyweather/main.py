@@ -10,6 +10,7 @@ sensor = Rg15(args.device)
 
 def main():
     print(sensor.parse_data())
+    print("hello from the raspi")"
     
 if __name__ == "__main__":
     main()
