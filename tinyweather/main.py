@@ -10,6 +10,6 @@ sensor = Rg15(args.device)
 
 def main():
     print(sensor.parse_data())
-    
+    print("hello")
 if __name__ == "__main__":
     main()
