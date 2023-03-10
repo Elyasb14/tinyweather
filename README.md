@@ -27,6 +27,3 @@ We are happy to have users contribute, however, in the early stages, the author 
 
 sensors.py is a file that holds classes associated to each sensor attached to the weather station
 
-## main.py
-
-Write your main tinyweather weather station script here.
