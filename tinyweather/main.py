@@ -9,6 +9,7 @@ args = parser.parse_args()
 sensor = Rg15(args.device)
 
 def main():
+    print(sensor.get_data())
     print(sensor.parse_data())
     print("hello")
 if __name__ == "__main__":
