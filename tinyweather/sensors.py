@@ -49,6 +49,6 @@ class Bme280(bme280.BME280):
     def __init__(self) -> None:
         super().__init__()
     
-    def parse_data(self): return {"temp": self.get_temperature(), "pressure": self.get_pressure(), "hummidity": self.get_hummidity()}
+    def parse_data(self): return {"temp": self.get_temperature(), "pressure": self.get_pressure(), "hummidity": self.get_humidity()}
     
     def altitude(self): return self.get_altitude()
