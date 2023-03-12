@@ -29,4 +29,5 @@ Acc  0.00 mm, EventAcc  0.58 mm, TotalAcc  0.58 mm, RInt  0.00 mmph
 
 ## ***Future Additions***
 
-We might use a raspi pico w to serve a basic webpage, not sure on that quite yet, but seems like a cool idea
+- We might use a raspi pico w to serve a basic webpage,   not sure on that quite yet, but seems like a cool idea
+- 

@@ -1,4 +1,6 @@
 import serial
+from smbus import SMBus
+import bme280
 
 valid_keys = {"Acc", "EventAcc", "TotalAcc", "RInt"}
 valid_units = {"mm", "mmph"}
@@ -42,3 +44,11 @@ class Rg15(serial.Serial):
         return values
     
     def save_data(self, data: dict): print("saved data to data/rain_sensor.csv")
+    
+class Bme280(bme280.BME280):
+    def __init__(self) -> None:
+        super().__init__()
+    
+    def parse_data(self): return {"temp": self.get_temperature(), "pressure": self.get_pressure(), "hummidity": self.get_hummidity()}
+    
+    def altitude(self): return self.get_altitude()
