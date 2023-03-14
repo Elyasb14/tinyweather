@@ -18,6 +18,7 @@ env = Bme280()
 def main():
     # print(rain.get_data())
     # print(rain.save_data(rain.parse_data()))
+    env.parse_data()
     print(env.parse_data())
     print(env.save_data(env.parse_data()))
 
