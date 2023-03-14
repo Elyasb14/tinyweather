@@ -1,6 +1,7 @@
 from sensors import Rg15, Bme280
 import argparse
 import datetime
+import time
 
 # adds cli flags
 parser = argparse.ArgumentParser()
@@ -18,9 +19,10 @@ env = Bme280()
 def main():
     # print(rain.get_data())
     # print(rain.save_data(rain.parse_data()))
-    env.parse_data()
-    print(env.parse_data())
-    print(env.save_data(env.parse_data()))
+    while True:
+        env.parse_data()
+        time.sleep(1)
+        env.save_data(env.parse_data()))
 
 if __name__ == "__main__":
     main()
