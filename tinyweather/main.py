@@ -1,4 +1,4 @@
-from sensors import Rg15
+from sensors import Rg15, Bme280
 import argparse
 import datetime
 
@@ -11,12 +11,13 @@ args = parser.parse_args()
 # timestamp method
 
 
-sensor = Rg15(args.device)
+rain = Rg15(args.device)
+env = Bme280()
 
 
 def main():
-    print(sensor.get_data())
-    print(sensor.save_data(sensor.parse_data()))
+    print(rain.get_data())
+    print(.save_data(sensor.parse_data()))
 
 if __name__ == "__main__":
     main()

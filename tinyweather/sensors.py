@@ -74,5 +74,8 @@ class Bme280(bme280.BME280):
             return {value[0]: value[1] for value in zip(keys, x.strftime("%m/%d/%Y, %H:%M:%S").replace(",", "").split(" "))}
         # return get_timestamp() | data
         df = pd.DataFrame((get_timestamp() | data), index=(0,1))
-        df.to_csv(f"data/{(get_timestamp()['date']).replace('/', '-')}-bme280.csv", mode="a")
-        print(f"saved to {(get_timestamp()['date']).replace('/', '-')}-bme280.csv")
+        if df.empty():
+            return
+        else:
+            df.to_csv(f"data/{(get_timestamp()['date']).replace('/', '-')}-bme280.csv", mode="a")
+            print(f"saved to {(get_timestamp()['date']).replace('/', '-')}-bme280.csv")
