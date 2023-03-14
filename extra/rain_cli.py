@@ -9,7 +9,7 @@ startTime = time.time()
 
 
 today = date.today()
-day = "-".join(["0" + str(today.month), "0" + str(today.day)])
+day = "-".join(["0" + str(today.month), str(today.day)])
 
 print(day)
 
