@@ -1,6 +1,5 @@
 from sensors import Rg15, Bme280
 import argparse
-import datetime
 import time
 
 # adds cli flags
@@ -9,20 +8,16 @@ parser.add_argument("--device", default="/dev/tty.usbserial-0001", help="serial 
 parser.add_argument("--reset", type=bool, help="reset all sensors that have the ability to be reset")
 args = parser.parse_args()
 
-# timestamp method
 
-
-# rain = Rg15(args.device)
 env = Bme280()
+rain = Rg15("/dev/ttyUSB0")
 
 
 def main():
-    # print(rain.get_data())
-    # print(rain.save_data(rain.parse_data()))
-    while True:
-        env.parse_data()
-        time.sleep(1)
-        env.save_data(env.parse_data())
+    rain.save_data(rain.parse_data())
+    env.parse_data()
+    time.sleep(1)
+    env.save_data(env.parse_data())
 
 if __name__ == "__main__":
     main()

@@ -75,7 +75,7 @@ class Bme280(bme280.BME280):
             keys = ["date", "time"]
             return {value[0]: value[1] for value in zip(keys, x.strftime("%m/%d/%Y, %H:%M:%S").replace(",", "").split(" "))}
         # return get_timestamp() | data
-        df = pd.DataFrame((get_timestamp() | data), index=(0,1))
+        df = pd.DataFrame((get_timestamp() | data), index=(0,1)).iloc[:-1,:]
         if len(df) == 0:
             return
         else:
