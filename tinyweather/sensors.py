@@ -52,10 +52,12 @@ class Rg15(serial.Serial):
             x = datetime.datetime.now()
             keys = ["date", "time"]
             return {value[0]: value[1] for value in zip(keys, x.strftime("%m/%d/%Y, %H:%M:%S").replace(",", "").split(" "))}
-        # return get_timestamp() | data
-        df = pd.DataFrame((get_timestamp() | data), index=(0,1))
-        df.to_csv(f"data/{(get_timestamp()['date']).replace('/', '-')}-rain.csv", mode="a")
-        print(f"saved to {(get_timestamp()['date']).replace('/', '-')}-rain.csv")
+        df = pd.DataFrame((get_timestamp() | data), index=(0,1)).iloc[:-1,:]
+        if len(df) == 0:
+            return
+        else:
+            df.to_csv(f"data/{(get_timestamp()['date']).replace('/', '-')}-rain.csv", mode="a")
+            print(f"saved to {(get_timestamp()['date']).replace('/', '-')}-rain.csv")
 
 # BME280 sensor class
 class Bme280(bme280.BME280):
@@ -74,7 +76,7 @@ class Bme280(bme280.BME280):
             return {value[0]: value[1] for value in zip(keys, x.strftime("%m/%d/%Y, %H:%M:%S").replace(",", "").split(" "))}
         # return get_timestamp() | data
         df = pd.DataFrame((get_timestamp() | data), index=(0,1))
-        if df.empty():
+        if len(df) == 0:
             return
         else:
             df.to_csv(f"data/{(get_timestamp()['date']).replace('/', '-')}-bme280.csv", mode="a")

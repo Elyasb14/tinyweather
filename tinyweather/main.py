@@ -11,13 +11,15 @@ args = parser.parse_args()
 # timestamp method
 
 
-rain = Rg15(args.device)
+# rain = Rg15(args.device)
 env = Bme280()
 
 
 def main():
-    print(rain.get_data())
-    print(rain.save_data(rain.parse_data()))
+    # print(rain.get_data())
+    # print(rain.save_data(rain.parse_data()))
+    print(env.get_data())
+    print(env.save_data(env.parse_data()))
 
 if __name__ == "__main__":
     main()

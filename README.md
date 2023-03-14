@@ -35,3 +35,4 @@ Acc  0.00 mm, EventAcc  0.58 mm, TotalAcc  0.58 mm, RInt  0.00 mmph
 ## ***TODO***
 
 - refactor rain and snow cli to save data to extra/data
+- for some reason rain gauge saves two readings per "save_data()", change this to be one entry
