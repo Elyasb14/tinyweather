@@ -2,10 +2,12 @@ import serial
 import datetime
 # from smbus import SMBus
 import bme280
+import pandas as pd
 
 valid_keys = {"Acc", "EventAcc", "TotalAcc", "RInt"}
 valid_units = {"mm", "mmph"}
 
+# rg15 rain gauge class
 class Rg15(serial.Serial):
     def __init__(self, dev: str) -> None:
         super().__init__(dev, timeout=3)
@@ -49,11 +51,13 @@ class Rg15(serial.Serial):
         def get_timestamp() -> dict:
             x = datetime.datetime.now()
             keys = ["date", "time"]
-            values = x.strftime("%m/%d/%Y, %H:%M:%S").replace(",", "").split(" ")
-            return {value[0]: value[1] for value in zip(keys, values)}
-        timestamp = get_timestamp()
-        return timestamp | data
+            return {value[0]: value[1] for value in zip(keys, x.strftime("%m/%d/%Y, %H:%M:%S").replace(",", "").split(" "))}
+        # return get_timestamp() | data
+        df = pd.DataFrame((get_timestamp() | data), index=(0,1))
+        df.to_csv(f"data/{(get_timestamp()['date']).replace('/', '-')}-rain.csv", mode="a")
+        print(f"saved to {(get_timestamp()['date']).replace('/', '-')}-rain.csv")
 
+# BME280 sensor class
 class Bme280(bme280.BME280):
     def __init__(self) -> None:
         super().__init__()
@@ -68,5 +72,7 @@ class Bme280(bme280.BME280):
             x = datetime.datetime.now()
             keys = ["date", "time"]
             return {value[0]: value[1] for value in zip(keys, x.strftime("%m/%d/%Y, %H:%M:%S").replace(",", "").split(" "))}
-        return get_timestamp() | data
-    
+        # return get_timestamp() | data
+        df = pd.DataFrame((get_timestamp() | data), index=(0,1))
+        df.to_csv(f"data/{(get_timestamp()['date']).replace('/', '-')}-bme280.csv", mode="a")
+        print(f"saved to {(get_timestamp()['date']).replace('/', '-')}-bme280.csv")

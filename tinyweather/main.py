@@ -5,6 +5,7 @@ import datetime
 # adds cli flags
 parser = argparse.ArgumentParser()
 parser.add_argument("--device", default="/dev/tty.usbserial-0001", help="serial device to use")
+parser.add_argument("--reset", type=bool, help="reset all sensors that have the ability to be reset")
 args = parser.parse_args()
 
 # timestamp method
