@@ -17,7 +17,7 @@ env = Bme280()
 
 def main():
     print(rain.get_data())
-    print(.save_data(sensor.parse_data()))
+    print(rain.save_data(sensor.parse_data()))
 
 if __name__ == "__main__":
     main()
