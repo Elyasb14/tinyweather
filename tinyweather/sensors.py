@@ -54,10 +54,21 @@ class Rg15(serial.Serial):
         timestamp = get_timestamp()
         return timestamp | data
 
-# class Bme280(bme280.BME280):
-#     def __init__(self) -> None:
-#         super().__init__()
+class Bme280(bme280.BME280):
+    def __init__(self) -> None:
+        super().__init__()
     
-#     def parse_data(self): return {"temp": self.get_temperature(), "pressure": self.get_pressure(), "hummidity": self.get_humidity()}
+    def parse_data(self): return {"temp (c)": self.get_temperature(), "pressure ()": self.get_pressure(), "hummidity": self.get_humidity()}
     
-#     def altitude(self): return self.get_altitude()
+    def altitude(self): return self.get_altitude()
+    
+    def save_data(self, data: dict) -> dict: 
+        """saves data to a csv with timestamp"""
+        def get_timestamp() -> dict:
+            x = datetime.datetime.now()
+            keys = ["date", "time"]
+            values = x.strftime("%m/%d/%Y, %H:%M:%S").replace(",", "").split(" ")
+            return {value[0]: value[1] for value in zip(keys, values)}
+        timestamp = get_timestamp()
+        return timestamp | data
+    
