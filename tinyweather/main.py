@@ -22,7 +22,7 @@ def main():
     while True:
         env.parse_data()
         time.sleep(1)
-        env.save_data(env.parse_data()))
+        env.save_data(env.parse_data())
 
 if __name__ == "__main__":
     main()
