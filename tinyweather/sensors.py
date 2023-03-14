@@ -54,9 +54,6 @@ class Rg15(serial.Serial):
         timestamp = get_timestamp()
         return timestamp | data
 
-        
-
-    
 # class Bme280(bme280.BME280):
 #     def __init__(self) -> None:
 #         super().__init__()

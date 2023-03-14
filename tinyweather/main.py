@@ -14,7 +14,6 @@ sensor = Rg15(args.device)
 
 
 def main():
-    sensor.reset_values()
     print(sensor.get_data())
     print(sensor.save_data(sensor.parse_data()))
 
