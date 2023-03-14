@@ -25,6 +25,19 @@ Acc  0.00 mm, EventAcc  0.58 mm, TotalAcc  0.58 mm, RInt  0.00 mmph
 {'Acc (mm)': 0.0, 'EventAcc (mm)': 0.58, 'TotalAcc (mm)': 0.58, 'RInt (mm)': 0.0}
 ```
 
+## ***BME280***
+```python
+from sensors import Bme280
+sensor = Bme280()
+
+print(sensor.parse_data())
+```
+
+```bash
+{"date":, "time":, "temp":, "pressure":, "humidity":}
+```
+
+
 ## ***BME680***
 
 ## ***Future Additions***
