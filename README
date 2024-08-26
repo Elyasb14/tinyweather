@@ -1,0 +1,4 @@
+tinyweather
+
+tinyweather is a weather station designed to be small, robust, and easy to use. this repo contains all the code used in the project. we will rely minimally on external libraries, allowing us to control what code is being run, making the platform as robust as possible. we plan on supporting a wide variety of sensors and telemetry options while making it seamless to add more of each. all of the code will be able to run on consumer hardware, making it trivial to self host a weather station. 
+
