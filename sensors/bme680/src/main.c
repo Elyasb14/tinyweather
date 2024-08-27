@@ -8,6 +8,9 @@
 
 #define BME_DEV_ADDR 0x77
 #define BME_LEN_TEMP_COEFF_1 UINT8_C(23)
+#define BME68X_REG_COEFF2 UINT8_C(0xe1)
+
+static int t1_cal, t2_cal, t3_cal; //temp calibration
 
 int main() {
   int bme_fd = open("/dev/i2c-1", O_RDWR);
@@ -36,11 +39,21 @@ int main() {
     return -1;
   }
 
-  //get calib data
-
-  reg_buf[0] = 0x8a;
+  // get temp calib data
+  reg_buf[0] = 0xe9;
   ret_code = write(bme_fd, reg_buf, 1);
   res = read(bme_fd, reg_buf, BME_LEN_TEMP_COEFF_1);
-  printf("%d\n", reg_buf[0]); 
+  if (ret_code < 0 || res != BME_LEN_TEMP_COEFF_1) {
+    printf("ret_code: %d, res: %d", ret_code, res);
+    return -1;
+  }
+
+  t1_cal = reg_buf[0];
+  
+
+
   return 0;
+
+
 }
+
