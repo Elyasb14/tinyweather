@@ -1,3 +1,5 @@
 .venv
 a.out
 *.out
+zig-*
+.zig-cache
