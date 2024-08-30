@@ -6,13 +6,29 @@ const version = 1;
 
 const Packet = struct {
     version: u8,
+    is_request: bool,
     data: []u8,
 
-    pub fn new(data: []u8) Packet {
-        return Packet{ .version = version, .data = data };
+    const Self = @This();
+
+    pub fn new(data: []u8, is_request: bool) Packet {
+        return Packet{ .version = version, .data = data, .is_request = is_request };
     }
 
-    pub fn parse(self: *Packet) 
+    pub fn encode(pkt: Self) []u8 {
+        std.debug.assert(pkt.version == 1);
+        var buf: []u8;
+        buf[0] = pkt.version;
+        buf[1] = @as(u2, pkt.is_request);
+        for (pkt.data) |x| {
+            buf[x + 2] = x;
+        }
+        return buf;
+    }
+
+    //     pub fn decode(pkt: []u8) *Packet {
+    //
+    //     }
 };
 
 pub fn main() !void {
@@ -35,7 +51,7 @@ pub fn main() !void {
         const msg = try client_reader.readUntilDelimiterOrEofAlloc(gpa, '\n', 65536) orelse break;
         defer gpa.free(msg);
 
-        const packet = Packet.new(msg);
+        const packet = Packet.new(msg, true).encode();
 
         for (packet.data) |byte| {
             print("{c}\n", .{byte});
