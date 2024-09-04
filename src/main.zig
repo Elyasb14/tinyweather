@@ -7,7 +7,7 @@ const version = 1;
 const Packet = struct {
     version: u8,
     is_request: bool,
-    data: []u8,
+    data: []const u8,
 
     const Self = @This();
 
@@ -15,20 +15,13 @@ const Packet = struct {
         return Packet{ .version = version, .data = data, .is_request = is_request };
     }
 
-    pub fn encode(pkt: Self) []u8 {
-        std.debug.assert(pkt.version == 1);
-        var buf: [1024]u8 = .{};
-        buf[0] = pkt.version;
-        buf[1] = @as(u8, pkt.is_request);
-        for (pkt.data) |x| {
-            buf[x + 2] = x;
-        }
-        return buf;
-    }
+    pub fn encode(self: Self, buf: []u8) []u8 {
+        std.debug.assert(self.version == 1);
 
-    //     pub fn decode(pkt: []u8) *Packet {
-    //
-    //     }
+        buf[0] = self.version;
+        buf[1] = @intFromBool(self.is_request);
+        // use @memcpy here to copy self.data into buf
+    }
 };
 
 pub fn main() !void {
