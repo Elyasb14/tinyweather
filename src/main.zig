@@ -17,9 +17,9 @@ const Packet = struct {
 
     pub fn encode(pkt: Self) []u8 {
         std.debug.assert(pkt.version == 1);
-        var buf: []u8;
+        var buf: [1024]u8 = .{};
         buf[0] = pkt.version;
-        buf[1] = @as(u2, pkt.is_request);
+        buf[1] = @as(u8, pkt.is_request);
         for (pkt.data) |x| {
             buf[x + 2] = x;
         }
