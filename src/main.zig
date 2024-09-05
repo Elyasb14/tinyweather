@@ -21,6 +21,8 @@ const Packet = struct {
         buf[0] = self.version;
         buf[1] = @intFromBool(self.is_request);
         // use @memcpy here to copy self.data into buf
+        @memcpy(buf[2..], self.data);
+        return buf;
     }
 };
 
@@ -44,11 +46,9 @@ pub fn main() !void {
         const msg = try client_reader.readUntilDelimiterOrEofAlloc(gpa, '\n', 65536) orelse break;
         defer gpa.free(msg);
 
-        const packet = Packet.new(msg, true).encode();
-
-        for (packet.data) |byte| {
-            print("{c}\n", .{byte});
-        }
+        // for (packet) |byte| {
+        //     print("{c}\n", .{byte});
+        // }
     }
 }
 
