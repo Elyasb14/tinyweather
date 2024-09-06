@@ -41,7 +41,11 @@ pub fn main() !void {
 }
 
 test "test encode" {
-    //const msg: []u8 = .{'h', 'e', 'l', 'l', '0'};
+    const data = [_]u8{ 'h', 'i' };
+    var buf: [1024]u8 = undefined;
 
-    //try std.testing.expectEqual(@as(i32, 42), list.pop());
+    const pkt = packet.Packet.init(&data);
+    const encoded = pkt.encode(&buf);
+
+    try std.testing.expectEqual([_]u8{ '1', 'h', 'e', 'l', 'l', '0' }, encoded);
 }
