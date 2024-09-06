@@ -12,12 +12,14 @@ fn handle_client(stream: net.Stream) !void {
     while (true) {
         const n = try stream.read(&buf);
         if (n == 0) break; // Client disconnected
-        const data = buf[0 .. n - 1]; // subtract 1 to not include new line
-        const pkt = packet.Packet.init(data);
+        const pkt = packet.Packet.init(buf[0 .. n - 1]);
 
         print("len: {d}, data: {d}\n", .{ pkt.len, pkt.data });
 
-        _ = try stream.write(buf[0..n]);
+        var enc_buf: [1024]u8 = undefined;
+        const encoded = pkt.encode(&enc_buf);
+
+        _ = try stream.write(encoded);
     }
 }
 
@@ -38,8 +40,7 @@ pub fn main() !void {
 }
 
 test "test encode" {
-    var list = std.ArrayList(i32).init(std.testing.allocator);
-    defer list.deinit(); // try commenting this out and see if zig detects the memory leak!
-    try list.append(42);
-    try std.testing.expectEqual(@as(i32, 42), list.pop());
+    // const pkt: []u8 = .{'h', 'e', 'l', 'l', '0'};
+    // //
+    // try std.testing.expectEqual(@as(i32, 42), list.pop());
 }
