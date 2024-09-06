@@ -2,54 +2,50 @@ const std = @import("std");
 const net = std.net;
 const print = std.debug.print;
 const assert = std.debug.assert;
-
-const version = 1;
+const Allocator = std.mem.Allocator;
 
 const Packet = struct {
     version: u8,
-    is_request: bool,
     len: usize,
     data: []const u8,
 
     const Self = @This();
 
-    pub fn new(data: []u8) Packet {
-        return data;
-    }
-
-    pub fn encode(self: Self, buf: []u8) []u8 {
-        buf[0] = self.version;
-        buf[1] = @intFromBool(self.is_request);
-        // use @memcpy here to copy self.data into buf
-        @memcpy(buf[2..][0..self.data.len], self.data);
-        return buf;
-    }
+    // pub fn encode(self: Self, buf: []u8) []u8 {
+    //     buf[0] = self.version;
+    //     buf[1] = @intFromBool(self.is_request);
+    //     // use @memcpy here to copy self.data into buf
+    //     @memcpy(buf[2..][0..self.data.len], self.data);
+    //     return buf;
+    // }
 };
 
-pub fn main() !void {
-    var gpa_alloc = std.heap.GeneralPurposeAllocator(.{}){};
-    defer assert(gpa_alloc.deinit() == .ok);
-    const gpa = gpa_alloc.allocator();
+fn handle_client(stream: net.Stream) !void {
+    defer stream.close();
+    var buf: [1024]u8 = undefined;
 
-    const addr = std.net.Address.initIp4(.{ 0, 0, 0, 0 }, 3667);
-    var server = try addr.listen(.{});
-
-    std.log.info("Server listening on port 3667", .{});
-
-    var client = try server.accept();
-    defer client.stream.close();
-
-    const client_reader = client.stream.reader();
-    // const client_writer = client.stream.writer();
     while (true) {
-        //this is []u8
-        const msg = try client_reader.readUntilDelimiterOrEofAlloc(gpa, '\n', 65536) orelse break;
-        defer gpa.free(msg);
+        const n = try stream.read(&buf);
+        if (n == 0) break; // Client disconnected
+        print("{c}", .{buf[0..n]});
 
-        const packet = Packet.new(msg);
-        var buf: [1024]u8 = undefined;
-        const encoded = packet.encode(&buf);
-        print("{c}", .{encoded});
+        _ = try stream.write(buf[0..n]);
+    }
+}
+
+pub fn main() !void {
+    const address = try net.Address.parseIp("127.0.0.1", 8080);
+    var server = try net.Address.listen(address, .{
+        .kernel_backlog = 1024,
+        .reuse_address = true,
+    });
+    defer server.deinit();
+    print("server listening on {}\n", .{address});
+    while (true) {
+        const conn = try server.accept();
+        const stream = conn.stream;
+
+        try handle_client(stream);
     }
 }
 
