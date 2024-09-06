@@ -12,10 +12,11 @@ fn handle_client(stream: net.Stream) !void {
     while (true) {
         const n = try stream.read(&buf);
         if (n == 0) break; // Client disconnected
-        const pkt = packet.Packet.init(buf[0 .. n - 1]);
+        const pkt = packet.Packet.init(buf[0..n]);
 
         print("len: {d}, data: {d}\n", .{ pkt.len, pkt.data });
 
+        // how do I avoid allocating this enc_buf here?
         var enc_buf: [1024]u8 = undefined;
         const encoded = pkt.encode(&enc_buf);
 
@@ -40,7 +41,7 @@ pub fn main() !void {
 }
 
 test "test encode" {
-    // const pkt: []u8 = .{'h', 'e', 'l', 'l', '0'};
-    // //
-    // try std.testing.expectEqual(@as(i32, 42), list.pop());
+    //const msg: []u8 = .{'h', 'e', 'l', 'l', '0'};
+
+    //try std.testing.expectEqual(@as(i32, 42), list.pop());
 }

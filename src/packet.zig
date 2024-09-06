@@ -5,7 +5,7 @@ pub const Packet = struct {
 
     const Self = @This();
 
-    pub fn init(data: []u8) Packet {
+    pub fn init(data: []const u8) Packet {
         // len is just len of data, no flags
         return Packet{ .version = 1, .len = data.len, .data = data };
     }
