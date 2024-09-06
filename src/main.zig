@@ -7,9 +7,19 @@ const Allocator = std.mem.Allocator;
 const Packet = struct {
     version: u8,
     len: usize,
+    packet_type: PktType,
     data: []const u8,
 
+    const PktType = enum {
+        request,
+        response,
+    };
+
     const Self = @This();
+
+    pub fn init(data: []u8, pkt_type: PktType) Packet {
+        return Packet{ .version = 1, .len = data.len + 1, .packet_type = pkt_type, .data = data };
+    }
 
     // pub fn encode(self: Self, buf: []u8) []u8 {
     //     buf[0] = self.version;
@@ -27,7 +37,9 @@ fn handle_client(stream: net.Stream) !void {
     while (true) {
         const n = try stream.read(&buf);
         if (n == 0) break; // Client disconnected
-        print("{c}", .{buf[0..n]});
+        const data = buf[0..n];
+        const packet = Packet.init(data, Packet.PktType.request);
+        print("len: {}, data: {c}", .{ packet.len, packet.data });
 
         _ = try stream.write(buf[0..n]);
     }
