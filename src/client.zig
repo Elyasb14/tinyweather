@@ -9,7 +9,7 @@ pub fn main() !void {
     const stream = try net.tcpConnectToAddress(address);
     defer stream.close();
 
-    const data = [_]u8{0} ** 3;
+    const data = [_]u8{0} ** 1024;
     const pkt = packet.Packet.init(&data);
 
     var enc_buf: [1025]u8 = undefined;
