@@ -17,7 +17,7 @@ pub const Packet = struct {
     pub fn encode(self: Self, buf: []u8) []u8 {
         buf[0] = self.version;
         @memcpy(buf[1..][0..self.len], self.data);
-        return buf[0..self.len];
+        return buf[0 .. self.len + 1];
     }
 
     // takes encoded buffer ([]u8), constructs a packet
