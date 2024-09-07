@@ -9,7 +9,7 @@ pub fn main() !void {
     const stream = try net.tcpConnectToAddress(address);
     defer stream.close();
 
-    const data = [_]u8{0} ** 1024;
+    const data = [_]u8{0} ** 3;
     const pkt = packet.Packet.init(&data);
 
     var enc_buf: [1025]u8 = undefined;
@@ -17,7 +17,7 @@ pub fn main() !void {
     _ = try stream.write(encoded);
     const n = try stream.read(&enc_buf);
 
-    const rec_packet = packet.Packet.decode(enc_buf[0..n]);
+    const rec_packet = packet.Packet.decode(enc_buf[0 .. n + 1]);
 
     print("Received: {any}\n", .{rec_packet});
 }
