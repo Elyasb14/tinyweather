@@ -6,7 +6,10 @@ const Allocator = std.mem.Allocator;
 const packet = @import("packet.zig");
 
 fn handle_client(stream: net.Stream) !void {
-    defer stream.close();
+    defer {
+        print("stream closed: {any}\n", .{stream});
+        stream.close();
+    }
     var buf: [1024]u8 = undefined;
 
     while (true) {
@@ -17,7 +20,7 @@ fn handle_client(stream: net.Stream) !void {
         print("len: {d}, data: {d}\n", .{ pkt.len, pkt.data });
 
         // how do I avoid allocating this enc_buf here?
-        var enc_buf: [1024]u8 = undefined;
+        var enc_buf: [1025]u8 = undefined;
         const encoded = pkt.encode(&enc_buf);
 
         _ = try stream.write(encoded);
@@ -34,6 +37,7 @@ pub fn main() !void {
     print("server listening on {}\n", .{address});
     while (true) {
         const conn = try server.accept();
+        print("connection by: {any}\n", .{conn.address});
         const stream = conn.stream;
 
         try handle_client(stream);
@@ -43,9 +47,13 @@ pub fn main() !void {
 test "test encode" {
     const data = [_]u8{ 'h', 'i' };
     var buf: [1024]u8 = undefined;
-
     const pkt = packet.Packet.init(&data);
     const encoded = pkt.encode(&buf);
+    try std.testing.expectEqual(@as(usize, 3), encoded.len);
+    try std.testing.expectEqualSlices(u8, &[_]u8{ 1, 'h', 'i' }, encoded);
+}
 
-    try std.testing.expectEqual([_]u8{ '1', 'h', 'e', 'l', 'l', '0' }, encoded);
+test "test buffer overflow" {
+    const data = [_]u8{0} ** 1025; // Data larger than 1024
+    try std.testing.expectError(error.AssertionError, packet.Packet.init(&data));
 }
