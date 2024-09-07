@@ -17,7 +17,7 @@ fn handle_client(stream: net.Stream) !void {
         if (n == 0) break; // Client disconnected
         const pkt = packet.Packet.init(buf[0..n]);
 
-        print("len: {d}, data: {d}\n", .{ pkt.len, pkt.data });
+        print("received: len: {d}, data: {d}\n", .{ pkt.len, pkt.data });
 
         // how do I avoid allocating this enc_buf here?
         var enc_buf: [1025]u8 = undefined;

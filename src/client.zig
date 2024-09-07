@@ -17,7 +17,7 @@ pub fn main() !void {
     _ = try stream.write(encoded);
     const n = try stream.read(&enc_buf);
 
-    const rec_packet = packet.Packet.decode(enc_buf[0 .. n + 1]);
+    const rec_packet = packet.Packet.decode(enc_buf[0..n]);
 
     print("Received: {any}\n", .{rec_packet});
 }
