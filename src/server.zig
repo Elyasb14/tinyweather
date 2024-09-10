@@ -3,7 +3,6 @@ const net = std.net;
 const print = std.debug.print;
 const assert = std.debug.assert;
 const tcp = @import("tcp.zig");
-const ArrayList = std.ArrayList;
 
 fn handle_client(stream: net.Stream) !void {
     defer {
@@ -15,20 +14,20 @@ fn handle_client(stream: net.Stream) !void {
     defer arena.deinit();
     const allocator = arena.allocator();
 
-    const arr_buf = ArrayList(u8).init(allocator);
-    defer arr_buf.deinit();
-
     var buf: [1024]u8 = undefined;
 
     while (true) {
         const n = try stream.read(&buf);
         if (n == 0) break; // Client disconnected
 
-        const packet = tcp.Packet.decode(buf[0..n]);
+        const packet = tcp.Packet.decode(buf[0..n]) catch |err| {
+            print("client wrote a bad packet, err: {any}\n", .{err});
+            return;
+        };
 
         print("data recieved from stream: {any}\n", .{packet});
 
-        const encoded = packet.encode();
+        const encoded = try packet.encode(allocator);
 
         _ = try stream.write(encoded);
     }

@@ -8,7 +8,7 @@ pub fn main() !void {
     const stream = try net.tcpConnectToAddress(address);
     defer stream.close();
 
-    const data = [_]u8{ 1, 0, 0, 0 };
+    const data = [_]u8{ 3, 0, 0, 0 };
 
     var buf: [1024]u8 = undefined;
     _ = try stream.write(&data);
