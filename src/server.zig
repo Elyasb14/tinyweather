@@ -21,7 +21,7 @@ fn handle_client(stream: net.Stream) !void {
         if (n == 0) break; // Client disconnected
 
         const packet = tcp.Packet.decode(buf[0..n]) catch |err| {
-            print("client wrote a bad packet, err: {any}\n", .{err});
+            print("\x1b[31mclient wrote a bad packet, err: {any}\x1b[0m\n", .{err});
             return;
         };
 
