@@ -3,26 +3,25 @@ const assert = std.debug.assert;
 
 pub const Packet = struct {
     version: u8,
-    len: usize,
     data: []const u8,
 
     const Self = @This();
 
-    pub fn init(data: []const u8) Packet {
+    fn init(version: u8, data: []const u8) Packet {
         // len is just len of data, no flags
         assert(data.len <= 1024);
-        return Packet{ .version = 1, .len = data.len, .data = data };
+        return Packet{ .version = version, .data = data };
     }
 
     pub fn encode(self: Self, buf: []u8) []u8 {
         buf[0] = self.version;
-        @memcpy(buf[1..][0..self.len], self.data);
-        return buf[0..self.len];
+        @memcpy(buf[1..][0..self.data.len], self.data);
+        return buf;
     }
 
     // takes encoded buffer ([]u8), constructs a packet
-    pub fn decode(enc_buf: []u8) Packet {
-        assert(enc_buf[0] == 1);
-        return Packet.init(enc_buf[1..]);
+    pub fn decode(buf: []const u8) Packet {
+        assert(buf[0] == 1);
+        return Packet.init(buf[0], buf[1..]);
     }
 };

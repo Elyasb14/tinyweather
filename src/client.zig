@@ -1,7 +1,6 @@
 const std = @import("std");
 const print = std.debug.print;
 const net = std.net;
-const packet = @import("packet.zig");
 const assert = std.debug.assert;
 
 pub fn main() !void {
@@ -9,15 +8,11 @@ pub fn main() !void {
     const stream = try net.tcpConnectToAddress(address);
     defer stream.close();
 
-    const data = [_]u8{0} ** 3;
-    const pkt = packet.Packet.init(&data);
+    const data = [_]u8{ 1, 0, 0, 0 };
 
-    var enc_buf: [1025]u8 = undefined;
-    const encoded = pkt.encode(&enc_buf);
-    _ = try stream.write(encoded);
-    const n = try stream.read(&enc_buf);
+    var buf: [1024]u8 = undefined;
+    _ = try stream.write(&data);
+    const n = try stream.read(&buf);
 
-    const rec_packet = packet.Packet.decode(enc_buf[0 .. n + 1]);
-
-    print("Received: {any}\n", .{rec_packet});
+    print("Received: {any}\n", .{buf[0..n]});
 }
