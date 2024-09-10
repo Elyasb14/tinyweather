@@ -1,5 +1,6 @@
 const std = @import("std");
 const assert = std.debug.assert;
+const ArrayList = std.ArrayList;
 
 pub const Packet = struct {
     version: u8,
@@ -14,8 +15,15 @@ pub const Packet = struct {
     }
 
     pub fn encode(self: Self) []u8 {
-        buf[0] = self.version;
-        buf.a
+        var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+        defer arena.deinit();
+        const allocator = arena.allocator();
+
+        var buf = ArrayList(u8).init(allocator);
+        defer buf.deinit();
+        try buf.append(self.version);
+        try buf.appendSlice(self.data);
+        return buf.items;
     }
 
     // takes encoded buffer ([]u8), constructs a packet

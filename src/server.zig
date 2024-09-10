@@ -3,6 +3,7 @@ const net = std.net;
 const print = std.debug.print;
 const assert = std.debug.assert;
 const tcp = @import("tcp.zig");
+const ArrayList = std.ArrayList;
 
 fn handle_client(stream: net.Stream) !void {
     defer {
@@ -10,7 +11,14 @@ fn handle_client(stream: net.Stream) !void {
         stream.close();
     }
 
-    var buf: []u8 = undefined;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+    const allocator = arena.allocator();
+
+    const arr_buf = ArrayList(u8).init(allocator);
+    defer arr_buf.deinit();
+
+    var buf: [1024]u8 = undefined;
 
     while (true) {
         const n = try stream.read(&buf);
@@ -20,7 +28,7 @@ fn handle_client(stream: net.Stream) !void {
 
         print("data recieved from stream: {any}\n", .{packet});
 
-        const encoded = packet.encode(&buf);
+        const encoded = packet.encode();
 
         _ = try stream.write(encoded);
     }
