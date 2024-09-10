@@ -3,3 +3,4 @@ a.out
 *.out
 zig-*
 .zig-cache
+.DS_Store
