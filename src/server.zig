@@ -2,7 +2,6 @@ const std = @import("std");
 const net = std.net;
 const print = std.debug.print;
 const assert = std.debug.assert;
-const Allocator = std.mem.Allocator;
 const tcp = @import("tcp.zig");
 
 fn handle_client(stream: net.Stream) !void {
@@ -10,19 +9,18 @@ fn handle_client(stream: net.Stream) !void {
         print("stream closed: {any}\n", .{stream});
         stream.close();
     }
-    var buf: [1024]u8 = undefined;
-    var enc_buf: [1024]u8 = undefined;
+
+    var buf: []u8 = undefined;
 
     while (true) {
         const n = try stream.read(&buf);
         if (n == 0) break; // Client disconnected
-        const data = buf[0..n];
 
-        const packet = tcp.Packet.decode(data);
+        const packet = tcp.Packet.decode(buf[0..n]);
 
         print("data recieved from stream: {any}\n", .{packet});
 
-        const encoded = packet.encode(&enc_buf);
+        const encoded = packet.encode(&buf);
 
         _ = try stream.write(encoded);
     }
