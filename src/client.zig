@@ -16,6 +16,7 @@ pub fn main() !void {
     var buf: [1024]u8 = undefined;
     _ = try stream.write(encoded);
     const n = try stream.read(&buf);
+    const decoded = tcp.Packet.decode(buf[0..n]);
 
-    print("Received: {any}\n", .{buf[0..n]});
+    print("Received: {any}\n", .{decoded});
 }
