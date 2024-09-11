@@ -27,6 +27,18 @@ fn handle_client(stream: net.Stream) !void {
 
         print("data recieved from stream: {any}\n", .{packet});
 
+        switch (packet.type) {
+            .SensorRequest => {
+                // decode packet.data into SensorRequest struct
+                // create response packet and encode it
+                // send to client
+            },
+            else => {
+                print("\x1b[31munexpected packet type: {any}\x1b[0m\n", .{packet.type});
+                return;
+            },
+        }
+
         const encoded = try packet.encode(allocator);
 
         _ = try stream.write(encoded);

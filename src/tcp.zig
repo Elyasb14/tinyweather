@@ -5,18 +5,24 @@ const ArrayList = std.ArrayList;
 pub const PacketType = enum(u8) {
     SensorRequest,
     SensorResponse,
-    Error,
+};
+
+const TCPError = error{
+    VersionError,
+    InvalidPacketType,
+};
+
+const SensorType = enum(u8) {
+    Temp,
+    Pres,
+    Hum,
+    Gas,
 };
 
 pub const Packet = struct {
     version: u8,
     type: PacketType,
     data: []const u8,
-
-    const TCPError = error{
-        VersionError,
-        InvalidPacketType,
-    };
 
     const Self = @This();
 
@@ -38,6 +44,7 @@ pub const Packet = struct {
 
     // takes encoded buffer ([]u8), constructs a packet
     pub fn decode(buf: []const u8) TCPError!Packet {
+        assert(buf.len > 0);
         if (buf[0] != 1) {
             return TCPError.VersionError;
         }

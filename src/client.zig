@@ -10,7 +10,7 @@ pub fn main() !void {
     defer stream.close();
 
     const data = [_]u8{ 1, 0, 0, 0 };
-    const packet = tcp.Packet.init(1, tcp.PacketType.SensorRequest, &data);
+    const packet = tcp.Packet.init(1, tcp.PacketType.SensorResponse, &data);
     const encoded = try packet.encode(std.heap.page_allocator);
 
     var buf: [1024]u8 = undefined;
