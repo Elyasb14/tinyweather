@@ -54,3 +54,26 @@ pub const Packet = struct {
         return Packet.init(buf[0], packet_type, buf[2..]);
     }
 };
+
+// const SensorRequest = struct {
+//     sensors: []const SensorType,
+//
+//     const Self = @This();
+//
+//     pub fn encode(self: Self, allocator: std.mem.Allocator) []u8 {}
+//     pub fn decode(buf: []const u8) SensorRequest {}
+// };
+//
+// const SensorData = struct {
+//     sensor_type: SensorType,
+//     val: f32
+// };
+//
+// const SensorResponse = struct {
+//     data: []const SensorData,
+//
+//     const Self = @This();
+//
+//     pub fn encode(self: Self, allocator: std.mem.Allocator) []u8 {}
+//     pub fn decode(buf: []const u8) SensorResponse {}
+// };
