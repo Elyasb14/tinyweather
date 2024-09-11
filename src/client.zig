@@ -9,8 +9,9 @@ pub fn main() !void {
     const stream = try net.tcpConnectToAddress(address);
     defer stream.close();
 
-    const data = [_]u8{ 1, 0, 0, 0 };
-    const packet = tcp.Packet.init(1, tcp.PacketType.SensorResponse, &data);
+    const req_enc = tcp.SensorRequest{ .sensors = &[_]tcp.SensorType{tcp.SensorType.Gas} };
+    const data = try req_enc.encode(std.heap.page_allocator);
+    const packet = tcp.Packet.init(1, tcp.PacketType.SensorRequest, &data);
     const encoded = try packet.encode(std.heap.page_allocator);
 
     var buf: [1024]u8 = undefined;

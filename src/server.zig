@@ -30,6 +30,8 @@ fn handle_client(stream: net.Stream) !void {
         switch (packet.type) {
             .SensorRequest => {
                 // decode packet.data into SensorRequest struct
+                const decoded = tcp.SensorRequest.decode(packet.data, allocator);
+                print("decoded SensorRequest packet: {any}\n", .{decoded});
                 // create response packet and encode it
                 // send to client
             },

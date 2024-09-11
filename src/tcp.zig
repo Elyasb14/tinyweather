@@ -12,7 +12,7 @@ const TCPError = error{
     InvalidPacketType,
 };
 
-const SensorType = enum(u8) {
+pub const SensorType = enum(u8) {
     Temp,
     Pres,
     Hum,
@@ -55,16 +55,28 @@ pub const Packet = struct {
     }
 };
 
-// const SensorRequest = struct {
-//     sensors: []const SensorType,
-//
-//     const Self = @This();
-//
-//     pub fn encode(self: Self, allocator: std.mem.Allocator) []u8 {}
-//     pub fn decode(buf: []const u8) SensorRequest {}
-// };
-//
-// const SensorData = struct {
+pub const SensorRequest = struct {
+    sensors: []const SensorType,
+
+    const Self = @This();
+
+    pub fn encode(self: Self, allocator: std.mem.Allocator) ![]u8 {
+        var sensors = ArrayList(SensorType).init(allocator);
+        try sensors.appendSlice(self.sensors);
+        return sensors.toOwnedSlice();
+    }
+
+    pub fn decode(buf: []const u8, allocator: std.mem.Allocator) !SensorRequest {
+        var sensors = ArrayList(SensorType).init(allocator);
+        for (buf) |x| {
+            const sensor = try std.meta.intToEnum(SensorType, x);
+            try sensors.append(sensor);
+        }
+        return SensorRequest{ .sensors = try sensors.toOwnedSlice() };
+    }
+};
+
+// pub const SensorData = struct {
 //     sensor_type: SensorType,
 //     val: f32
 // };
