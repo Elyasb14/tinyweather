@@ -7,16 +7,16 @@ pub const PacketType = enum(u8) {
     SensorResponse,
 };
 
-const TCPError = error{
-    VersionError,
-    InvalidPacketType,
-};
-
 pub const SensorType = enum(u8) {
     Temp,
     Pres,
     Hum,
     Gas,
+};
+
+const TCPError = error{
+    VersionError,
+    InvalidPacketType,
 };
 
 pub const Packet = struct {
@@ -61,8 +61,11 @@ pub const SensorRequest = struct {
     const Self = @This();
 
     pub fn encode(self: Self, allocator: std.mem.Allocator) ![]u8 {
-        var sensors = ArrayList(SensorType).init(allocator);
-        try sensors.appendSlice(self.sensors);
+        var sensors = ArrayList(u8).init(allocator);
+        defer sensors.deinit();
+        for (self.sensors) |sensor| {
+            try sensors.append(@intFromEnum(sensor));
+        }
         return sensors.toOwnedSlice();
     }
 
@@ -76,16 +79,31 @@ pub const SensorRequest = struct {
     }
 };
 
-// pub const SensorData = struct {
-//     sensor_type: SensorType,
-//     val: f32
-// };
-//
-// const SensorResponse = struct {
-//     data: []const SensorData,
-//
-//     const Self = @This();
-//
-//     pub fn encode(self: Self, allocator: std.mem.Allocator) []u8 {}
-//     pub fn decode(buf: []const u8) SensorResponse {}
-// };
+pub const SensorData = struct { sensor_type: SensorType, val: f32 };
+
+pub const SensorResponse = struct {
+    data: ArrayList(u8),
+    request: SensorRequest,
+
+    const Self = @This();
+
+    pub fn encode(self: Self, allocator: std.mem.Allocator) ![]u8 {
+        var buf = ArrayList(u8).init(allocator);
+        for (self.request.sensors) |sensor| {
+            switch (sensor) {
+                .Gas => {
+                    try buf.append(get_gas());
+                },
+                else => {
+                    std.debug.print("failed", .{});
+                },
+            }
+        }
+        return buf.toOwnedSlice();
+    }
+    // pub fn decode(buf: []const u8) SensorResponse {}
+};
+
+fn get_gas() u8 {
+    return 17;
+}

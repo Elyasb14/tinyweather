@@ -11,13 +11,14 @@ pub fn main() !void {
 
     const req_enc = tcp.SensorRequest{ .sensors = &[_]tcp.SensorType{tcp.SensorType.Gas} };
     const data = try req_enc.encode(std.heap.page_allocator);
-    const packet = tcp.Packet.init(1, tcp.PacketType.SensorRequest, &data);
+    const packet = tcp.Packet.init(1, tcp.PacketType.SensorRequest, data);
     const encoded = try packet.encode(std.heap.page_allocator);
 
     var buf: [1024]u8 = undefined;
+    print("\x1b[32mPacket Sent\x1b[0m: {any}\n", .{packet});
     _ = try stream.write(encoded);
     const n = try stream.read(&buf);
     const decoded = tcp.Packet.decode(buf[0..n]);
 
-    print("Received: {any}\n", .{decoded});
+    print("\x1b[32mPacket Received\x1b[0m: {any}\n", .{decoded});
 }

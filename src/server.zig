@@ -3,6 +3,7 @@ const net = std.net;
 const print = std.debug.print;
 const assert = std.debug.assert;
 const tcp = @import("tcp.zig");
+const ArrayList = std.ArrayList;
 
 fn handle_client(stream: net.Stream) !void {
     defer {
@@ -21,29 +22,31 @@ fn handle_client(stream: net.Stream) !void {
         if (n == 0) break; // Client disconnected
 
         const packet = tcp.Packet.decode(buf[0..n]) catch |err| {
-            print("\x1b[31mclient wrote a bad packet, err: {any}\x1b[0m\n", .{err});
+            print("\x1b[31mclient wrote a bad packet, err\x1b[0m: {any}\n", .{err});
             return;
         };
 
-        print("data recieved from stream: {any}\n", .{packet});
+        print("\x1b[32mPacket recieved from stream\x1b[0m: {any}\n", .{packet});
 
         switch (packet.type) {
             .SensorRequest => {
                 // decode packet.data into SensorRequest struct
-                const decoded = tcp.SensorRequest.decode(packet.data, allocator);
-                print("decoded SensorRequest packet: {any}\n", .{decoded});
+                const decoded_request = try tcp.SensorRequest.decode(packet.data, allocator);
+                print("\x1b[32mDecoded SensorRequest packet\x1b[0m: {any}\n", .{decoded_request});
                 // create response packet and encode it
-                // send to client
+                const encoded_buf = ArrayList(u8).init(allocator);
+                const encoded = try tcp.SensorResponse.encode(tcp.SensorResponse{ .request = decoded_request, .data = encoded_buf }, allocator);
+                print("\x1b[32mEncoded SensorResponse packet\x1b[0m: {any}\n", .{encoded});
+                const response_packet = tcp.Packet.init(1, tcp.PacketType.SensorResponse, encoded);
+                print("\x1b[32mPacket response sent to stream\x1b[0m: {any}\n", .{response_packet});
+                const response_encoded = try response_packet.encode(allocator);
+                _ = try stream.write(response_encoded);
             },
             else => {
-                print("\x1b[31munexpected packet type: {any}\x1b[0m\n", .{packet.type});
+                print("\x1b[31munexpected packet type\x1b[0m: {any}\n", .{packet.type});
                 return;
             },
         }
-
-        const encoded = try packet.encode(allocator);
-
-        _ = try stream.write(encoded);
     }
 }
 
