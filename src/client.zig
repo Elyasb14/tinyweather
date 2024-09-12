@@ -18,7 +18,8 @@ pub fn main() !void {
     print("\x1b[32mPacket Sent\x1b[0m: {any}\n", .{packet});
     _ = try stream.write(encoded);
     const n = try stream.read(&buf);
-    const decoded = tcp.Packet.decode(buf[0..n]);
+    const decoded = try tcp.Packet.decode(buf[0..n]);
+    const decoded_sensor_response = try tcp.SensorResponse.decode(req_enc, decoded.data);
 
-    print("\x1b[32mPacket Received\x1b[0m: {any}\n", .{decoded});
+    print("\x1b[32mPacket Received\x1b[0m: {any}\n", .{decoded_sensor_response});
 }

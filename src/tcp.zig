@@ -87,6 +87,7 @@ pub const SensorData = struct { sensor_type: SensorType, val: f32 };
 
 pub const SensorResponse = struct {
     request: SensorRequest,
+    data: []const u8 = undefined,
 
     const Self = @This();
 
@@ -109,7 +110,15 @@ pub const SensorResponse = struct {
         }
         return buf.toOwnedSlice();
     }
-    // pub fn decode(buf: []const u8) SensorResponse {}
+    pub fn decode(request: SensorRequest, buf: []const u8) !SensorResponse {
+        // var dec_buf = ArrayList(u8).init(allocator);
+        // defer dec_buf.deinit();
+        // for (buf) |x| {
+        //     try dec_buf.append(try std.meta.intToEnum(SensorType, x));
+        // }
+        // return dec_buf.toOwnedSlice();
+        return SensorResponse{ .data = buf, .request = request };
+    }
 };
 
 fn get_gas() u8 {
