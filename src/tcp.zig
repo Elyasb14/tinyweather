@@ -60,6 +60,8 @@ pub const SensorRequest = struct {
 
     const Self = @This();
 
+    // pub fn init(sensors[
+
     pub fn encode(self: Self, allocator: std.mem.Allocator) ![]u8 {
         var sensors = ArrayList(u8).init(allocator);
         defer sensors.deinit();

@@ -26,7 +26,7 @@ fn handle_client(stream: net.Stream) !void {
             return;
         };
 
-        print("\x1b[32mPacket recieved from stream\x1b[0m: {any}\n", .{packet});
+        print("\x1b[32mPacket from stream\x1b[0m: {any}\n", .{packet});
 
         switch (packet.type) {
             .SensorRequest => {
@@ -35,12 +35,12 @@ fn handle_client(stream: net.Stream) !void {
                 print("\x1b[32mDecoded SensorRequest packet\x1b[0m: {any}\n", .{decoded_request});
                 // create response packet and encode it
                 const encoded_buf = ArrayList(u8).init(allocator);
-                const encoded = try tcp.SensorResponse.encode(tcp.SensorResponse{ .request = decoded_request, .data = encoded_buf }, allocator);
-                print("\x1b[32mEncoded SensorResponse packet\x1b[0m: {any}\n", .{encoded});
-                const response_packet = tcp.Packet.init(1, tcp.PacketType.SensorResponse, encoded);
+                const encoded_response = try tcp.SensorResponse.encode(tcp.SensorResponse{ .request = decoded_request, .data = encoded_buf }, allocator);
+                print("\x1b[32mEncoded SensorResponse packet\x1b[0m: {any}\n", .{encoded_response});
+                const response_packet = tcp.Packet.init(1, tcp.PacketType.SensorResponse, encoded_response);
                 print("\x1b[32mPacket response sent to stream\x1b[0m: {any}\n", .{response_packet});
-                const response_encoded = try response_packet.encode(allocator);
-                _ = try stream.write(response_encoded);
+                const response_encoded_packet = try response_packet.encode(allocator);
+                _ = try stream.write(response_encoded_packet);
             },
             else => {
                 print("\x1b[31munexpected packet type\x1b[0m: {any}\n", .{packet.type});
