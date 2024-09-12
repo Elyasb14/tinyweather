@@ -5,8 +5,3 @@ tinyweather is a weather station designed to be small, robust, and easy to use. 
 things that need doing
 - bme680 device driver (in progress)
 - rg15 serial device driver (in progress)
-- RPC engine
- - want to support different telemetry options
-  - lora
-  - ip
-
