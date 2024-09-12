@@ -86,6 +86,7 @@ pub const SensorRequest = struct {
 pub const SensorData = struct { sensor_type: SensorType, val: u8 };
 
 pub const SensorResponse = struct {
+    //TODO: need to support floats across the network
     request: SensorRequest,
     data: []SensorData = undefined,
 
@@ -116,7 +117,8 @@ pub const SensorResponse = struct {
         for (buf, request.sensors) |x, sensor| {
             try dec_buf.append(SensorData{ .sensor_type = sensor, .val = x });
         }
-        return SensorResponse{ .data = try dec_buf.toOwnedSlice(), .request = request };
+        const data = try dec_buf.toOwnedSlice();
+        return SensorResponse{ .data = data, .request = request };
     }
 };
 
