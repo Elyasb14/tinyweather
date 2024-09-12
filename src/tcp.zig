@@ -15,7 +15,7 @@ pub const SensorType = enum(u8) {
     Error, //can I better handle the error in the switch statement?
 };
 
-pub const TCPError = error{
+const TCPError = error{
     VersionError,
     InvalidPacketType,
 };
@@ -83,11 +83,11 @@ pub const SensorRequest = struct {
     }
 };
 
-pub const SensorData = struct { sensor_type: SensorType, val: f32 };
+pub const SensorData = struct { sensor_type: SensorType, val: u8 };
 
 pub const SensorResponse = struct {
     request: SensorRequest,
-    data: []const u8 = undefined,
+    data: []SensorData = undefined,
 
     const Self = @This();
 
@@ -110,14 +110,13 @@ pub const SensorResponse = struct {
         }
         return buf.toOwnedSlice();
     }
-    pub fn decode(request: SensorRequest, buf: []const u8) !SensorResponse {
-        // var dec_buf = ArrayList(u8).init(allocator);
-        // defer dec_buf.deinit();
-        // for (buf) |x| {
-        //     try dec_buf.append(try std.meta.intToEnum(SensorType, x));
-        // }
-        // return dec_buf.toOwnedSlice();
-        return SensorResponse{ .data = buf, .request = request };
+    pub fn decode(request: SensorRequest, buf: []const u8, allocator: std.mem.Allocator) !SensorResponse {
+        var dec_buf = ArrayList(SensorData).init(allocator);
+        defer dec_buf.deinit();
+        for (buf, request.sensors) |x, sensor| {
+            try dec_buf.append(SensorData{ .sensor_type = sensor, .val = x });
+        }
+        return SensorResponse{ .data = try dec_buf.toOwnedSlice(), .request = request };
     }
 };
 
