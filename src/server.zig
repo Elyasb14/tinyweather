@@ -67,3 +67,19 @@ pub fn main() !void {
         try handle_client(client_stream, allocator);
     }
 }
+
+const testing = std.testing;
+
+test "Packet encoding and decoding" {
+    const allocator = testing.allocator;
+
+    const original_packet = tcp.Packet.init(1, .SensorRequest, &[_]u8{ 1, 2, 3 });
+    const encoded = try original_packet.encode(allocator);
+    defer allocator.free(encoded);
+
+    const decoded = try tcp.Packet.decode(encoded);
+
+    try testing.expectEqual(original_packet.version, decoded.version);
+    try testing.expectEqual(original_packet.type, decoded.type);
+    try testing.expectEqualSlices(u8, original_packet.data, decoded.data);
+}

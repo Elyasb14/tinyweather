@@ -15,7 +15,7 @@ pub const SensorType = enum(u8) {
     Error, //can I better handle the error in the switch statement?
 };
 
-const TCPError = error{
+pub const TCPError = error{
     VersionError,
     InvalidPacketType,
 };
