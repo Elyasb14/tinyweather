@@ -84,7 +84,6 @@ pub const SensorRequest = struct {
 pub const SensorData = struct { sensor_type: SensorType, val: f32 };
 
 pub const SensorResponse = struct {
-    data: ArrayList(u8),
     request: SensorRequest,
 
     const Self = @This();

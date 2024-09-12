@@ -34,8 +34,8 @@ fn handle_client(stream: net.Stream) !void {
                 const decoded_request = try tcp.SensorRequest.decode(packet.data, allocator);
                 print("\x1b[32mDecoded SensorRequest packet\x1b[0m: {any}\n", .{decoded_request});
                 // create response packet and encode it
-                const encoded_buf = ArrayList(u8).init(allocator);
-                const encoded_response = try tcp.SensorResponse.encode(tcp.SensorResponse{ .request = decoded_request, .data = encoded_buf }, allocator);
+                // const encoded_buf = ArrayList(u8).init(allocator);
+                const encoded_response = try tcp.SensorResponse.encode(tcp.SensorResponse{ .request = decoded_request }, allocator);
                 print("\x1b[32mEncoded SensorResponse packet\x1b[0m: {any}\n", .{encoded_response});
                 const response_packet = tcp.Packet.init(1, tcp.PacketType.SensorResponse, encoded_response);
                 print("\x1b[32mPacket response sent to stream\x1b[0m: {any}\n", .{response_packet});
