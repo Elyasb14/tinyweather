@@ -9,7 +9,7 @@ pub fn main() !void {
     const stream = try net.tcpConnectToAddress(address);
     defer stream.close();
 
-    const req_enc = tcp.SensorRequest{ .sensors = &[_]tcp.SensorType{tcp.SensorType.Gas} };
+    const req_enc = tcp.SensorRequest{ .sensors = &[_]tcp.SensorType{ tcp.SensorType.Gas, tcp.SensorType.Temp, tcp.SensorType.Hum } };
     const data = try req_enc.encode(std.heap.page_allocator);
     const packet = tcp.Packet.init(1, tcp.PacketType.SensorRequest, data);
     const encoded = try packet.encode(std.heap.page_allocator);

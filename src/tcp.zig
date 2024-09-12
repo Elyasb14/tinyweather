@@ -12,6 +12,7 @@ pub const SensorType = enum(u8) {
     Pres,
     Hum,
     Gas,
+    Error, //can I better handle the error in the switch statement?
 };
 
 const TCPError = error{
@@ -73,6 +74,7 @@ pub const SensorRequest = struct {
 
     pub fn decode(buf: []const u8, allocator: std.mem.Allocator) !SensorRequest {
         var sensors = ArrayList(SensorType).init(allocator);
+        defer sensors.deinit();
         for (buf) |x| {
             const sensor = try std.meta.intToEnum(SensorType, x);
             try sensors.append(sensor);
@@ -90,13 +92,18 @@ pub const SensorResponse = struct {
 
     pub fn encode(self: Self, allocator: std.mem.Allocator) ![]u8 {
         var buf = ArrayList(u8).init(allocator);
+        defer buf.deinit();
         for (self.request.sensors) |sensor| {
             switch (sensor) {
                 .Gas => {
                     try buf.append(get_gas());
                 },
+                .Temp => {
+                    try buf.append(get_temp());
+                },
                 else => {
-                    std.debug.print("failed", .{});
+                    try buf.append(@intFromEnum(SensorType.Error));
+                    std.debug.print("\x1b[31mFailed to get data from sensor\x1b[0m: {any}\n", .{sensor});
                 },
             }
         }
@@ -107,4 +114,8 @@ pub const SensorResponse = struct {
 
 fn get_gas() u8 {
     return 17;
+}
+
+fn get_temp() u8 {
+    return 23;
 }
