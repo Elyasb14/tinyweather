@@ -138,3 +138,9 @@ fn get_gas() u8 {
 fn get_temp() u8 {
     return 23;
 }
+
+test "test bitcast" {
+    const val = 10.5;
+    const byte_array = std.mem.asBytes(&val);
+    std.log.warn("\n{any}\n", .{byte_array});
+}
