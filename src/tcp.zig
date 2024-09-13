@@ -61,7 +61,9 @@ pub const SensorRequest = struct {
 
     const Self = @This();
 
-    // pub fn init(sensors[
+    pub fn init(sensors: []const SensorType) SensorRequest {
+        return SensorRequest{ .sensors = sensors };
+    }
 
     pub fn encode(self: Self, allocator: std.mem.Allocator) ![]u8 {
         var sensors = ArrayList(u8).init(allocator);
@@ -91,6 +93,13 @@ pub const SensorResponse = struct {
     data: []SensorData = undefined,
 
     const Self = @This();
+
+    pub fn init(request: SensorRequest, data: []SensorData) SensorResponse {
+        return SensorResponse{
+            .request = request,
+            .data = data,
+        };
+    }
 
     pub fn encode(self: Self, allocator: std.mem.Allocator) ![]u8 {
         var buf = ArrayList(u8).init(allocator);

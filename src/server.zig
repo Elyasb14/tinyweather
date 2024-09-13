@@ -29,7 +29,8 @@ fn handle_client(stream: net.Stream, allocator: std.mem.Allocator) !void {
                 const decoded_request = try tcp.SensorRequest.decode(received_packet.data, allocator);
                 print("\x1b[32mDecoded SensorRequest packet\x1b[0m: {any}\n", .{decoded_request});
 
-                const encoded_response = try tcp.SensorResponse.encode(tcp.SensorResponse{ .request = decoded_request }, allocator);
+                const sensor_response = tcp.SensorResponse.init(decoded_request, undefined);
+                const encoded_response = try sensor_response.encode(allocator);
                 print("\x1b[32mEncoded SensorResponse packet\x1b[0m: {any}\n", .{encoded_response});
 
                 const response_packet = tcp.Packet.init(1, tcp.PacketType.SensorResponse, encoded_response);
