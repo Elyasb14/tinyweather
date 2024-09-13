@@ -18,14 +18,14 @@ pub fn main() !void {
     const sensor_request = tcp.SensorRequest.init(sensors);
     const sensor_request_encoded = try sensor_request.encode(allocator);
     const packet = tcp.Packet.init(1, tcp.PacketType.SensorRequest, sensor_request_encoded);
-    const encoded = try packet.encode(allocator);
+    const encoded_packet = try packet.encode(allocator);
 
     var buf: [1024]u8 = undefined;
     print("\x1b[32mPacket Sent\x1b[0m: {any}\n", .{packet});
-    _ = try stream.write(encoded);
+    _ = try stream.write(encoded_packet);
     const n = try stream.read(&buf);
-    const decoded = try tcp.Packet.decode(buf[0..n]);
-    const decoded_sensor_response = try tcp.SensorResponse.decode(sensor_request, decoded.data, allocator);
+    const decoded_packet = try tcp.Packet.decode(buf[0..n]);
+    const decoded_sensor_response = try tcp.SensorResponse.decode(sensor_request, decoded_packet.data, allocator);
 
     print("\x1b[32mPacket Received\x1b[0m: {any}\n", .{decoded_sensor_response});
 }
