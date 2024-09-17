@@ -4,6 +4,7 @@ const print = std.debug.print;
 const assert = std.debug.assert;
 const tcp = @import("tcp.zig");
 const ArrayList = std.ArrayList;
+const rg15 = @import("sensors/rg15.zig");
 
 fn handle_client(stream: net.Stream, allocator: std.mem.Allocator) !void {
     defer {
@@ -48,6 +49,7 @@ fn handle_client(stream: net.Stream, allocator: std.mem.Allocator) !void {
 }
 
 pub fn main() !void {
+    try rg15.setup_serial();
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
     const allocator = arena.allocator();
