@@ -10,7 +10,7 @@
 
 int main() {
   // Open the serial port. Change device path as needed (currently set to an standard FTDI USB-UART cable type device)
-  int serial_port = open("/dev/ttyUSB0", O_RDWR);
+  int serial_port = open("/dev/tty.usbserial-0001", O_RDWR);
 
   // Create new termios struct, we call it 'tty' for convention
   struct termios tty;
