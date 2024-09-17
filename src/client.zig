@@ -25,7 +25,13 @@ pub fn main() !void {
     _ = try stream.write(encoded_packet);
     const n = try stream.read(&buf);
     const decoded_packet = try tcp.Packet.decode(buf[0..n]);
-    const decoded_sensor_response = try tcp.SensorResponse.decode(sensor_request, decoded_packet.data, allocator);
-
-    print("\x1b[32mPacket Received\x1b[0m: {any}\n", .{decoded_sensor_response});
+    switch (decoded_packet.type) {
+        .SensorResponse => {
+            const decoded_sensor_response = try tcp.SensorResponse.decode(sensor_request, decoded_packet.data, allocator);
+            print("\x1b[32mPacket Received\x1b[0m: {any}\n", .{decoded_sensor_response});
+        },
+        else => {
+            print("Wrong packet type: {any}", .{decoded_packet.type});
+        },
+    }
 }
