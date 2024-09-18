@@ -120,7 +120,6 @@ pub const SensorResponse = struct {
     }
     pub fn decode(request: SensorRequest, buf: []const u8, allocator: std.mem.Allocator) !SensorResponse {
         var dec_buf = ArrayList(SensorData).init(allocator);
-        defer dec_buf.deinit();
         for (buf, request.sensors) |x, sensor| {
             try dec_buf.append(SensorData{ .sensor_type = sensor, .val = x });
         }

@@ -27,7 +27,6 @@ fn handle_client(stream: net.Stream, allocator: std.mem.Allocator) !void {
         switch (received_packet.type) {
             .SensorRequest => {
                 const decoded_request = try tcp.SensorRequest.decode(received_packet.data, allocator);
-                defer allocator.free(decoded_request.sensors); //TODO: do I need this?
                 std.log.debug("\x1b[32mDecoded SensorRequest packet\x1b[0m: {any}", .{decoded_request});
 
                 const sensor_response = tcp.SensorResponse.init(decoded_request, undefined);
