@@ -69,7 +69,7 @@ pub const SensorRequest = struct {
         for (self.sensors) |sensor| {
             try sensors.append(@intFromEnum(sensor));
         }
-        return sensors.toOwnedSlice();
+        return try sensors.toOwnedSlice();
     }
 
     pub fn decode(buf: []const u8, allocator: std.mem.Allocator) !SensorRequest {
@@ -112,7 +112,7 @@ pub const SensorResponse = struct {
                 },
                 else => {
                     try buf.append(@intFromEnum(SensorType.Error));
-                    std.log.debug("\x1b[31mFailed to get data from sensor\x1b[0m: {any}... SensorType.Error\n", .{sensor});
+                    std.log.err("\x1b[31mFailed to get data from sensor\x1b[0m: {any}... SensorType.Error\n", .{sensor});
                 },
             }
         }
