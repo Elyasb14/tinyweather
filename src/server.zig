@@ -49,7 +49,6 @@ fn handle_client(stream: net.Stream, allocator: std.mem.Allocator) !void {
 }
 
 pub fn main() !void {
-    try rg15.setup_serial();
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
     const allocator = arena.allocator();
