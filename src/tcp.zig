@@ -112,7 +112,7 @@ pub const SensorResponse = struct {
                 },
                 else => {
                     try buf.append(@intFromEnum(SensorType.Error));
-                    std.debug.print("\x1b[31mFailed to get data from sensor\x1b[0m: {any}\n", .{sensor});
+                    std.log.debug("\x1b[31mFailed to get data from sensor\x1b[0m: {any}... SensorType.Error\n", .{sensor});
                 },
             }
         }
