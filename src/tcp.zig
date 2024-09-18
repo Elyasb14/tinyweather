@@ -105,8 +105,7 @@ pub const SensorResponse = struct {
         for (self.request.sensors) |sensor| {
             switch (sensor) {
                 .Gas => {
-                    const casted = std.mem.toBytes(get_gas());
-                    try buf.appendSlice(&casted);
+                    try buf.appendSlice(get_gas());
                 },
                 .Temp => {
                     try buf.append(get_temp());
