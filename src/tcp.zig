@@ -63,7 +63,7 @@ pub const SensorRequest = struct {
         return SensorRequest{ .sensors = sensors };
     }
 
-    pub fn encode(self: Self, allocator: std.mem.Allocator) ![]u8 {
+    pub fn encode(self: Self, allocator: std.mem.Allocator) ![]const u8 {
         var sensors = ArrayList(u8).init(allocator);
         defer sensors.deinit();
         for (self.sensors) |sensor| {
@@ -99,7 +99,7 @@ pub const SensorResponse = struct {
         };
     }
 
-    pub fn encode(self: Self, allocator: std.mem.Allocator) ![]u8 {
+    pub fn encode(self: Self, allocator: std.mem.Allocator) ![]const u8 {
         var buf = ArrayList(u8).init(allocator);
         defer buf.deinit();
         for (self.request.sensors) |sensor| {
@@ -135,10 +135,4 @@ fn get_gas() u8 {
 
 fn get_temp() u8 {
     return 23;
-}
-
-test "test bitcast" {
-    const val = 10.5;
-    const byte_array = std.mem.asBytes(&val);
-    std.log.warn("\n{any}\n", .{byte_array});
 }

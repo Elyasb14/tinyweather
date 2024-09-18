@@ -85,3 +85,14 @@ test "Packet encoding and decoding" {
     try testing.expectEqual(original_packet.type, decoded.type);
     try testing.expectEqualSlices(u8, original_packet.data, decoded.data);
 }
+
+test "sensor request encoding and decoding" {
+    const allocator = testing.allocator;
+
+    const original_request = tcp.SensorRequest.init(&[_]tcp.SensorType{ tcp.SensorType.Hum, tcp.SensorType.Temp });
+    const encoded_request = try original_request.encode(allocator);
+    defer allocator.free(encoded_request);
+    const decoded_request = try tcp.SensorRequest.decode(encoded_request, allocator);
+
+    try testing.expectEqual(original_request.sensors, decoded_request.sensors);
+}
