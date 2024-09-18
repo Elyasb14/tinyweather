@@ -20,14 +20,14 @@ pub fn main() !void {
     const encoded_packet = try packet.encode(allocator);
 
     var buf: [1024]u8 = undefined;
-    std.log.debug("\x1b[32mPacket Sent\x1b[0m: {any}\n", .{packet});
+    std.log.debug("\x1b[32mPacket Sent\x1b[0m: {any}", .{packet});
     _ = try stream.write(encoded_packet);
     const n = try stream.read(&buf);
     const decoded_packet = try tcp.Packet.decode(buf[0..n]);
     switch (decoded_packet.type) {
         .SensorResponse => {
             const decoded_sensor_response = try tcp.SensorResponse.decode(sensor_request, decoded_packet.data, allocator);
-            std.log.debug("\x1b[32mPacket Received\x1b[0m: {any}\n", .{decoded_sensor_response});
+            std.log.debug("\x1b[32mPacket Received\x1b[0m: {any}", .{decoded_sensor_response});
         },
         else => {
             std.log.err("Wrong packet type: {any}", .{decoded_packet.type});
