@@ -105,7 +105,8 @@ pub const SensorResponse = struct {
         for (self.request.sensors) |sensor| {
             switch (sensor) {
                 .Gas => {
-                    try buf.append(get_gas());
+                    const casted = std.mem.toBytes(get_gas());
+                    try buf.appendSlice(&casted);
                 },
                 .Temp => {
                     try buf.append(get_temp());
@@ -121,15 +122,15 @@ pub const SensorResponse = struct {
     pub fn decode(request: SensorRequest, buf: []const u8, allocator: std.mem.Allocator) !SensorResponse {
         var dec_buf = ArrayList(SensorData).init(allocator);
         for (buf, request.sensors) |x, sensor| {
-            try dec_buf.append(SensorData{ .sensor_type = sensor, .val = x });
+            try dec_buf.append(SensorData{ .sensor_type = sensor, .val = std.mem.bytesToValue(u8, &x) });
         }
         const data = try dec_buf.toOwnedSlice();
         return SensorResponse{ .data = data, .request = request };
     }
 };
 
-fn get_gas() u8 {
-    return 17;
+fn get_gas() f32 {
+    return 17.1;
 }
 
 fn get_temp() u8 {
