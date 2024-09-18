@@ -49,9 +49,7 @@ pub const Packet = struct {
         if (buf[0] != 1) {
             return TCPError.VersionError;
         }
-        const packet_type = std.meta.intToEnum(PacketType, buf[1]) catch {
-            return TCPError.InvalidPacketType;
-        };
+        const packet_type = @as(PacketType, @enumFromInt(buf[1]));
         return Packet.init(buf[0], packet_type, buf[2..]);
     }
 };
@@ -78,7 +76,7 @@ pub const SensorRequest = struct {
         var sensors = ArrayList(SensorType).init(allocator);
         defer sensors.deinit();
         for (buf) |x| {
-            const sensor = try std.meta.intToEnum(SensorType, x);
+            const sensor = @as(SensorType, @enumFromInt(x));
             try sensors.append(sensor);
         }
         return SensorRequest{ .sensors = try sensors.toOwnedSlice() };
