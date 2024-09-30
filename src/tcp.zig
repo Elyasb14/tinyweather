@@ -116,7 +116,7 @@ pub const SensorResponse = struct {
                 },
             }
         }
-        return buf.toOwnedSlice();
+        return try buf.toOwnedSlice();
     }
     pub fn decode(request: SensorRequest, buf: []const u8, allocator: std.mem.Allocator) !SensorResponse {
         var dec_buf = ArrayList(SensorData).init(allocator);
