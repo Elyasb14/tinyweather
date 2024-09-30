@@ -105,7 +105,7 @@ pub const SensorResponse = struct {
         for (self.request.sensors) |sensor| {
             switch (sensor) {
                 .Gas => {
-                    try buf.appendSlice(get_gas());
+                    try buf.append(get_gas());
                 },
                 .Temp => {
                     try buf.append(get_temp());
@@ -128,8 +128,8 @@ pub const SensorResponse = struct {
     }
 };
 
-fn get_gas() f32 {
-    return 17.1;
+fn get_gas() u8 {
+    return 17;
 }
 
 fn get_temp() u8 {
