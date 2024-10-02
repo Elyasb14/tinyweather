@@ -28,20 +28,9 @@ fn handle_client(stream: net.Stream, allocator: std.mem.Allocator) !void {
         switch (received_packet.type) {
             .SensorRequest => {
                 const decoded_request = try tcp.SensorRequest.decode(received_packet.data, allocator);
-<<<<<<< HEAD
-<<<<<<< HEAD
-                std.log.debug("{s}:{{ sensors: {any} }}", .{ try helpers.color_string("Decoded Response Packet", helpers.Colors.Green, allocator), decoded_request.sensors });
-=======
+
                 std.log.debug("\x1b[32mDecoded Response Packet\x1b[0m: {any}", .{decoded_request});
 
->>>>>>> 241a631 (coloring my logs)
-=======
-                std.log.debug("\x1b[32mDecoded Response Packet\x1b[0m: {any}", .{decoded_request});
-
-=======
-                std.log.debug("{s}:{{ sensors: {any} }}", .{ try helpers.color_string("Decoded Response Packet", helpers.Colors.Green, allocator), decoded_request.sensors });
->>>>>>> 492debe (this is not good)
->>>>>>> 608a385 (merge conflict)
                 const sensor_response = tcp.SensorResponse.init(decoded_request, undefined);
                 // std.log.debug("\x1b[32mSensorResponse packet\x1b[0m: {any}\n", .{sensor_response});
                 const encoded_response = try sensor_response.encode(allocator);
