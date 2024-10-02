@@ -4,6 +4,7 @@ const assert = std.debug.assert;
 const tcp = @import("tcp.zig");
 const ArrayList = std.ArrayList;
 const rg15 = @import("sensors/rg15.zig");
+const helpers = @import("helpers.zig");
 
 fn handle_client(stream: net.Stream, allocator: std.mem.Allocator) !void {
     defer {
@@ -27,7 +28,7 @@ fn handle_client(stream: net.Stream, allocator: std.mem.Allocator) !void {
         switch (received_packet.type) {
             .SensorRequest => {
                 const decoded_request = try tcp.SensorRequest.decode(received_packet.data, allocator);
-                std.log.debug("\x1b[32mDecoded SensorRequest packet\x1b[0m: {any}", .{decoded_request});
+                std.log.debug("{s}:{s}", .{ try helpers.color_string("Decoded Response Packet", helpers.Colors.Green, allocator), decoded_request });
 
                 const sensor_response = tcp.SensorResponse.init(decoded_request, undefined);
                 // std.log.debug("\x1b[32mSensorResponse packet\x1b[0m: {any}\n", .{sensor_response});
@@ -63,7 +64,7 @@ pub fn main() !void {
 
     while (true) {
         const connection = try server.accept();
-        std.log.debug("Connection established with: {any}", .{connection.address});
+        std.log.debug("\x1b[32mConnection established with\x1b[0m: {any}", .{connection.address});
         const client_stream = connection.stream;
 
         try handle_client(client_stream, allocator);
