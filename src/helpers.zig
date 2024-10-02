@@ -2,14 +2,13 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 
 pub const Colors = enum { Green, Red };
-
 pub fn color_string(str: []const u8, color: Colors, allocator: Allocator) ![]const u8 {
     switch (color) {
         .Green => {
-            return try std.fmt.allocPrint(allocator, "{s}{s}{s}\n", .{ "\x1b[31m", str, "\x1b[0m" });
+            return try std.fmt.allocPrint(allocator, "\x1b[32m{s}\x1b[0m", .{str});
         },
         else => {
-            return "hello";
+            return try allocator.dupe(u8, str);
         },
     }
 }
