@@ -28,7 +28,12 @@ fn handle_client(stream: net.Stream, allocator: std.mem.Allocator) !void {
         switch (received_packet.type) {
             .SensorRequest => {
                 const decoded_request = try tcp.SensorRequest.decode(received_packet.data, allocator);
+<<<<<<< HEAD
                 std.log.debug("{s}:{{ sensors: {any} }}", .{ try helpers.color_string("Decoded Response Packet", helpers.Colors.Green, allocator), decoded_request.sensors });
+=======
+                std.log.debug("\x1b[32mDecoded Response Packet\x1b[0m: {any}", .{decoded_request});
+
+>>>>>>> 241a631 (coloring my logs)
                 const sensor_response = tcp.SensorResponse.init(decoded_request, undefined);
                 // std.log.debug("\x1b[32mSensorResponse packet\x1b[0m: {any}\n", .{sensor_response});
                 const encoded_response = try sensor_response.encode(allocator);
@@ -59,7 +64,7 @@ pub fn main() !void {
     });
 
     defer server.deinit();
-    std.log.debug("Server listening on {}", .{server_address});
+    std.log.debug("\x1b[32mServer listening on {}\x1b[0m", .{server_address});
 
     while (true) {
         const connection = try server.accept();
