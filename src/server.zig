@@ -112,5 +112,5 @@ test "sensor response encoding and decoding" {
     const decoded_request = try tcp.SensorRequest.decode(encoded_request, allocator);
     defer allocator.free(decoded_request.sensors);
 
-    try testing.expectEqual(original_request, decoded_request);
+    try testing.expectEqualSlices(tcp.SensorType, original_request.sensors, decoded_request.sensors);
 }
