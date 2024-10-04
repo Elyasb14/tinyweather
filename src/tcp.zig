@@ -1,6 +1,7 @@
 const std = @import("std");
 const assert = std.debug.assert;
 const ArrayList = std.ArrayList;
+const helpers = @import("helpers.zig");
 
 pub const PacketType = enum(u8) {
     SensorRequest,
@@ -83,7 +84,7 @@ pub const SensorRequest = struct {
     }
 };
 
-pub const SensorData = struct { sensor_type: SensorType, val: u8 };
+pub const SensorData = struct { sensor_type: SensorType, val: f32 };
 
 pub const SensorResponse = struct {
     //TODO: need to support floats across the network
@@ -105,10 +106,10 @@ pub const SensorResponse = struct {
         for (self.request.sensors) |sensor| {
             switch (sensor) {
                 .Gas => {
-                    try buf.append(get_gas());
+                    try buf.appendSlice(&get_gas());
                 },
                 .Temp => {
-                    try buf.append(get_temp());
+                    try buf.appendSlice(&get_temp());
                 },
                 else => {
                     try buf.append(@intFromEnum(SensorType.Error));
@@ -120,18 +121,23 @@ pub const SensorResponse = struct {
     }
     pub fn decode(request: SensorRequest, buf: []const u8, allocator: std.mem.Allocator) !SensorResponse {
         var dec_buf = ArrayList(SensorData).init(allocator);
-        for (buf, request.sensors) |x, sensor| {
-            try dec_buf.append(SensorData{ .sensor_type = sensor, .val = std.mem.bytesToValue(u8, &x) });
+        var offset: usize = 0;
+        for (request.sensors) |sensor| {
+            if (offset + 4 > buf.len) break;
+            const chunk = buf[offset .. offset + 4];
+            const data = helpers.bytes_to_f32(chunk);
+            try dec_buf.append(SensorData{ .sensor_type = sensor, .val = data });
+            offset += 4;
         }
         const data = try dec_buf.toOwnedSlice();
         return SensorResponse{ .data = data, .request = request };
     }
 };
 
-fn get_gas() u8 {
-    return 17;
+fn get_gas() [4]u8 {
+    return helpers.f32_to_bytes(172.34);
 }
 
-fn get_temp() u8 {
-    return 23;
+fn get_temp() [4]u8 {
+    return helpers.f32_to_bytes(17.2);
 }

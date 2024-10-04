@@ -19,8 +19,8 @@ pub fn f32_to_bytes(value: f32) [4]u8 {
 }
 
 // Function to convert a byte array back to f32
-pub fn bytes_to_f32(bytes: [4]u8) f32 {
-    return std.mem.bytesToValue(f32, &bytes);
+pub fn bytes_to_f32(bytes: []const u8) f32 {
+    return std.mem.bytesToValue(f32, bytes);
 }
 
 const testing = std.testing;
