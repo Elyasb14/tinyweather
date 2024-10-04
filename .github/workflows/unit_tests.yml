@@ -1,0 +1,25 @@
+name: Zig Unit Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Set up Zig
+      uses: goto-bus-stop/setup-zig@v2
+      with:
+        version: 0.13.0  # Specify the Zig version you're using
+    
+    - name: Build
+      run: zig build
+    
+    - name: Run tests
+      run: zig build test
