@@ -103,6 +103,7 @@ test "sensor request encoding and decoding" {
     try testing.expectEqualSlices(tcp.SensorType, original_request.sensors, decoded_request.sensors);
 }
 
+
 test "sensor response encoding and decoding" {
     const allocator = testing.allocator;
     const original_request = tcp.SensorRequest.init(&[_]tcp.SensorType{ tcp.SensorType.Hum, tcp.SensorType.Temp });
@@ -114,3 +115,4 @@ test "sensor response encoding and decoding" {
 
     try testing.expectEqualSlices(tcp.SensorType, original_request.sensors, decoded_request.sensors);
 }
+
