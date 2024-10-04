@@ -121,12 +121,13 @@ pub const SensorResponse = struct {
     }
     pub fn decode(request: SensorRequest, buf: []const u8, allocator: std.mem.Allocator) !SensorResponse {
         var dec_buf = ArrayList(SensorData).init(allocator);
+        var offset: usize = 0;
         for (request.sensors) |sensor| {
-            var iterator = std.mem.window(u8, buf, 4, 4);
-            while (iterator.next()) |chunk| {
-                const data = helpers.bytes_to_f32(chunk);
-                try dec_buf.append(SensorData{ .sensor_type = sensor, .val = data });
-            }
+            if (offset + 4 > buf.len) break;
+            const chunk = buf[offset .. offset + 4];
+            const data = helpers.bytes_to_f32(chunk);
+            try dec_buf.append(SensorData{ .sensor_type = sensor, .val = data });
+            offset += 4;
         }
         const data = try dec_buf.toOwnedSlice();
         return SensorResponse{ .data = data, .request = request };
