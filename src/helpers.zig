@@ -28,7 +28,7 @@ const testing = std.testing;
 test "test type safety" {
     const val: f32 = 10.4;
     const bytes = f32_to_bytes(val);
-    const casted_f32 = bytes_to_f32(bytes);
+    const casted_f32 = bytes_to_f32(&bytes);
     try testing.expectEqual(@TypeOf(val), @TypeOf(casted_f32));
     try testing.expectEqual(@TypeOf(bytes), [4]u8);
 }
@@ -44,8 +44,8 @@ test "convert f32 to bytes and back" {
     const bytes3 = f32_to_bytes(val3);
     const bytes4 = f32_to_bytes(val4);
 
-    try testing.expectEqual(bytes_to_f32(bytes1), val1);
-    try testing.expectEqual(bytes_to_f32(bytes2), val2);
-    try testing.expectEqual(bytes_to_f32(bytes3), val3);
-    try testing.expectEqual(bytes_to_f32(bytes4), val4);
+    try testing.expectEqual(bytes_to_f32(&bytes1), val1);
+    try testing.expectEqual(bytes_to_f32(&bytes2), val2);
+    try testing.expectEqual(bytes_to_f32(&bytes3), val3);
+    try testing.expectEqual(bytes_to_f32(&bytes4), val4);
 }
