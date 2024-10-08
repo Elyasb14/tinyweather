@@ -87,7 +87,6 @@ pub const SensorRequest = struct {
 pub const SensorData = struct { sensor_type: SensorType, val: f32 };
 
 pub const SensorResponse = struct {
-    //TODO: need to support floats across the network
     request: SensorRequest,
     data: []SensorData = undefined,
 
