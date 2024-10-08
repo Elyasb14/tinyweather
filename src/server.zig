@@ -64,7 +64,10 @@ pub fn main() !void {
     std.log.debug("\x1b[32mServer listening on {}\x1b[0m", .{server_address});
 
     while (true) {
-        const connection = try server.accept();
+        const connection = server.accept() catch |err| {
+            std.log.err("\x1b[31mServer failed to connect to client:\x1b[0m {any}", .{err});
+            continue;
+        };
         std.log.debug("\x1b[32mConnection established with\x1b[0m: {any}", .{connection.address});
         const client_stream = connection.stream;
 
@@ -103,7 +106,6 @@ test "sensor request encoding and decoding" {
     try testing.expectEqualSlices(tcp.SensorType, original_request.sensors, decoded_request.sensors);
 }
 
-
 test "sensor response encoding and decoding" {
     const allocator = testing.allocator;
     const original_request = tcp.SensorRequest.init(&[_]tcp.SensorType{ tcp.SensorType.Hum, tcp.SensorType.Temp });
@@ -115,4 +117,3 @@ test "sensor response encoding and decoding" {
 
     try testing.expectEqualSlices(tcp.SensorType, original_request.sensors, decoded_request.sensors);
 }
-
