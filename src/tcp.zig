@@ -3,23 +3,11 @@ const assert = std.debug.assert;
 const ArrayList = std.ArrayList;
 const helpers = @import("helpers.zig");
 
-pub const PacketType = enum(u8) {
-    SensorRequest,
-    SensorResponse,
-};
+pub const PacketType = enum(u8) { SensorRequest, SensorResponse, Error };
 
-pub const SensorType = enum(u8) {
-    Temp,
-    Pres,
-    Hum,
-    Gas,
-    Error, //can I better handle the error in the switch statement?
-};
+pub const SensorType = enum(u8) { Temp, Pres, Hum, Gas, Error };
 
-const TCPError = error{
-    VersionError,
-    InvalidPacketType,
-};
+const TCPError = error{ VersionError, InvalidPacketType, InvalidSensorType };
 
 pub const Packet = struct {
     version: u8,
@@ -88,7 +76,7 @@ pub const SensorData = struct { sensor_type: SensorType, val: f32 };
 
 pub const SensorResponse = struct {
     request: SensorRequest,
-    data: []SensorData = undefined,
+    data: []SensorData,
 
     const Self = @This();
 
