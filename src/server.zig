@@ -4,6 +4,7 @@ const assert = std.debug.assert;
 const tcp = @import("tcp.zig");
 const ArrayList = std.ArrayList;
 const helpers = @import("helpers.zig");
+const serial = @import("serial");
 
 fn handle_client(stream: net.Stream, allocator: std.mem.Allocator) !void {
     defer {
@@ -50,6 +51,18 @@ fn handle_client(stream: net.Stream, allocator: std.mem.Allocator) !void {
 }
 
 pub fn main() !void {
+    if (false) {
+        var serial_fd = try std.fs.cwd().openFile("/dev/ttyUSB0", .{ .mode = .read_write });
+        defer serial_fd.close();
+
+        try serial.configureSerialPort(serial_fd, serial.SerialConfig{
+            .baud_rate = 19200,
+            .word_size = serial.WordSize.eight,
+            .parity = .none,
+            .stop_bits = .one,
+            .handshake = .none,
+        });
+    }
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
     const allocator = arena.allocator();
