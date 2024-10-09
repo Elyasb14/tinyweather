@@ -7,12 +7,11 @@ on:
     branches: ['*']
 
 jobs:
-  unit_test:
+  zig_unit_test:
     runs-on: ubuntu-latest
     
     steps:
     - uses: actions/checkout@v3
-    
     - name: Set up Zig
       uses: mlugg/setup-zig@v1 
       with:
@@ -25,17 +24,19 @@ jobs:
     - name: Run tests
       run: zig build test --summary all
     
-    
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.12'
-    
-    - name: Install python dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install tabulate
-    
-    - name: Run size script
-      run: python size.py
+  python_size_script: 
+    runs-on: ubuntu-latest
 
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with: 
+          version: '3.12'
+      - name: Install python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install tabulate
+    
+      - name: Run size script
+        run: python size.py
