@@ -23,6 +23,7 @@ pub fn main() !void {
     std.log.debug("\x1b[32mPacket Sent\x1b[0m: {any}", .{packet});
     _ = try stream.write(encoded_packet);
     const n = try stream.read(&buf);
+    std.log.debug("\x1b[32mBytes read by stream\x1b[0m: {any}", .{n});
     const decoded_packet = try tcp.Packet.decode(buf[0..n]);
     switch (decoded_packet.type) {
         .SensorResponse => {

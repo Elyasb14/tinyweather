@@ -3,7 +3,6 @@ const net = std.net;
 const assert = std.debug.assert;
 const tcp = @import("tcp.zig");
 const ArrayList = std.ArrayList;
-const rg15 = @import("sensors/rg15.zig");
 const helpers = @import("helpers.zig");
 
 fn handle_client(stream: net.Stream, allocator: std.mem.Allocator) !void {
@@ -16,8 +15,8 @@ fn handle_client(stream: net.Stream, allocator: std.mem.Allocator) !void {
 
     while (true) {
         const bytes_read = try stream.read(&recv_buffer);
-        if (bytes_read == 0) break; // Client disconnected
-
+        if (bytes_read == 0) break;
+        std.log.debug("\x1b[32mBytes read by connection\x1b[0m: {any}", .{bytes_read});
         const received_packet = tcp.Packet.decode(recv_buffer[0..bytes_read]) catch |err| {
             std.log.err("\x1b[31mClient wrote a bad packet, error\x1b[0m: {any}", .{err});
             return;
