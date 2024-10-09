@@ -2,6 +2,7 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 
 pub const Colors = enum { Green, Red };
+
 pub fn color_string(str: []const u8, color: Colors, allocator: Allocator) ![]const u8 {
     switch (color) {
         .Green => {
