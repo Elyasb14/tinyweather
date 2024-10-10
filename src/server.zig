@@ -12,7 +12,7 @@ fn handle_client(stream: net.Stream, allocator: std.mem.Allocator) !void {
         stream.close();
     }
 
-    var recv_buffer: [1024]u8 = undefined;
+    var recv_buffer: [50]u8 = undefined;
 
     while (true) {
         const bytes_read = try stream.read(&recv_buffer);
