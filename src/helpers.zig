@@ -1,14 +1,18 @@
 const std = @import("std");
-const Allocator = std.mem.Allocator;
 
+const Allocator = std.mem.Allocator;
 pub const Colors = enum { Green, Red };
 pub fn color_string(str: []const u8, color: Colors, allocator: Allocator) ![]const u8 {
     switch (color) {
         .Green => {
-            return try std.fmt.allocPrint(allocator, "\x1b[32m{s}\x1b[0m", .{str});
+            var buf = std.ArrayList(u8).init(allocator);
+            try buf.appendSlice("\x1b[32m");
+            try buf.appendSlice(str);
+            try buf.appendSlice("\x1b[0m");
+            return try buf.toOwnedSlice();
         },
-        else => {
-            return try allocator.dupe(u8, str);
+        .Red => {
+            return "hehe";
         },
     }
 }
@@ -24,7 +28,14 @@ pub fn bytes_to_f32(bytes: []const u8) f32 {
 }
 
 const testing = std.testing;
-
+test "test color_string helper" {
+    const allocator = std.testing.allocator;
+    const str = "hello";
+    const test_colored_string = "\x1b[32mhello\x1b[0m";
+    const real_color_string = try color_string(str, Colors.Green, allocator);
+    defer allocator.free(real_color_string);
+    try testing.expectEqualSlices(u8, test_colored_string, real_color_string);
+}
 test "test type safety" {
     const val: f32 = 10.4;
     const bytes = f32_to_bytes(val);

@@ -19,7 +19,7 @@ pub fn main() !void {
     const packet = tcp.Packet.init(1, tcp.PacketType.SensorRequest, sensor_request_encoded);
     const encoded_packet = try packet.encode(allocator);
 
-    var buf: [1024]u8 = undefined;
+    var buf: [50]u8 = undefined;
     std.log.debug("\x1b[32mPacket Sent\x1b[0m: {any}", .{packet});
     _ = try stream.write(encoded_packet);
     const n = try stream.read(&buf);
