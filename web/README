@@ -4,5 +4,5 @@ very simple website for tinyweather showing off what it can do.
 
 * dev rules *
 
-- very simple,only allowed to use flask
+- written in go, just standard library 
 - markdown based 
