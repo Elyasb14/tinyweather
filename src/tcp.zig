@@ -4,9 +4,7 @@ const ArrayList = std.ArrayList;
 const helpers = @import("helpers.zig");
 
 pub const PacketType = enum(u8) { SensorRequest, SensorResponse, Error };
-
 pub const SensorType = enum(u8) { Temp, Pres, Hum, Gas, Error };
-
 const TCPError = error{ VersionError, InvalidPacketType, InvalidSensorType };
 
 pub const Packet = struct {
