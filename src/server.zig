@@ -101,6 +101,7 @@ test "Packet encoding and decoding" {
     try testing.expectEqual(original_packet.version, decoded.version);
     try testing.expectEqual(original_packet.type, decoded.type);
     try testing.expectEqualSlices(u8, original_packet.data, decoded.data);
+    try testing.expectEqualDeep(original_packet, decoded);
 }
 
 test "sensor request encoding and decoding" {
@@ -116,6 +117,7 @@ test "sensor request encoding and decoding" {
     }
 
     try testing.expectEqualSlices(tcp.SensorType, original_request.sensors, decoded_request.sensors);
+    try testing.expectEqualDeep(original_request, decoded_request);
 }
 
 test "sensor response encoding and decoding" {
@@ -128,6 +130,7 @@ test "sensor response encoding and decoding" {
     defer allocator.free(decoded_request.sensors);
 
     try testing.expectEqualSlices(tcp.SensorType, original_request.sensors, decoded_request.sensors);
+    try testing.expectEqualDeep(original_request, decoded_request);
 }
 
 test "end to end" {
