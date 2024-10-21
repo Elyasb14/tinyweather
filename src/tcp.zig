@@ -115,7 +115,7 @@ pub const SensorResponse = struct {
             offset += 4;
         }
         const data = try dec_buf.toOwnedSlice();
-        return SensorResponse{ .data = data, .request = request };
+        return SensorResponse.init(request, data);
     }
 };
 
