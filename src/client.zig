@@ -28,10 +28,13 @@ pub fn main() !void {
     switch (decoded_packet.type) {
         .SensorResponse => {
             const decoded_sensor_response = try tcp.SensorResponse.decode(sensor_request, decoded_packet.data, allocator);
-            std.log.debug("\x1b[32mPacket Received\x1b[0m: {any}", .{decoded_sensor_response});
+            std.log.debug("\x1b[32mSensor Response Packet Received\x1b[0m: {any}", .{decoded_sensor_response});
         },
-        else => {
-            std.log.err("Wrong packet type: {any}", .{decoded_packet.type});
+        .SensorRequest => {
+            std.log.err("Expected SensorResponse, got SensorRequest: {any}", .{decoded_packet});
+        },
+        .Error => {
+            std.log.err("Got bad packet: {any}", .{decoded_packet});
         },
     }
 }
