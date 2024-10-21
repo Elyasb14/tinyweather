@@ -23,7 +23,6 @@ pub const Packet = struct {
 
     pub fn encode(self: Self, allocator: std.mem.Allocator) ![]u8 {
         var buf = ArrayList(u8).init(allocator);
-        defer buf.deinit();
         try buf.append(self.version);
         try buf.append(@intFromEnum(self.type));
         try buf.appendSlice(self.data);
@@ -52,7 +51,6 @@ pub const SensorRequest = struct {
 
     pub fn encode(self: Self, allocator: std.mem.Allocator) ![]const u8 {
         var sensors = ArrayList(u8).init(allocator);
-        defer sensors.deinit();
         for (self.sensors) |sensor| {
             try sensors.append(@intFromEnum(sensor));
         }
@@ -61,12 +59,11 @@ pub const SensorRequest = struct {
 
     pub fn decode(buf: []const u8, allocator: std.mem.Allocator) !SensorRequest {
         var sensors = ArrayList(SensorType).init(allocator);
-        defer sensors.deinit();
         for (buf) |x| {
             const sensor = @as(SensorType, @enumFromInt(x));
             try sensors.append(sensor);
         }
-        return SensorRequest{ .sensors = try sensors.toOwnedSlice() };
+        return SensorRequest.init(try sensors.toOwnedSlice());
     }
 };
 
@@ -87,7 +84,6 @@ pub const SensorResponse = struct {
 
     pub fn encode(self: Self, allocator: std.mem.Allocator) ![]const u8 {
         var buf = ArrayList(u8).init(allocator);
-        defer buf.deinit();
         for (self.request.sensors) |sensor| {
             switch (sensor) {
                 .Gas => {
