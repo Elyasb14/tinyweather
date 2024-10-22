@@ -51,18 +51,17 @@ fn handle_client(stream: net.Stream, allocator: std.mem.Allocator) !void {
 }
 
 pub fn main() !void {
-    if (false) {
-        var serial_fd = try std.fs.cwd().openFile("/dev/ttyUSB0", .{ .mode = .read_write });
-        defer serial_fd.close();
+    var serial_fd = try std.fs.cwd().openFile("/dev/tty.usbserial-0001", .{ .mode = .read_write, .lock = .none });
+    errdefer serial_fd.close();
+    std.debug.print("debug\n", .{});
+    try serial.configureSerialPort(serial_fd, serial.SerialConfig{
+        .baud_rate = 9600,
+        .word_size = serial.WordSize.eight,
+        .parity = .none,
+        .stop_bits = .one,
+        .handshake = .none,
+    });
 
-        try serial.configureSerialPort(serial_fd, serial.SerialConfig{
-            .baud_rate = 19200,
-            .word_size = serial.WordSize.eight,
-            .parity = .none,
-            .stop_bits = .one,
-            .handshake = .none,
-        });
-    }
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
     const allocator = arena.allocator();
