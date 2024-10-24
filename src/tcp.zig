@@ -94,8 +94,8 @@ pub const SensorResponse = struct {
                     try buf.appendSlice(&get_temp());
                 },
                 else => {
-                    try buf.append(@intFromEnum(SensorType.Error));
-                    std.log.err("\x1b[31mFailed to get data from sensor\x1b[0m: {any}... SensorType.Error\n", .{sensor});
+                    try buf.appendSlice(&[4]u8{ 0, 0, 0, 0 });
+                    std.log.err("\x1b[31mFailed to get data from sensor\x1b[0m: {any}... Sending zeros to the client", .{sensor});
                 },
             }
         }
