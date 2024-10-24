@@ -22,12 +22,6 @@
     // `zig build --fetch` can be used to fetch all dependencies of a package, recursively.
     // Once all dependencies are fetched, `zig build` no longer requires
     // internet connectivity.
-    .dependencies = .{
-        .serial = .{
-            .url = "https://github.com/ZigEmbeddedGroup/serial/archive/refs/heads/master.zip",
-            .hash = "122054cbec27a1894b4e8568cd743d93e92de0be7a9775b90dd60932bdaddd861a5e",
-        },
-    },
 
     // Specifies the set of files and directories that are included in this package.
     // Only files and directories listed here are included in the `hash` that
