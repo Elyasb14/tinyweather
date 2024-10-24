@@ -2,6 +2,7 @@ const std = @import("std");
 const assert = std.debug.assert;
 const ArrayList = std.ArrayList;
 const helpers = @import("helpers.zig");
+const Allocator = std.mem.Allocator;
 
 pub const PacketType = enum(u8) { SensorRequest, SensorResponse, Error };
 pub const SensorType = enum(u8) { Temp, Pres, Hum, Gas, Error };
@@ -21,7 +22,7 @@ pub const Packet = struct {
         return Packet{ .version = version, .type = packet_type, .data = data };
     }
 
-    pub fn encode(self: Self, allocator: std.mem.Allocator) ![]u8 {
+    pub fn encode(self: Self, allocator: std.mem.Allocator) Allocator.Error![]u8 {
         var buf = ArrayList(u8).init(allocator);
         try buf.append(self.version);
         try buf.append(@intFromEnum(self.type));
@@ -49,7 +50,7 @@ pub const SensorRequest = struct {
         return SensorRequest{ .sensors = sensors };
     }
 
-    pub fn encode(self: Self, allocator: std.mem.Allocator) ![]const u8 {
+    pub fn encode(self: Self, allocator: std.mem.Allocator) Allocator.Error![]const u8 {
         var sensors = ArrayList(u8).init(allocator);
         for (self.sensors) |sensor| {
             try sensors.append(@intFromEnum(sensor));
@@ -57,7 +58,7 @@ pub const SensorRequest = struct {
         return try sensors.toOwnedSlice();
     }
 
-    pub fn decode(buf: []const u8, allocator: std.mem.Allocator) !SensorRequest {
+    pub fn decode(buf: []const u8, allocator: std.mem.Allocator) Allocator.Error!SensorRequest {
         var sensors = ArrayList(SensorType).init(allocator);
         for (buf) |x| {
             const sensor = @as(SensorType, @enumFromInt(x));
@@ -82,7 +83,7 @@ pub const SensorResponse = struct {
         };
     }
 
-    pub fn encode(self: Self, allocator: std.mem.Allocator) ![]const u8 {
+    pub fn encode(self: Self, allocator: std.mem.Allocator) Allocator.Error![]const u8 {
         var buf = ArrayList(u8).init(allocator);
         for (self.request.sensors) |sensor| {
             switch (sensor) {
@@ -100,7 +101,7 @@ pub const SensorResponse = struct {
         }
         return try buf.toOwnedSlice();
     }
-    pub fn decode(request: SensorRequest, buf: []const u8, allocator: std.mem.Allocator) !SensorResponse {
+    pub fn decode(request: SensorRequest, buf: []const u8, allocator: std.mem.Allocator) Allocator.Error!SensorResponse {
         var dec_buf = ArrayList(SensorData).init(allocator);
         var offset: usize = 0;
         for (request.sensors) |sensor| {
