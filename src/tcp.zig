@@ -5,7 +5,7 @@ const helpers = @import("helpers.zig");
 const Allocator = std.mem.Allocator;
 
 pub const PacketType = enum(u8) { SensorRequest, SensorResponse, Error };
-pub const SensorType = enum(u8) { Temp, Pres, Hum, Gas, Error };
+pub const SensorType = enum(u8) { Temp, Pres, Hum, Gas };
 const TCPError = error{ VersionError, InvalidPacketType, InvalidSensorType };
 
 pub const Packet = struct {
@@ -16,8 +16,7 @@ pub const Packet = struct {
     const Self = @This();
 
     pub fn init(version: u8, packet_type: PacketType, data: []const u8) Packet {
-        // len is just len of data, no flags
-        assert(data.len <= 1024);
+        assert(data.len <= 50);
 
         return Packet{ .version = version, .type = packet_type, .data = data };
     }
@@ -93,9 +92,11 @@ pub const SensorResponse = struct {
                 .Temp => {
                     try buf.appendSlice(&get_temp());
                 },
-                else => {
-                    try buf.appendSlice(&[4]u8{ 0, 0, 0, 0 });
-                    std.log.err("\x1b[31mFailed to get data from sensor\x1b[0m: {any}... Sending zeros to the client", .{sensor});
+                .Pres => {
+                    try buf.appendSlice(&get_pres());
+                },
+                .Hum => {
+                    try buf.appendSlice(&get_hum());
                 },
             }
         }
@@ -122,4 +123,12 @@ fn get_gas() [4]u8 {
 
 fn get_temp() [4]u8 {
     return helpers.f32_to_bytes(17.2);
+}
+
+fn get_hum() [4]u8 {
+    return helpers.f32_to_bytes(111.17);
+}
+
+fn get_pres() [4]u8 {
+    return helpers.f32_to_bytes(1111.4);
 }
