@@ -4,7 +4,6 @@ const assert = std.debug.assert;
 const tcp = @import("tcp.zig");
 const ArrayList = std.ArrayList;
 const helpers = @import("helpers.zig");
-const serial = @import("serial");
 
 fn handle_client(stream: net.Stream, allocator: std.mem.Allocator) !void {
     defer {
