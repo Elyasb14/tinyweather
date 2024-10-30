@@ -58,6 +58,7 @@ pub fn main() !void {
     var server = try net.Address.listen(server_address, .{
         .kernel_backlog = 1024,
         .reuse_address = true,
+        .reuse_port = true,
     });
 
     defer server.deinit();
