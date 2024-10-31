@@ -4,3 +4,4 @@ a.out
 zig-*
 .zig-cache
 .DS_Store
+*.o

@@ -11,6 +11,8 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    server_exe.linkLibC();
+
     const client_exe = b.addExecutable(.{
         .name = "tinyweather-client",
         .root_source_file = b.path("src/client.zig"),
