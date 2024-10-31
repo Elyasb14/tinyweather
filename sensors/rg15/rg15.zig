@@ -1,17 +1,26 @@
 const std = @import("std");
-const c = @cImport( @cInclude("termios.h"), @cInclude("fcntl.h") );
+const c = @cImport({
+    @cInclude("termios.h");
+    @cInclude("fcntl.h");
+});
+
+const DeviceError = error{DeviceOpenError};
 
 const Device = struct {
     fd: c_int,
 
-    pub fn init(fd: c_int) *Device {
-        return &.Device{ .fd = fd };
+    pub fn init(fd: c_int) Device {
+        return Device{ .fd = fd };
     }
 };
 
-pub fn init_rg15() *Device {
+pub fn init_rg15() DeviceError!Device {
     const fd = c.open("/dev/ttyUSB0", c.O_RDWR);
-    return Device.init(fd, c.termios);
+    if (fd == -1) {
+        std.debug.print("can't open device... fd: {any}\n", .{fd});
+        return DeviceError.DeviceOpenError;
+    }
+    return Device.init(fd);
 }
 
 pub fn main() void {
