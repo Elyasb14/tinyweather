@@ -10,7 +10,8 @@ pub fn init_rg15() !void {
 
     settings.ispeed = std.c.speed_t.B9600;
     settings.ospeed = std.c.speed_t.B9600;
-    settings.cflag.PARENB = true;
+    settings.cflag.PARENB = false;
+    settings.cflag.CSTOPB = false;
 
     settings.cc[c.VTIME] = 30;
 }
@@ -19,15 +20,7 @@ pub fn main() void {
     const device = init_rg15();
     std.debug.print("device: {any}", .{device});
 }
-//
-// // Configure serial port
-// if (tcgetattr(dev->fd, &dev->tty) != 0) {
-//     perror("Error getting serial port attributes");
-//     close(dev->fd);
-//     free(dev);
-//     return NULL;
-// }
-//
+
 // // Set serial port parameters (matching Python's default settings)
 // cfsetispeed(&dev->tty, B9600);
 // cfsetospeed(&dev->tty, B9600);
