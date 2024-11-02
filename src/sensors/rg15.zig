@@ -7,7 +7,12 @@ pub fn init_rg15() !void {
     const file = try std.fs.cwd().openFile("/dev/ttyUSB0", .{ .mode = .read_write });
 
     var settings = try std.posix.tcgetattr(file.handle);
-    settings.cflag.PARENB = false;
+
+    settings.ispeed = std.c.speed_t.B9600;
+    settings.ospeed = std.c.speed_t.B9600;
+    settings.cflag.PARENB = true;
+
+    settings.cc[c.VTIME] = 30;
 }
 
 pub fn main() void {
