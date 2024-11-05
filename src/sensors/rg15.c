@@ -10,19 +10,6 @@
 #define DEFAULT_DEVICE "/dev/ttyUSB0"
 #define DARWIN_DEVICE "/dev/tty.usbserial-0001"
 
-// Structure to hold parsed data
-typedef struct {
-    char key[32];
-    char value[32];
-} KeyValuePair;
-
-// Structure to hold device configuration
-typedef struct {
-    int fd;         // File descriptor
-    char device[64];
-    struct termios tty;
-} RG15Device;
-
 // Initialize the serial device
 RG15Device* rg15_init(const char* device) {
     RG15Device* dev = malloc(sizeof(RG15Device));
