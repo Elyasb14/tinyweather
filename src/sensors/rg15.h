@@ -3,6 +3,6 @@
 
 
 
-int display_data();
+char* display_data();
 
 #endif
