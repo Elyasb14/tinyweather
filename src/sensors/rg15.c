@@ -217,24 +217,24 @@ int display_data() {
     }
 
     char* data = rg15_get_data(dev);
-    // if (data) {
-    //     printf("\nReceived data: '%s'\n", data);
-    //     
-    //     int count;
-    //     KeyValuePair* pairs = rg15_parse_data(data, &count);
-    //     if (pairs) {
-    //         printf("\nParsed data (%d pairs):\n", count);
-    //         for (int i = 0; i < count; i++) {
-    //             printf("%s: %s\n", pairs[i].key, pairs[i].value);
-    //         }
-    //         free(pairs);
-    //     } else {
-    //         printf("Failed to parse data\n");
-    //     }
-    // } else {
-    //     printf("Failed to get data from device\n");
-    // }
-    //
+    if (data) {
+        printf("\nReceived data: '%s'\n", data);
+        
+        int count;
+        KeyValuePair* pairs = rg15_parse_data(data, &count);
+        if (pairs) {
+            printf("\nParsed data (%d pairs):\n", count);
+            for (int i = 0; i < count; i++) {
+                printf("%s: %s\n", pairs[i].key, pairs[i].value);
+            }
+            free(pairs);
+        } else {
+            printf("Failed to parse data\n");
+        }
+    } else {
+        printf("Failed to get data from device\n");
+    }
+
     rg15_cleanup(dev);
     return 0;
 }
