@@ -6,7 +6,7 @@ def count_lines(file_path):
     """Return the number of lines in a file."""
     try:
         with open(file_path, 'r') as file:
-            return sum(1 for line in file)
+            return sum(1 for _ in file)
     except Exception as e:
         print(f"Error reading {file_path}: {e}")
         return 0
@@ -24,7 +24,7 @@ def walk_directory(directory):
     """Yield file paths and subdirectories."""
     for root, dirs, files in os.walk(directory):
         for file in files:
-            if file.endswith(".zig"):
+            if file.endswith(".zig") or file.endswith(".c"):
                 yield os.path.join(root, file)
         for dir in dirs:
             yield os.path.join(root, dir)
