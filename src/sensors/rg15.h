@@ -18,6 +18,6 @@ RG15Device* rg15_init(const char* device);
 char* rg15_get_data(RG15Device* dev);
 KeyValuePair* rg15_parse_data(const char* data, int* count);
 void rg15_cleanup(RG15Device* dev);
-char* display_data();
+void display_data();
 
 #endif // RG15_H

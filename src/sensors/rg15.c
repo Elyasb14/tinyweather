@@ -85,7 +85,6 @@ RG15Device* rg15_init(const char* device) {
     return dev;
 }
 
-// Get data with debug info
 char* rg15_get_data(RG15Device* dev) {
     static char buffer[MAX_BUFFER];
     ssize_t bytes_written;
@@ -107,10 +106,10 @@ char* rg15_get_data(RG15Device* dev) {
         
         if (n > 0) {
             buffer[n] = '\0';
-            for (int i = 0; i < n; i++) {
-                printf("%02X ", (unsigned char)buffer[i]);
-            }
-            printf("\n");
+            // for (int i = 0; i < n; i++) {
+            //     printf("%02X ", (unsigned char)buffer[i]);
+            // }
+            // printf("\n");
             
             // Remove CR/LF
             char* p = strchr(buffer, '\r');
@@ -191,11 +190,11 @@ void rg15_cleanup(RG15Device* dev) {
     }
 }
 
-char* display_data() {
+void display_data() {
     RG15Device* dev = rg15_init(NULL);
     if (!dev) {
         fprintf(stderr, "Failed to initialize device\n");
-        return "no data";
+        return;
     }
     char* data = rg15_get_data(dev);
     if (data) {
@@ -203,6 +202,5 @@ char* display_data() {
     } 
 
     rg15_cleanup(dev);
-    return data;
 }
 
