@@ -207,7 +207,7 @@ void rg15_cleanup(RG15Device* dev) {
     }
 }
 
-int main() {
+int display_data() {
     printf("Initializing device...\n");
     RG15Device* dev = rg15_init(NULL);
     if (!dev) {

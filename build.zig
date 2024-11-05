@@ -11,7 +11,12 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    server_exe.addIncludePath(b.path("src"));
     server_exe.linkLibC();
+    // server_exe.addC(.{
+    //     .file = b.path("src/sensors/rg15.h"),
+    //     .flags = &[_][]const u8{"-std=c99"}, // Add any C compiler flags you need
+    // });
 
     const client_exe = b.addExecutable(.{
         .name = "tinyweather-client",
