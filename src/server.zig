@@ -53,8 +53,7 @@ fn handle_client(stream: net.Stream, allocator: std.mem.Allocator) !void {
 }
 
 pub fn main() !void {
-    const data = c.display_data();
-    std.debug.print("rg15 data: {any}\n", .{data});
+    c.display_data();
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
     const allocator = arena.allocator();
