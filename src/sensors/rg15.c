@@ -103,7 +103,6 @@ char* rg15_get_data(RG15Device* dev) {
     static char buffer[MAX_BUFFER];
     ssize_t bytes_written;
     
-    printf("Sending 'r\\n' command...\n");
     bytes_written = write(dev->fd, "r\n", 2);
     if (bytes_written != 2) {
         perror("Failed to write command");
@@ -113,17 +112,14 @@ char* rg15_get_data(RG15Device* dev) {
     // Small delay to ensure command is sent
     usleep(100000);  // 100ms delay
     
-    printf("Reading response...\n");
     ssize_t n = 0;
     int retries = 3;
     
     while (retries > 0) {
         n = read(dev->fd, buffer, sizeof(buffer) - 1);
-        printf("Read %zd bytes\n", n);
         
         if (n > 0) {
             buffer[n] = '\0';
-            printf("Raw buffer content (hex): ");
             for (int i = 0; i < n; i++) {
                 printf("%02X ", (unsigned char)buffer[i]);
             }
