@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <fcntl.h>
-#include <errno.h>
 #include <termios.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include "rg15.h"
 
 #define MAX_BUFFER 1024
 #define DEFAULT_DEVICE "/dev/ttyUSB0"
@@ -208,7 +208,7 @@ void rg15_cleanup(RG15Device* dev) {
     }
 }
 
-int main() {
+int display_data() {
     printf("Initializing device...\n");
     RG15Device* dev = rg15_init(NULL);
     if (!dev) {
@@ -238,3 +238,4 @@ int main() {
     rg15_cleanup(dev);
     return 0;
 }
+
