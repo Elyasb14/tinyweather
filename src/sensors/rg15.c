@@ -10,19 +10,16 @@
 #define DEFAULT_DEVICE "/dev/ttyUSB0"
 #define DARWIN_DEVICE "/dev/tty.usbserial-0001"
 
-// Structure to hold parsed data
 typedef struct {
     char key[32];
     char value[32];
 } KeyValuePair;
 
-// Structure to hold device configuration
 typedef struct {
     int fd;         // File descriptor
     char device[64];
     struct termios tty;
 } RG15Device;
-
 // Initialize the serial device
 RG15Device* rg15_init(const char* device) {
     RG15Device* dev = malloc(sizeof(RG15Device));
@@ -38,7 +35,7 @@ RG15Device* rg15_init(const char* device) {
         strncpy(dev->device, device ? device : DEFAULT_DEVICE, sizeof(dev->device) - 1);
     #endif
 
-    printf("Opening device: %s\n", dev->device);
+    //printf("Opening device: %s\n", dev->device);
 
     // Open serial port
     dev->fd = open(dev->device, O_RDWR);
@@ -48,7 +45,7 @@ RG15Device* rg15_init(const char* device) {
         return NULL;
     }
 
-    printf("Successfully opened device with fd: %d\n", dev->fd);
+    //printf("Successfully opened device with fd: %d\n", dev->fd);
 
     // Configure serial port
     if (tcgetattr(dev->fd, &dev->tty) != 0) {
@@ -94,16 +91,14 @@ RG15Device* rg15_init(const char* device) {
     // Flush anything in the buffer
     tcflush(dev->fd, TCIOFLUSH);
     
-    printf("Serial port configured successfully\n");
+    //printf("Serial port configured successfully\n");
     return dev;
 }
 
-// Get data with debug info
 char* rg15_get_data(RG15Device* dev) {
     static char buffer[MAX_BUFFER];
     ssize_t bytes_written;
     
-    printf("Sending 'r\\n' command...\n");
     bytes_written = write(dev->fd, "r\n", 2);
     if (bytes_written != 2) {
         perror("Failed to write command");
@@ -113,21 +108,18 @@ char* rg15_get_data(RG15Device* dev) {
     // Small delay to ensure command is sent
     usleep(100000);  // 100ms delay
     
-    printf("Reading response...\n");
     ssize_t n = 0;
     int retries = 3;
     
     while (retries > 0) {
         n = read(dev->fd, buffer, sizeof(buffer) - 1);
-        printf("Read %zd bytes\n", n);
         
         if (n > 0) {
             buffer[n] = '\0';
-            printf("Raw buffer content (hex): ");
-            for (int i = 0; i < n; i++) {
-                printf("%02X ", (unsigned char)buffer[i]);
-            }
-            printf("\n");
+            // for (int i = 0; i < n; i++) {
+            //     printf("%02X ", (unsigned char)buffer[i]);
+            // }
+            // printf("\n");
             
             // Remove CR/LF
             char* p = strchr(buffer, '\r');
@@ -202,40 +194,23 @@ KeyValuePair* rg15_parse_data(const char* data, int* count) {
 // Cleanup
 void rg15_cleanup(RG15Device* dev) {
     if (dev) {
-        printf("Closing device fd: %d\n", dev->fd);
+        //printf("Closing device fd: %d\n", dev->fd);
         close(dev->fd);
         free(dev);
     }
 }
 
-int display_data() {
-    printf("Initializing device...\n");
+void display_data() {
     RG15Device* dev = rg15_init(NULL);
     if (!dev) {
         fprintf(stderr, "Failed to initialize device\n");
-        return 1;
+        return;
     }
-
     char* data = rg15_get_data(dev);
     if (data) {
-        printf("\nReceived data: '%s'\n", data);
-        
-        int count;
-        KeyValuePair* pairs = rg15_parse_data(data, &count);
-        if (pairs) {
-            printf("\nParsed data (%d pairs):\n", count);
-            for (int i = 0; i < count; i++) {
-                printf("%s: %s\n", pairs[i].key, pairs[i].value);
-            }
-            free(pairs);
-        } else {
-            printf("Failed to parse data\n");
-        }
-    } else {
-        printf("Failed to get data from device\n");
-    }
+        printf("Received data: '%s'\n", data);
+    } 
 
     rg15_cleanup(dev);
-    return 0;
 }
 

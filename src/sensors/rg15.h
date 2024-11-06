@@ -1,8 +1,6 @@
-#ifndef RG15_H  // Include guard
+#ifndef RG15_H
 #define RG15_H
 
+void display_data();
 
-
-int display_data();
-
-#endif
+#endif // RG15_H
