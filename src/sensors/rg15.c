@@ -25,7 +25,7 @@ RG15Device* rg15_init(const char* device) {
         strncpy(dev->device, device ? device : DEFAULT_DEVICE, sizeof(dev->device) - 1);
     #endif
 
-    printf("Opening device: %s\n", dev->device);
+    //printf("Opening device: %s\n", dev->device);
 
     // Open serial port
     dev->fd = open(dev->device, O_RDWR);
@@ -35,7 +35,7 @@ RG15Device* rg15_init(const char* device) {
         return NULL;
     }
 
-    printf("Successfully opened device with fd: %d\n", dev->fd);
+    //printf("Successfully opened device with fd: %d\n", dev->fd);
 
     // Configure serial port
     if (tcgetattr(dev->fd, &dev->tty) != 0) {
@@ -81,7 +81,7 @@ RG15Device* rg15_init(const char* device) {
     // Flush anything in the buffer
     tcflush(dev->fd, TCIOFLUSH);
     
-    printf("Serial port configured successfully\n");
+    //printf("Serial port configured successfully\n");
     return dev;
 }
 
@@ -184,7 +184,7 @@ KeyValuePair* rg15_parse_data(const char* data, int* count) {
 // Cleanup
 void rg15_cleanup(RG15Device* dev) {
     if (dev) {
-        printf("Closing device fd: %d\n", dev->fd);
+        //printf("Closing device fd: %d\n", dev->fd);
         close(dev->fd);
         free(dev);
     }
@@ -198,7 +198,7 @@ void display_data() {
     }
     char* data = rg15_get_data(dev);
     if (data) {
-        printf("\nReceived data: '%s'\n", data);
+        printf("Received data: '%s'\n", data);
     } 
 
     rg15_cleanup(dev);
