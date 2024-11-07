@@ -84,7 +84,6 @@ pub const SensorResponse = struct {
     }
 
     pub fn encode(self: Self, allocator: std.mem.Allocator) Allocator.Error![]const u8 {
-        parse_rain();
         var buf = ArrayList(u8).init(allocator);
         for (self.request.sensors) |sensor| {
             switch (sensor) {
