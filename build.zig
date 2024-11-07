@@ -5,8 +5,8 @@ pub fn build(b: *std.Build) void {
     const optimize = b.standardOptimizeOption(.{});
 
     const server_exe = b.addExecutable(.{
-        .name = "tinyweather-server",
-        .root_source_file = b.path("src/server.zig"),
+        .name = "tinyweather-node",
+        .root_source_file = b.path("src/node.zig"),
         .target = target,
         .optimize = optimize,
     });
@@ -26,7 +26,7 @@ pub fn build(b: *std.Build) void {
     b.installArtifact(client_exe);
 
     const server_unit_tests = b.addTest(.{
-        .root_source_file = b.path("src/server.zig"),
+        .root_source_file = b.path("src/node.zig"),
         .target = target,
         .optimize = optimize,
     });
