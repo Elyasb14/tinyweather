@@ -84,6 +84,7 @@ pub const SensorResponse = struct {
     }
 
     pub fn encode(self: Self, allocator: std.mem.Allocator) Allocator.Error![]const u8 {
+        parse_rain();
         var buf = ArrayList(u8).init(allocator);
         for (self.request.sensors) |sensor| {
             switch (sensor) {
@@ -128,8 +129,10 @@ fn get_pres() [4]u8 {
 }
 
 fn parse_rain() void {
-    const rain_data = c.get_rain();
-    std.debug.print("rain_data: {s}\n", .{rain_data});
+    const rain_data: []const u8 = @alignCast(c.get_rain());
+    for (rain_data) |x| {
+        std.debug.print("{any}\n", .{x});
+    }
 }
 
 fn get_rain() [4]u8 {
