@@ -1,6 +1,6 @@
 #ifndef RG15_H
 #define RG15_H
 
-void display_data();
+char* get_rain();
 
 #endif // RG15_H

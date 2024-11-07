@@ -15,7 +15,7 @@ pub fn main() !void {
     defer arena.deinit();
     const allocator = arena.allocator();
 
-    const sensors = &[_]tcp.SensorType{ tcp.SensorType.Gas, tcp.SensorType.Pres, tcp.SensorType.Temp };
+    const sensors = &[_]tcp.SensorType{ tcp.SensorType.Rain, tcp.SensorType.Gas, tcp.SensorType.Pres, tcp.SensorType.Temp };
     const sensor_request = tcp.SensorRequest.init(sensors);
     const sensor_request_encoded = try sensor_request.encode(allocator);
     const packet = tcp.Packet.init(1, tcp.PacketType.SensorRequest, sensor_request_encoded);

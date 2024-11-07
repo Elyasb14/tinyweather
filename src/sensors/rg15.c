@@ -10,10 +10,63 @@
 #define DEFAULT_DEVICE "/dev/ttyUSB0"
 #define DARWIN_DEVICE "/dev/tty.usbserial-0001"
 
-typedef struct {
-    char key[32];
-    char value[32];
-} KeyValuePair;
+// typedef struct {
+//     char key[32];
+//     char value[32];
+// } KeyValuePair;
+
+// // Parse data into key-value pairs with debug info
+// KeyValuePair* rg15_parse_data(const char* data, int* count) {
+//     if (!data || !count) return NULL;
+//     
+//     printf("Parsing data string: '%s'\n", data);
+//     
+//     // First, count the number of comma-separated groups
+//     *count = 1;
+//     for (const char* p = data; *p; p++) {
+//         if (*p == ',') (*count)++;
+//     }
+//     
+//     printf("Found %d groups\n", *count);
+//
+//     KeyValuePair* pairs = malloc(*count * sizeof(KeyValuePair));
+//     if (!pairs) {
+//         perror("Failed to allocate memory for pairs");
+//         return NULL;
+//     }
+//
+//     char* data_copy = strdup(data);
+//     if (!data_copy) {
+//         perror("Failed to duplicate data string");
+//         free(pairs);
+//         return NULL;
+//     }
+//
+//     char* token = strtok(data_copy, ",");
+//     int i = 0;
+//
+//     while (token && i < *count) {
+//         printf("Processing token: '%s'\n", token);
+//         
+//         // Split each group into key and value
+//         char* space = strchr(token, ' ');
+//         if (space) {
+//             *space = '\0';
+//             strncpy(pairs[i].key, token, sizeof(pairs[i].key) - 1);
+//             strncpy(pairs[i].value, space + 1, sizeof(pairs[i].value) - 1);
+//             pairs[i].key[sizeof(pairs[i].key) - 1] = '\0';
+//             pairs[i].value[sizeof(pairs[i].value) - 1] = '\0';
+//             printf("Parsed pair - Key: '%s', Value: '%s'\n", pairs[i].key, pairs[i].value);
+//             i++;
+//         } else {
+//             printf("Warning: No space found in token\n");
+//         }
+//         token = strtok(NULL, ",");
+//     }
+//
+//     free(data_copy);
+//     return pairs;
+// }
 
 typedef struct {
     int fd;         // File descriptor
@@ -136,12 +189,6 @@ char* rg15_get_data(RG15Device* dev) {
         
         if (n > 0) {
             buffer[n] = '\0';
-            // for (int i = 0; i < n; i++) {
-            //     printf("%02X ", (unsigned char)buffer[i]);
-            // }
-            // printf("\n");
-            
-            // Remove CR/LF
             char* p = strchr(buffer, '\r');
             if (p) *p = '\0';
             p = strchr(buffer, '\n');
@@ -158,81 +205,28 @@ char* rg15_get_data(RG15Device* dev) {
     return NULL;
 }
 
-// Parse data into key-value pairs with debug info
-KeyValuePair* rg15_parse_data(const char* data, int* count) {
-    if (!data || !count) return NULL;
-    
-    printf("Parsing data string: '%s'\n", data);
-    
-    // First, count the number of comma-separated groups
-    *count = 1;
-    for (const char* p = data; *p; p++) {
-        if (*p == ',') (*count)++;
-    }
-    
-    printf("Found %d groups\n", *count);
-
-    KeyValuePair* pairs = malloc(*count * sizeof(KeyValuePair));
-    if (!pairs) {
-        perror("Failed to allocate memory for pairs");
-        return NULL;
-    }
-
-    char* data_copy = strdup(data);
-    if (!data_copy) {
-        perror("Failed to duplicate data string");
-        free(pairs);
-        return NULL;
-    }
-
-    char* token = strtok(data_copy, ",");
-    int i = 0;
-
-    while (token && i < *count) {
-        printf("Processing token: '%s'\n", token);
-        
-        // Split each group into key and value
-        char* space = strchr(token, ' ');
-        if (space) {
-            *space = '\0';
-            strncpy(pairs[i].key, token, sizeof(pairs[i].key) - 1);
-            strncpy(pairs[i].value, space + 1, sizeof(pairs[i].value) - 1);
-            pairs[i].key[sizeof(pairs[i].key) - 1] = '\0';
-            pairs[i].value[sizeof(pairs[i].value) - 1] = '\0';
-            printf("Parsed pair - Key: '%s', Value: '%s'\n", pairs[i].key, pairs[i].value);
-            i++;
-        } else {
-            printf("Warning: No space found in token\n");
-        }
-        token = strtok(NULL, ",");
-    }
-
-    free(data_copy);
-    return pairs;
-}
-
-// Cleanup
 void rg15_cleanup(RG15Device* dev) {
     if (dev) {
-        //printf("Closing device fd: %d\n", dev->fd);
         close(dev->fd);
         free(dev);
     }
 }
 
-void display_data() {
+char* get_rain() {
     RG15Device* dev = rg15_init(NULL);
     if (!dev) {
         fprintf(stderr, "Failed to initialize device\n");
-        return;
+        return NULL;
     }
     
     char* data = rg15_get_data(dev);
     if (data) {
-        printf("Received data: '%s'\n", data);
+        rg15_cleanup(dev);
+        return data; 
     } else {
         printf("Failed to get data\n");
+        return NULL;
     }
-    rg15_cleanup(dev);
+    
 }
 
