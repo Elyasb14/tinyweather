@@ -1,3 +1,6 @@
+// this file can only import from the zig standard library
+// no dependencies on tinyweather internals
+
 const std = @import("std");
 
 const Allocator = std.mem.Allocator;

@@ -3,9 +3,10 @@ const assert = std.debug.assert;
 const ArrayList = std.ArrayList;
 const helpers = @import("helpers.zig");
 const Allocator = std.mem.Allocator;
+const c = @cImport(@cInclude("sensors/rg15.h"));
 
 pub const PacketType = enum(u8) { SensorRequest, SensorResponse, Error };
-pub const SensorType = enum(u8) { Temp, Pres, Hum, Gas };
+pub const SensorType = enum(u8) { Temp, Pres, Hum, Gas, Rain };
 const TCPError = error{ VersionError, InvalidPacketType, InvalidSensorType };
 
 pub const Packet = struct {
@@ -83,21 +84,15 @@ pub const SensorResponse = struct {
     }
 
     pub fn encode(self: Self, allocator: std.mem.Allocator) Allocator.Error![]const u8 {
+        c.display_data();
         var buf = ArrayList(u8).init(allocator);
         for (self.request.sensors) |sensor| {
             switch (sensor) {
-                .Gas => {
-                    try buf.appendSlice(&get_gas());
-                },
-                .Temp => {
-                    try buf.appendSlice(&get_temp());
-                },
-                .Pres => {
-                    try buf.appendSlice(&get_pres());
-                },
-                .Hum => {
-                    try buf.appendSlice(&get_hum());
-                },
+                .Gas => try buf.appendSlice(&get_gas()),
+                .Temp => try buf.appendSlice(&get_temp()),
+                .Pres => try buf.appendSlice(&get_pres()),
+                .Hum => try buf.appendSlice(&get_hum()),
+                .Rain => try buf.appendSlice(&get_rain()),
             }
         }
         return try buf.toOwnedSlice();
@@ -131,4 +126,8 @@ fn get_hum() [4]u8 {
 
 fn get_pres() [4]u8 {
     return helpers.f32_to_bytes(1111.4);
+}
+
+fn get_rain() [4]u8 {
+    return helpers.f32_to_bytes(1.2);
 }
