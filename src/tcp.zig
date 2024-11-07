@@ -129,9 +129,9 @@ fn get_pres() [4]u8 {
 }
 
 fn parse_rain() void {
-    const rain_data: []const u8 = @alignCast(c.get_rain());
+    const rain_data = std.mem.span(c.get_rain());
     for (rain_data) |x| {
-        std.debug.print("{any}\n", .{x});
+        std.debug.print("{c}\n", .{x});
     }
 }
 
