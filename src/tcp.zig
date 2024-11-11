@@ -1,12 +1,13 @@
 const std = @import("std");
 const assert = std.debug.assert;
 const ArrayList = std.ArrayList;
-const helpers = @import("helpers.zig");
 const Allocator = std.mem.Allocator;
 const c = @cImport(@cInclude("sensors/rg15.h"));
+const device = @import("device.zig");
+const helpers = @import("helpers.zig");
 
 pub const PacketType = enum(u8) { SensorRequest, SensorResponse, Error };
-pub const SensorType = enum(u8) { Temp, Pres, Hum, Gas, Rain };
+pub const SensorType = enum(u8) { Temp, Pres, Hum, Gas, RainAcc, RainTotalAcc, RainEventAcc, RainRInt };
 const TCPError = error{ VersionError, InvalidPacketType, InvalidSensorType };
 
 pub const Packet = struct {
@@ -87,11 +88,14 @@ pub const SensorResponse = struct {
         var buf = ArrayList(u8).init(allocator);
         for (self.request.sensors) |sensor| {
             switch (sensor) {
-                .Gas => try buf.appendSlice(&get_gas()),
-                .Temp => try buf.appendSlice(&get_temp()),
-                .Pres => try buf.appendSlice(&get_pres()),
-                .Hum => try buf.appendSlice(&get_hum()),
-                .Rain => try buf.appendSlice(&get_rain()),
+                .Gas => try buf.appendSlice(&device.get_gas()),
+                .Temp => try buf.appendSlice(&device.get_temp()),
+                .Pres => try buf.appendSlice(&device.get_pres()),
+                .Hum => try buf.appendSlice(&device.get_hum()),
+                .RainAcc => try buf.appendSlice(&try device.get_rainacc(allocator)),
+                .RainTotalAcc => try buf.appendSlice(&try device.get_raintotalacc(allocator)),
+                .RainEventAcc => try buf.appendSlice(&try device.get_raineventacc(allocator)),
+                .RainRInt => try buf.appendSlice(&try device.get_rainrint(allocator)),
             }
         }
         return try buf.toOwnedSlice();
@@ -110,35 +114,3 @@ pub const SensorResponse = struct {
         return SensorResponse.init(request, data);
     }
 };
-
-fn get_gas() [4]u8 {
-    return helpers.f32_to_bytes(172.34);
-}
-
-fn get_temp() [4]u8 {
-    return helpers.f32_to_bytes(17.2);
-}
-
-fn get_hum() [4]u8 {
-    return helpers.f32_to_bytes(111.17);
-}
-
-fn get_pres() [4]u8 {
-    return helpers.f32_to_bytes(1111.4);
-}
-
-pub fn parse_rain(allocator: Allocator) Allocator.Error![]const f32 {
-    var buf = ArrayList(f32).init(allocator);
-    const rain_data = std.mem.span(c.get_rain());
-    var split = std.mem.splitAny(u8, rain_data, " ,{}");
-    while (split.next()) |x| {
-        if (std.mem.eql(u8, x, "")) continue;
-        const val = std.fmt.parseFloat(f32, x) catch continue;
-        try buf.append(val);
-    }
-    return try buf.toOwnedSlice();
-}
-
-fn get_rain() [4]u8 {
-    return helpers.f32_to_bytes(1.2);
-}
