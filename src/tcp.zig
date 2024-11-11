@@ -84,7 +84,6 @@ pub const SensorResponse = struct {
     }
 
     pub fn encode(self: Self, allocator: std.mem.Allocator) Allocator.Error![]const u8 {
-        c.display_data();
         var buf = ArrayList(u8).init(allocator);
         for (self.request.sensors) |sensor| {
             switch (sensor) {
@@ -126,6 +125,18 @@ fn get_hum() [4]u8 {
 
 fn get_pres() [4]u8 {
     return helpers.f32_to_bytes(1111.4);
+}
+
+pub fn parse_rain(allocator: Allocator) Allocator.Error![]const f32 {
+    var buf = ArrayList(f32).init(allocator);
+    const rain_data = std.mem.span(c.get_rain());
+    var split = std.mem.splitAny(u8, rain_data, " ,{}");
+    while (split.next()) |x| {
+        if (std.mem.eql(u8, x, "")) continue;
+        const val = std.fmt.parseFloat(f32, x) catch continue;
+        try buf.append(val);
+    }
+    return try buf.toOwnedSlice();
 }
 
 fn get_rain() [4]u8 {

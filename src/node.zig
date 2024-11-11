@@ -53,6 +53,7 @@ pub fn main() !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
     const allocator = arena.allocator();
+
     const server_address = try net.Address.parseIp("127.0.0.1", 8080);
     var server = try net.Address.listen(server_address, .{
         .kernel_backlog = 1024,

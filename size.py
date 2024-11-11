@@ -24,7 +24,7 @@ def walk_directory(directory):
     """Yield file paths and subdirectories."""
     for root, dirs, files in os.walk(directory):
         for file in files:
-            if file.endswith(".zig") or file.endswith(".c"):
+            if file.endswith(".zig") or file.endswith(".c") or file.endswith(".h"):
                 yield os.path.join(root, file)
         for dir in dirs:
             yield os.path.join(root, dir)
