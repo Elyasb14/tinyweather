@@ -127,11 +127,16 @@ fn get_pres() [4]u8 {
     return helpers.f32_to_bytes(1111.4);
 }
 
-fn parse_rain() void {
+pub fn parse_rain(allocator: Allocator) ![]const f32 {
+    var buf = ArrayList(f32).init(allocator);
     const rain_data = std.mem.span(c.get_rain());
-    for (rain_data) |x| {
-        std.debug.print("{c}\n", .{x});
+    var split = std.mem.splitAny(u8, rain_data, " ,{}");
+    while (split.next()) |x| {
+        if (std.mem.eql(u8, x, "")) continue;
+        const val = std.fmt.parseFloat(f32, x) catch continue;
+        try buf.append(val);
     }
+    return try buf.toOwnedSlice();
 }
 
 fn get_rain() [4]u8 {
