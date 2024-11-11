@@ -127,7 +127,7 @@ fn get_pres() [4]u8 {
     return helpers.f32_to_bytes(1111.4);
 }
 
-pub fn parse_rain(allocator: Allocator) ![]const f32 {
+pub fn parse_rain(allocator: Allocator) Allocator.Error![]const f32 {
     var buf = ArrayList(f32).init(allocator);
     const rain_data = std.mem.span(c.get_rain());
     var split = std.mem.splitAny(u8, rain_data, " ,{}");
