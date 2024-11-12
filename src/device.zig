@@ -4,6 +4,14 @@ const Allocator = std.mem.Allocator;
 const ArrayList = std.ArrayList;
 const c = @cImport(@cInclude("sensors/rg15.h"));
 
+const RainSensorValues = enum {
+    Acc,
+    EventAcc,
+    TotalAcc,
+RInt,
+
+};
+
 pub fn get_gas() [4]u8 {
     return helpers.f32_to_bytes(172.34);
 }
@@ -20,7 +28,7 @@ pub fn get_pres() [4]u8 {
     return helpers.f32_to_bytes(1111.4);
 }
 
-pub fn parse_rain(allocator: Allocator) Allocator.Error![]const f32 {
+pub fn parse_rain(allocator: Allocator, vals: []const RainSensorValues) Allocator.Error![]const f32 {
     var buf = ArrayList(f32).init(allocator);
     const rain_data = std.mem.span(c.get_rain());
     var split = std.mem.splitAny(u8, rain_data, " ,{}");
@@ -29,7 +37,11 @@ pub fn parse_rain(allocator: Allocator) Allocator.Error![]const f32 {
         const val = std.fmt.parseFloat(f32, x) catch continue;
         try buf.append(val);
     }
-    return try buf.toOwnedSlice();
+    const data = try buf.toOwnedSlice();
+
+    switch (vals) {
+        .Acc => 
+    }
 }
 
 // TODO: we parse the data from the sensor every time we get the data from the sensor
