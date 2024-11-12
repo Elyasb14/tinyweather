@@ -30,7 +30,7 @@ pub fn get_pres() [4]u8 {
 
 // this functions returns null when the sensor returns no data or partial data
 // the caller should return the bytearrray representing inf in f32 (std.math.inf(f32)
-pub fn parse_rain(allocator: Allocator) !?[]const f32 {
+fn parse_rain(allocator: Allocator) !?[]const f32 {
     var buf = ArrayList(f32).init(allocator);
 
     // TODO: c.get_rain() can return a null pointer (see rg15.c get_rain())
@@ -41,9 +41,9 @@ pub fn parse_rain(allocator: Allocator) !?[]const f32 {
     if (rain_data.len < 4) return null;
 
     var split = std.mem.splitAny(u8, rain_data, " ,{}");
-    while (split.next()) |x| {
-        if (std.mem.eql(u8, x, "")) continue;
-        const val = std.fmt.parseFloat(f32, x) catch continue;
+    while (split.next()) |token| {
+        if (std.mem.eql(u8, token, "")) continue;
+        const val = std.fmt.parseFloat(f32, token) catch continue;
         try buf.append(val);
     }
     const data = try buf.toOwnedSlice();
