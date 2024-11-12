@@ -8,7 +8,7 @@ const helpers = @import("helpers.zig");
 
 pub const PacketType = enum(u8) { SensorRequest, SensorResponse, Error };
 pub const SensorType = enum(u8) { Temp, Pres, Hum, Gas, RainAcc, RainTotalAcc, RainEventAcc, RainRInt };
-const TCPError = error{ VersionError, InvalidPacketType, InvalidSensorType };
+pub const TCPError = error{ VersionError, InvalidPacketType, InvalidSensorType, DeviceError };
 
 pub const Packet = struct {
     version: u8,
