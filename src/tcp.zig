@@ -8,7 +8,7 @@ const helpers = @import("helpers.zig");
 
 pub const PacketType = enum(u8) { SensorRequest, SensorResponse, Error };
 pub const SensorType = enum(u8) { Temp, Pres, Hum, Gas, RainAcc, RainTotalAcc, RainEventAcc, RainRInt };
-const TCPError = error{ VersionError, InvalidPacketType, InvalidSensorType };
+pub const TCPError = error{ VersionError, InvalidPacketType, InvalidSensorType, DeviceError };
 
 pub const Packet = struct {
     version: u8,
@@ -85,6 +85,8 @@ pub const SensorResponse = struct {
     }
 
     pub fn encode(self: Self, allocator: std.mem.Allocator) Allocator.Error![]const u8 {
+        const rain_data: []const f32 = (try device.parse_rain(allocator)) orelse &[_]f32{std.math.inf(f32)} ** 4;
+
         var buf = ArrayList(u8).init(allocator);
         for (self.request.sensors) |sensor| {
             switch (sensor) {
@@ -92,10 +94,10 @@ pub const SensorResponse = struct {
                 .Temp => try buf.appendSlice(&device.get_temp()),
                 .Pres => try buf.appendSlice(&device.get_pres()),
                 .Hum => try buf.appendSlice(&device.get_hum()),
-                .RainAcc => try buf.appendSlice(&try device.get_rainacc(allocator)),
-                .RainTotalAcc => try buf.appendSlice(&try device.get_raintotalacc(allocator)),
-                .RainEventAcc => try buf.appendSlice(&try device.get_raineventacc(allocator)),
-                .RainRInt => try buf.appendSlice(&try device.get_rainrint(allocator)),
+                .RainAcc => try buf.appendSlice(&helpers.f32_to_bytes(rain_data[0])),
+                .RainTotalAcc => try buf.appendSlice(&helpers.f32_to_bytes(rain_data[1])),
+                .RainEventAcc => try buf.appendSlice(&helpers.f32_to_bytes(rain_data[2])),
+                .RainRInt => try buf.appendSlice(&helpers.f32_to_bytes(rain_data[3])),
             }
         }
         return try buf.toOwnedSlice();
