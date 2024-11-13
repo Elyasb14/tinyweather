@@ -27,7 +27,7 @@ pub fn parse_rain(allocator: Allocator) !?[]const f32 {
     // TODO: this is a HACK
     // this line is only here because sometimes we have a null pointer if there is no rain gauge device
     std.fs.accessAbsolute("/dev/tty.usbserial-0001", .{}) catch {
-        std.log.err("\x1b[31mCould not open serial device, sending nan to the client\x1b[0m", .{});
+        std.log.info("\x1b[31mCould not open serial device, sending nan to the client\x1b[0m", .{});
         return null;
     };
     var buf = ArrayList(f32).init(allocator);
