@@ -26,15 +26,15 @@ pub fn main() !void {
     const encoded_packet = try packet.encode(allocator);
 
     var buf: [50]u8 = undefined;
-    std.log.debug("\x1b[32mPacket Sent\x1b[0m: {any}", .{packet});
+    std.log.info("\x1b[32mPacket Sent\x1b[0m: {any}", .{packet});
     _ = try stream.write(encoded_packet);
     const n = try stream.read(&buf);
-    std.log.debug("\x1b[32mBytes read by stream\x1b[0m: {any}", .{n});
+    std.log.info("\x1b[32mBytes read by stream\x1b[0m: {any}", .{n});
     const decoded_packet = try tcp.Packet.decode(buf[0..n]);
     switch (decoded_packet.type) {
         .SensorResponse => {
             const decoded_sensor_response = try tcp.SensorResponse.decode(sensor_request, decoded_packet.data, allocator);
-            std.log.debug("\x1b[32mSensor Response Packet Received\x1b[0m: {any}", .{decoded_sensor_response});
+            std.log.info("\x1b[32mSensor Response Packet Received\x1b[0m: {any}", .{decoded_sensor_response});
         },
         .SensorRequest => {
             std.log.err("Expected SensorResponse, got SensorRequest: {any}", .{decoded_packet});
