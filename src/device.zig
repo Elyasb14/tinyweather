@@ -5,13 +5,6 @@ const ArrayList = std.ArrayList;
 const c = @cImport(@cInclude("sensors/rg15.h"));
 const tcp = @import("tcp.zig");
 
-const RainSensorValues = enum {
-    Acc,
-    EventAcc,
-    TotalAcc,
-    RInt,
-};
-
 pub fn get_gas() [4]u8 {
     return helpers.f32_to_bytes(172.34);
 }
@@ -48,24 +41,4 @@ pub fn parse_rain(allocator: Allocator) !?[]const f32 {
     const data = try buf.toOwnedSlice();
     if (data.len < 4) return null;
     return data;
-}
-
-// TODO: we parse the data from the sensor every time we get the data from the sensor
-// change this to only happen once
-pub fn get_rainacc(allocator: Allocator) ![4]u8 {
-    const rain_acc = (try parse_rain(allocator)) orelse return helpers.f32_to_bytes(std.math.inf(f32));
-    return helpers.f32_to_bytes(rain_acc[0]);
-}
-
-pub fn get_raineventacc(allocator: Allocator) ![4]u8 {
-    const rain_acc = (try parse_rain(allocator)) orelse return helpers.f32_to_bytes(std.math.inf(f32));
-    return helpers.f32_to_bytes(rain_acc[1]);
-}
-pub fn get_raintotalacc(allocator: Allocator) ![4]u8 {
-    const rain_totalacc = (try parse_rain(allocator)) orelse return helpers.f32_to_bytes(std.math.inf(f32));
-    return helpers.f32_to_bytes(rain_totalacc[2]);
-}
-pub fn get_rainrint(allocator: Allocator) ![4]u8 {
-    const rain_acc = (try parse_rain(allocator)) orelse return helpers.f32_to_bytes(std.math.inf(f32));
-    return helpers.f32_to_bytes(rain_acc[3]);
 }
