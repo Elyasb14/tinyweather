@@ -2,7 +2,6 @@ const std = @import("std");
 const assert = std.debug.assert;
 const ArrayList = std.ArrayList;
 const Allocator = std.mem.Allocator;
-const c = @cImport(@cInclude("sensors/rg15.h"));
 const device = @import("device.zig");
 const helpers = @import("helpers.zig");
 

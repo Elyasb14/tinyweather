@@ -4,22 +4,22 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    // Create the tcp library
     const tcp_lib = b.addStaticLibrary(.{ .name = "tcp", .root_source_file = b.path("src/tcp.zig"), .target = target, .optimize = optimize });
-    tcp_lib.addIncludePath(b.path("src"));
-    tcp_lib.addCSourceFile(.{ .file = b.path("src/sensors/rg15.c"), .flags = &.{} });
-    tcp_lib.linkLibC();
+    const device_lib = b.addStaticLibrary(.{ .name = "device", .root_source_file = b.path("src/device.zig"), .target = target, .optimize = optimize });
+    device_lib.addIncludePath(b.path("src"));
+    device_lib.addCSourceFile(.{ .file = b.path("src/sensors/rg15.c"), .flags = &.{} });
+    device_lib.linkLibC();
+    tcp_lib.linkLibrary(device_lib);
 
-    // Create server executable
-    const server_exe = b.addExecutable(.{
+    const node_exe = b.addExecutable(.{
         .name = "tinyweather-node",
         .root_source_file = b.path("src/node.zig"),
         .target = target,
         .optimize = optimize,
     });
 
-    server_exe.addIncludePath(b.path("src"));
-    server_exe.linkLibrary(tcp_lib);
+    node_exe.addIncludePath(b.path("src"));
+    node_exe.linkLibrary(tcp_lib);
 
     const client_exe = b.addExecutable(.{
         .name = "tinyweather-client",
@@ -28,17 +28,27 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    b.installArtifact(server_exe);
+    const benchmark_rain_exe = b.addExecutable(.{
+        .name = "benchmark-rain",
+        .root_source_file = b.path("src/benchmark/rg15.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    benchmark_rain_exe.addIncludePath(b.path("src"));
+    benchmark_rain_exe.linkLibrary(device_lib);
+
+    b.installArtifact(benchmark_rain_exe);
+    b.installArtifact(node_exe);
     b.installArtifact(client_exe);
 
-    // Tests setup
     const server_unit_tests = b.addTest(.{
         .root_source_file = b.path("src/node.zig"),
         .target = target,
         .optimize = optimize,
     });
 
-    server_unit_tests.addIncludePath(b.path("src")); // Add include path for tests too
+    server_unit_tests.addIncludePath(b.path("src"));
     server_unit_tests.linkLibrary(tcp_lib);
     server_unit_tests.linkLibC();
 
