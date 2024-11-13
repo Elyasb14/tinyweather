@@ -22,7 +22,7 @@ pub fn get_pres() [4]u8 {
 }
 
 // this functions returns null when the sensor returns no data or partial data
-// the caller should return the bytearrray representing inf in f32 (std.math.inf(f32))
+// the caller should return the bytearrray representing nan in f32 (std.math.inf(f32))
 pub fn parse_rain(allocator: Allocator) !?[]const f32 {
     // TODO: this is a HACK
     // this line is only here because sometimes we have a null pointer if there is no rain gauge device
