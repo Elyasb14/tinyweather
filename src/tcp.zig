@@ -7,7 +7,7 @@ const device = @import("device.zig");
 const helpers = @import("helpers.zig");
 
 pub const PacketType = enum(u8) { SensorRequest, SensorResponse, Error };
-pub const SensorType = enum(u8) { Temp, Pres, Hum, Gas, RainAcc, RainTotalAcc, RainEventAcc, RainRInt };
+pub const SensorType = enum(u8) { Temp, Pres, Hum, Gas, RainAcc, RainEventAcc, RainTotalAcc, RainRInt };
 pub const TCPError = error{ VersionError, InvalidPacketType, InvalidSensorType, DeviceError };
 
 pub const Packet = struct {
@@ -95,8 +95,8 @@ pub const SensorResponse = struct {
                 .Pres => try buf.appendSlice(&device.get_pres()),
                 .Hum => try buf.appendSlice(&device.get_hum()),
                 .RainAcc => try buf.appendSlice(&helpers.f32_to_bytes(rain_data[0])),
-                .RainTotalAcc => try buf.appendSlice(&helpers.f32_to_bytes(rain_data[1])),
-                .RainEventAcc => try buf.appendSlice(&helpers.f32_to_bytes(rain_data[2])),
+                .RainEventAcc => try buf.appendSlice(&helpers.f32_to_bytes(rain_data[1])),
+                .RainTotalAcc => try buf.appendSlice(&helpers.f32_to_bytes(rain_data[2])),
                 .RainRInt => try buf.appendSlice(&helpers.f32_to_bytes(rain_data[3])),
             }
         }
