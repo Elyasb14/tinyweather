@@ -4,7 +4,8 @@ const c = @cImport({
 });
 
 pub fn init_rg15() !void {
-    const file = try std.fs.cwd().openFile("/dev/ttyUSB0", .{ .mode = .read_write });
+    const file = try std.fs.cwd().openFile("/dev/tty.usbserial-0001", .{ .mode = .read_write });
+    defer file.close();
 
     var settings = try std.posix.tcgetattr(file.handle);
 
