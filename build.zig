@@ -5,7 +5,6 @@ pub fn build(b: *std.Build) void {
     const optimize = b.standardOptimizeOption(.{});
 
     const tcp_lib = b.addStaticLibrary(.{ .name = "tcp", .root_source_file = b.path("src/tcp.zig"), .target = target, .optimize = optimize });
-    tcp_lib.addIncludePath(b.path("src"));
     tcp_lib.addCSourceFile(.{ .file = b.path("src/sensors/rg15.c"), .flags = &.{} });
     tcp_lib.linkLibC();
 
