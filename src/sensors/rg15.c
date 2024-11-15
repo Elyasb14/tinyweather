@@ -31,21 +31,6 @@ RG15Device* rg15_init(const char* device) {
         strncpy(dev->device, device ? device : DEFAULT_DEVICE, sizeof(dev->device) - 1);
     #endif
 
-    // Check if device exists
-    if (access(dev->device, F_OK) == -1) {
-        fprintf(stderr, "Device %s does not exist\n", dev->device);
-        free(dev);
-        return NULL;
-    }
-
-    // Check read/write permissions
-    if (access(dev->device, R_OK|W_OK) == -1) {
-        fprintf(stderr, "Permission denied for %s\n", dev->device);
-        fprintf(stderr, "Try: sudo chmod 666 %s\n", dev->device);
-        free(dev);
-        return NULL;
-    }
-
     dev->fd = open(dev->device, O_RDWR | O_NOCTTY | O_NONBLOCK);  // Added O_NOCTTY and O_NONBLOCK
     if (dev->fd < 0) {
         perror("Error opening serial port");
@@ -59,10 +44,6 @@ RG15Device* rg15_init(const char* device) {
         free(dev);
         return NULL;
     }
-
-    // Set serial port parameters with error checking
-    
-    cfmakeraw(&dev->tty);  // Start with raw mode
     
     if (cfsetispeed(&dev->tty, B9600) < 0 || cfsetospeed(&dev->tty, B9600) < 0) {
         perror("Error setting baud rate");
@@ -90,22 +71,6 @@ RG15Device* rg15_init(const char* device) {
         return NULL;
     }
 
-    // Clear the O_NONBLOCK flag
-    int flags = fcntl(dev->fd, F_GETFL, 0);
-    if (flags == -1) {
-        perror("Error getting flags");
-        close(dev->fd);
-        free(dev);
-        return NULL;
-    }
-    flags &= ~O_NONBLOCK;
-    if (fcntl(dev->fd, F_SETFL, flags) == -1) {
-        perror("Error setting flags");
-        close(dev->fd);
-        free(dev);
-        return NULL;
-    }
-    
     tcflush(dev->fd, TCIOFLUSH);
     
     return dev;
