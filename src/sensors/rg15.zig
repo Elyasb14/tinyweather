@@ -12,7 +12,7 @@ pub fn init_rg15() !c_int {
         std.log.err("can't open serial device", .{});
     }
     defer _ = c.close(fd);
-
+    //
     var settings = try std.posix.tcgetattr(fd);
 
     settings.ispeed = std.c.speed_t.B9600;
@@ -28,15 +28,32 @@ pub fn init_rg15() !c_int {
     settings.cc[c.VTIME] = 10;
 
     try std.posix.tcsetattr(fd, std.posix.TCSA.NOW, settings);
-    _ = c.tcflush(fd, c.TCIOFLUSH);
+
+    const flush = c.tcflush(fd, c.TCIOFLUSH);
+    if (flush != 0) std.log.err("flush didn't work: {any}", .{flush});
 
     return fd;
 }
 pub fn main() !void {
     const device = try init_rg15();
+    std.debug.print("{any}\n", .{device});
     const written = c.write(device, "r\n", 2);
-    if (written != 2) {
+    if (written < 0) {
         std.log.err("didn't write enough bytes: {any}", .{written});
     }
 }
-// n = read(dev->fd, buffer, sizeof(buffer) - 1);
+// // Clear the O_NONBLOCK flag
+//     int flags = fcntl(dev->fd, F_GETFL, 0);
+//     if (flags == -1) {
+//         perror("Error getting flags");
+//         close(dev->fd);
+//         free(dev);
+//         return NULL;
+//     }
+//     flags &= ~O_NONBLOCK;
+//     if (fcntl(dev->fd, F_SETFL, flags) == -1) {
+//         perror("Error setting flags");
+//         close(dev->fd);
+//         free(dev);
+//         return NULL;
+//     }

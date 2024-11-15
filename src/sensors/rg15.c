@@ -58,7 +58,7 @@ RG15Device* rg15_init(const char* device) {
     dev->tty.c_cflag &= ~CSTOPB;             // 1 stop bit
     dev->tty.c_cflag &= ~CSIZE;
     dev->tty.c_cflag |= CS8;                 // 8 bits per byte
-    dev->tty.c_cflag &= ~CRTSCTS;            // No hardware flow control
+    // dev->tty.c_cflag &= ~CRTSCTS;            // No hardware flow control
 
     // Setting timeouts
     dev->tty.c_cc[VMIN] = 0;                 // No minimum characters
@@ -72,7 +72,7 @@ RG15Device* rg15_init(const char* device) {
     }
 
     tcflush(dev->fd, TCIOFLUSH);
-    
+    printf("%d\n", dev->fd); 
     return dev;
 }
 char* rg15_get_data(RG15Device* dev) {
