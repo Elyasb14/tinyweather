@@ -9,7 +9,7 @@ pub fn init_rg15() !c_int {
     const fd = c.open("/dev/tty.usbserial-0001", c.O_RDWR | c.O_NOCTTY | c.O_NONBLOCK);
     if (fd < 0) {
         _ = c.close(fd);
-        return error.NoDevice;
+        std.log.err("can't open serial device", .{});
     }
     defer _ = c.close(fd);
 
@@ -17,23 +17,26 @@ pub fn init_rg15() !c_int {
 
     settings.ispeed = std.c.speed_t.B9600;
     settings.ospeed = std.c.speed_t.B9600;
+    // Basic settings
+    settings.cflag.CLOCAL = true;
+    settings.cflag.CREAD = true;
+    settings.cflag.PARENB = true;
+    settings.cflag.CSTOPB = true;
+    settings.cflag.CSIZE = .CS8;
+
+    settings.cc[c.VMIN] = 0;
+    settings.cc[c.VTIME] = 10;
+
+    try std.posix.tcsetattr(fd, std.posix.TCSA.NOW, settings);
+    _ = c.tcflush(fd, c.TCIOFLUSH);
 
     return fd;
 }
-
-pub fn main() void {
-    const device = init_rg15();
-    std.debug.print("device: {any}\n", .{device});
+pub fn main() !void {
+    const device = try init_rg15();
+    const written = c.write(device, "r\n", 2);
+    if (written != 2) {
+        std.log.err("didn't write enough bytes: {any}", .{written});
+    }
 }
-
-// // Basic settings
-//     dev->tty.c_cflag |= (CLOCAL | CREAD);    // Enable receiver, ignore modem controls
-//     dev->tty.c_cflag &= ~PARENB;             // No parity
-//     dev->tty.c_cflag &= ~CSTOPB;             // 1 stop bit
-//     dev->tty.c_cflag &= ~CSIZE;
-//     dev->tty.c_cflag |= CS8;                 // 8 bits per byte
-//     dev->tty.c_cflag &= ~CRTSCTS;            // No hardware flow control
-//
-//     // Setting timeouts
-//     dev->tty.c_cc[VMIN] = 0;                 // No minimum characters
-//     dev->tty.c_cc[VTIME] = 10;               // 1 second timeout
+// n = read(dev->fd, buffer, sizeof(buffer) - 1);
