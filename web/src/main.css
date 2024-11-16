@@ -1,0 +1,25 @@
+body {
+  font-family: 'Pixel Operator', sans-serif;
+  background-color: #2a2a2a;  /* Dark Slate background */
+  color: #00BFFF;  /* Light text color for contrast */
+  line-height: 1.6;
+  text-align: center;  /* Centering the text horizontally */
+  height: 100vh;  /* Ensure full screen height */
+  margin: 0;
+  padding: 0;
+}
+
+.title{
+  font-size: 4rem;  /* Large size for the header */
+  color: #00BFFF;  /* Bright cyan text color */
+  letter-spacing: 5px;  /* Spaced-out text for a more digital feel */
+  text-transform: uppercase;  /* Uppercase letters for a bold, techy look */
+  margin-bottom: 20px;  /* Space below the header */
+}
+
+div {
+  font-size: 1.5rem;
+  color: #00BFFF;
+  margin-top: 20px;  /* Space above the div */
+}
+
