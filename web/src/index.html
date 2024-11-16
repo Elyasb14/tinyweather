@@ -5,11 +5,15 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Tinyweather - Smart Weather Station</title>
 	<link rel="stylesheet" href="main.css"> <!-- Link to the external CSS -->
+  <script src="htmx.js"></script>
 </head>
 <body>
 
 	<h1 class="title">Tinyweather</h1>
-  <div class="main-text"> main text div</div>
+    <a hx-get="/why.html" hx-trigger="click" hx-target="#main-text">
+      why?
+    </a>
 
+  <div class="main-text" > </div>
 </body>
 </html>
