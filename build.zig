@@ -25,6 +25,14 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    const web_exe = b.addExecutable(.{
+        .name = "tinyweather-web",
+        .root_source_file = b.path("src/web/server.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    b.installArtifact(web_exe);
     b.installArtifact(server_exe);
     b.installArtifact(client_exe);
 
