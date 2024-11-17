@@ -7,12 +7,12 @@ fn on_request(r: zap.Request) void {
 
     if (r.path) |path| {
         if (std.mem.eql(u8, path, "/why")) {
-            r.setContentTypeFromFilename("why.html") catch return;
-            r.sendBody("hello") catch return;
+            r.setContentType(.HTML) catch return;
+            r.sendFile("why.html") catch return;
         } else {
             r.setStatus(.bad_request);
             r.setContentType(.HTML) catch return;
-            r.sendBody("<p> 400 bad request</p>");
+            r.sendBody("<p> 400 bad request</p>") catch return;
         }
     }
 }
