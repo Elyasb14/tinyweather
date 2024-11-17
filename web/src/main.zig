@@ -5,35 +5,43 @@ const ArrayList = std.ArrayList;
 const why = @embedFile("why.html");
 const html_404 = @embedFile("404.html");
 const index = @embedFile("index.html");
+const css = @embedFile("main.css");
+const htmx = @embedFile("htmx.js");
 
 const Endpoints = enum {
-    index,
-    why,
-    not_found,
+    Index,
+    Why,
+    Css, // NOTE: this is a hack, want to just send main.css to the client when it first gets requested
+    NotFound,
 
     pub fn fromUrl(url: []const u8) Endpoints {
-        if (std.mem.eql(u8, url, "/")) return .index;
-        if (std.mem.eql(u8, url, "/why")) return .why;
-        return .not_found;
+        if (std.mem.eql(u8, url, "/")) return .Index;
+        if (std.mem.eql(u8, url, "/why")) return .Why;
+        if (std.mem.eql(u8, url, "/css")) return .Css;
+        return .NotFound;
     }
 };
 
 fn handle_request(req: *std.http.Server.Request) !void {
     const target = Endpoints.fromUrl(req.head.target);
+    std.log.info("client requested: {s}", .{req.head.target});
 
     switch (target) {
-        .index => {
+        .Index => {
             std.log.info("sending /", .{});
             try req.respond(index, .{});
         },
-        .why => {
+        .Why => {
             std.log.info("sending /why", .{});
             try req.respond(why, .{});
         },
-        .not_found => {
-            std.log.info("client requested endpoint that does not exist: {any}", .{target});
+        .NotFound => {
+            std.log.warn("client requested endpoint that does not exist: {s}", .{req.head.target});
             try req.respond(html_404, .{ .status = .not_found });
-            return;
+        },
+        .Css => {
+            std.log.info("sending /css", .{});
+            try req.respond(css, .{});
         },
     }
 }
@@ -55,11 +63,19 @@ pub fn main() !void {
             continue;
         };
         std.log.info("\x1b[32mConnection established with\x1b[0m: {any}", .{conn.address});
+        defer conn.stream.close();
 
         var buf: [1024]u8 = undefined;
 
         var http_server = std.http.Server.init(conn, &buf);
-        var request = try http_server.receiveHead();
-        try handle_request(&request);
+        while (http_server.state == .ready) {
+            var request = http_server.receiveHead() catch |err| {
+                if (err != error.HttpConnectionClosing) {
+                    std.log.debug("connection error: {s}\n", .{@errorName(err)});
+                }
+                continue;
+            };
+            try handle_request(&request);
+        }
     }
 }
