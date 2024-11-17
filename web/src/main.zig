@@ -3,18 +3,32 @@ const net = std.net;
 const assert = std.debug.assert;
 const ArrayList = std.ArrayList;
 const why = @embedFile("why.html");
+const html_404 = @embedFile("404.html");
+const index = @embedFile("index.html");
+
+const Endpoints = union(enum(u8)) {
+    index = "/",
+    why = "why",
+};
 
 fn handle_request(req: *std.http.Server.Request) !void {
     const target = req.head.target;
-    std.log.info("request target: {s}", .{target});
-    try req.respond(why, .{});
+
+    if (std.mem.eql(u8, target, "/")) {
+        std.log.info("sending /", .{});
+        try req.respond(index, .{});
+    }
+    if (std.mem.eql(u8, target, "/why")) {
+        std.log.info("sending /why", .{});
+        try req.respond(why, .{});
+    } else {
+        std.log.info("client requested endpoint that does not exist: {s}", .{target});
+        try req.respond(html_404, .{ .status = .not_found });
+        return;
+    }
 }
 
 pub fn main() !void {
-    // var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-    // defer arena.deinit();
-    // const allocator = arena.allocator();
-    //
     const server_address = try net.Address.parseIp("127.0.0.1", 8080);
     var server = try net.Address.listen(server_address, .{
         .kernel_backlog = 1024,
