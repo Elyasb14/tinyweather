@@ -1,12 +1,9 @@
 const std = @import("std");
 const net = std.net;
-const assert = std.debug.assert;
-const ArrayList = std.ArrayList;
 const why = @embedFile("why.html");
 const html_404 = @embedFile("404.html");
 const index = @embedFile("index.html");
 const css = @embedFile("main.css");
-const htmx = @embedFile("htmx.js");
 
 const Endpoints = enum {
     Index,
@@ -24,24 +21,24 @@ const Endpoints = enum {
 
 fn handle_request(req: *std.http.Server.Request) !void {
     const target = Endpoints.fromUrl(req.head.target);
-    std.log.info("client requested: {s}", .{req.head.target});
+    std.log.info("\x1b[32mclient requested: {s}\x1b[0m", .{req.head.target});
 
     switch (target) {
         .Index => {
-            std.log.info("sending /", .{});
+            std.log.info("\x1b[32msending /\x1b[0m", .{});
             try req.respond(index, .{});
         },
         .Why => {
-            std.log.info("sending /why", .{});
+            std.log.info("\x1b[32msending /why\x1b[0m", .{});
             try req.respond(why, .{});
         },
-        .NotFound => {
-            std.log.warn("client requested endpoint that does not exist: {s}", .{req.head.target});
-            try req.respond(html_404, .{ .status = .not_found });
-        },
         .Css => {
-            std.log.info("sending /css", .{});
+            std.log.info("\x1b[32msending /css\x1b[0m", .{});
             try req.respond(css, .{});
+        },
+        .NotFound => {
+            std.log.warn("\x1b[33mclient requested endpoint that does not exist: {s}\x1b[0m", .{req.head.target});
+            try req.respond(html_404, .{ .status = .not_found });
         },
     }
 }

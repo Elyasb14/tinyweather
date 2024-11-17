@@ -3,20 +3,17 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Tinyweather - Smart Weather Station</title>
+    <title>tinyweather</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/htmx/2.0.3/htmx.min.js"></script>
     <link rel="stylesheet" href="css">
 </head>
 <body>
     <h1 class="title">Tinyweather</h1>
-    
-    <!-- Added the ID to match the hx-target -->
-    <div id="main-text"></div>
-    
     <a hx-get="/why" 
        hx-target="#main-text"
        hx-swap="innerHTML">
         why?
     </a>
+    <div id="main-text"></div>
 </body>
 </html>
