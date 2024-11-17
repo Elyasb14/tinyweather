@@ -1,8 +1,0 @@
-*** the tinyweather website ***
-
-very simple website for tinyweather showing off what it can do. 
-
-* dev rules *
-
-- written in go, just standard library 
-- markdown based 
