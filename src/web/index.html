@@ -8,12 +8,42 @@
     <link rel="stylesheet" href="css">
 </head>
 <body>
-    <h1 class="title">Tinyweather</h1>
-    <a hx-get="/why" 
-       hx-target="#main-text"
-       hx-swap="innerHTML">
-        why?
-    </a>
-    <div id="main-text"></div>
+    <div class="sidebar">
+        <h1 class="title">Tiny<br>weather</h1>
+        <a class="nav-item" 
+           hx-get="/features" 
+           hx-target="#main-text">
+            Features
+        </a>
+        <a class="nav-item" 
+           hx-get="/specs" 
+           hx-target="#main-text">
+            Specifications
+        </a>
+        <a class="nav-item" 
+           hx-get="/how-it-works" 
+           hx-target="#main-text">
+            How It Works
+        </a>
+        <a class="nav-item" 
+           hx-get="/pricing" 
+           hx-target="#main-text">
+            Pricing
+        </a>
+        <a class="nav-item" 
+           hx-get="/installation" 
+           hx-target="#main-text">
+            Installation
+        </a>
+    </div>
+
+    <div class="main-content">
+        <div id="main-text">
+            <img src="/api/placeholder/400/320" alt="TinyWeather Station" class="product-image">
+            <h2>Welcome to TinyWeather</h2>
+            <p>Meet the most compact and efficient personal weather station. Tinyweather brings professional-grade meteorological measurements to your backyard with its sleek, minimalist design and powerful capabilities.</p>
+            <p>Select an option from the sidebar to learn more about our revolutionary weather monitoring solution.</p>
+        </div>
+    </div>
 </body>
 </html>
