@@ -6,25 +6,35 @@ const why = @embedFile("why.html");
 const html_404 = @embedFile("404.html");
 const index = @embedFile("index.html");
 
-const Endpoints = union(enum(u8)) {
-    index = "/",
-    why = "why",
+const Endpoints = enum {
+    index,
+    why,
+    not_found,
+
+    pub fn fromUrl(url: []const u8) Endpoints {
+        if (std.mem.eql(u8, url, "/")) return .index;
+        if (std.mem.eql(u8, url, "/why")) return .why;
+        return .not_found;
+    }
 };
 
 fn handle_request(req: *std.http.Server.Request) !void {
-    const target = req.head.target;
+    const target = Endpoints.fromUrl(req.head.target);
 
-    if (std.mem.eql(u8, target, "/")) {
-        std.log.info("sending /", .{});
-        try req.respond(index, .{});
-    }
-    if (std.mem.eql(u8, target, "/why")) {
-        std.log.info("sending /why", .{});
-        try req.respond(why, .{});
-    } else {
-        std.log.info("client requested endpoint that does not exist: {s}", .{target});
-        try req.respond(html_404, .{ .status = .not_found });
-        return;
+    switch (target) {
+        .index => {
+            std.log.info("sending /", .{});
+            try req.respond(index, .{});
+        },
+        .why => {
+            std.log.info("sending /why", .{});
+            try req.respond(why, .{});
+        },
+        .not_found => {
+            std.log.info("client requested endpoint that does not exist: {any}", .{target});
+            try req.respond(html_404, .{ .status = .not_found });
+            return;
+        },
     }
 }
 
