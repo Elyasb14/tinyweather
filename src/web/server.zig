@@ -13,7 +13,7 @@ const Endpoints = enum {
     Favicon,
     NotFound,
 
-    pub fn fromUrl(url: []const u8) Endpoints {
+    pub fn from_url(url: []const u8) Endpoints {
         if (std.mem.eql(u8, url, "/")) return .Index;
         if (std.mem.eql(u8, url, "/why")) return .Why;
         if (std.mem.eql(u8, url, "/css")) return .Css;
@@ -23,7 +23,7 @@ const Endpoints = enum {
 };
 
 fn handle_request(req: *std.http.Server.Request) !void {
-    const target = Endpoints.fromUrl(req.head.target);
+    const target = Endpoints.from_url(req.head.target);
     std.log.info("\x1b[32mclient requested: {s}\x1b[0m", .{req.head.target});
 
     switch (target) {
@@ -59,7 +59,7 @@ pub fn main() !void {
     });
 
     defer server.deinit();
-    std.log.info("\x1b[32mServer listening on {any}\x1b[0m", .{server_address});
+    std.log.info("\x1b[32mHTTP Server listening on {any}\x1b[0m", .{server_address});
 
     while (true) {
         const conn = server.accept() catch |err| {
