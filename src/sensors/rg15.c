@@ -16,43 +16,34 @@ typedef struct {
     struct termios tty;
 } RG15Device;
 
-// Initialize the serial device
+// Initialize the 
 RG15Device* rg15_init(const char* device) {
-    
     RG15Device* dev = malloc(sizeof(RG15Device));
     if (!dev) {
         perror("Failed to allocate device structure");
         return NULL;
     }
 
+    // Select appropriate device based on platform
     #ifdef __APPLE__
         strncpy(dev->device, DARWIN_DEVICE, sizeof(dev->device) - 1);
     #else
         strncpy(dev->device, device ? device : DEFAULT_DEVICE, sizeof(dev->device) - 1);
     #endif
 
-    // Check if device exists
-    if (access(dev->device, F_OK) == -1) {
-        fprintf(stderr, "Device %s does not exist\n", dev->device);
-        free(dev);
-        return NULL;
-    }
+    printf("Opening device: %s\n", dev->device);
 
-    // Check read/write permissions
-    if (access(dev->device, R_OK|W_OK) == -1) {
-        fprintf(stderr, "Permission denied for %s\n", dev->device);
-        fprintf(stderr, "Try: sudo chmod 666 %s\n", dev->device);
-        free(dev);
-        return NULL;
-    }
-
-    dev->fd = open(dev->device, O_RDWR | O_NOCTTY | O_NONBLOCK);  // Added O_NOCTTY and O_NONBLOCK
+    // Open serial port
+    dev->fd = open(dev->device, O_RDWR);
     if (dev->fd < 0) {
         perror("Error opening serial port");
         free(dev);
         return NULL;
     }
 
+    printf("Successfully opened device with fd: %d\n", dev->fd);
+
+    // Configure serial port
     if (tcgetattr(dev->fd, &dev->tty) != 0) {
         perror("Error getting serial port attributes");
         close(dev->fd);
@@ -60,28 +51,31 @@ RG15Device* rg15_init(const char* device) {
         return NULL;
     }
 
-    // Set serial port parameters with error checking
-    
-    cfmakeraw(&dev->tty);  // Start with raw mode
-    
-    if (cfsetispeed(&dev->tty, B9600) < 0 || cfsetospeed(&dev->tty, B9600) < 0) {
-        perror("Error setting baud rate");
-        close(dev->fd);
-        free(dev);
-        return NULL;
-    }
-
-    // Basic settings
-    dev->tty.c_cflag |= (CLOCAL | CREAD);    // Enable receiver, ignore modem controls
-    dev->tty.c_cflag &= ~PARENB;             // No parity
-    dev->tty.c_cflag &= ~CSTOPB;             // 1 stop bit
+    // Set serial port parameters (matching Python's default settings)
+    cfsetispeed(&dev->tty, B9600);
+    cfsetospeed(&dev->tty, B9600);
+    dev->tty.c_cflag &= ~PARENB;        // No parity
+    dev->tty.c_cflag &= ~CSTOPB;        // 1 stop bit
     dev->tty.c_cflag &= ~CSIZE;
-    dev->tty.c_cflag |= CS8;                 // 8 bits per byte
-    dev->tty.c_cflag &= ~CRTSCTS;            // No hardware flow control
+    dev->tty.c_cflag |= CS8;            // 8 bits per byte
+    dev->tty.c_cflag &= ~CRTSCTS;       // No hardware flow control
+    dev->tty.c_cflag |= CREAD | CLOCAL; // Enable reading & ignore ctrl lines
 
-    // Setting timeouts
-    dev->tty.c_cc[VMIN] = 0;                 // No minimum characters
-    dev->tty.c_cc[VTIME] = 10;               // 1 second timeout
+    dev->tty.c_lflag &= ~ICANON;        // Disable canonical mode
+    dev->tty.c_lflag &= ~ECHO;          // Disable echo
+    dev->tty.c_lflag &= ~ECHOE;         // Disable erasure
+    dev->tty.c_lflag &= ~ECHONL;        // Disable new-line echo
+    dev->tty.c_lflag &= ~ISIG;          // Disable interpretation of INTR, QUIT and SUSP
+
+    dev->tty.c_iflag &= ~(IXON | IXOFF | IXANY);   // Turn off software flow control
+    dev->tty.c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP|INLCR|IGNCR|ICRNL);
+
+    dev->tty.c_oflag &= ~OPOST;         // Prevent special interpretation of output bytes
+    dev->tty.c_oflag &= ~ONLCR;         // Prevent conversion of newline to carriage return/line feed
+
+    // Set timeout to 3 seconds (matching Python version)
+    dev->tty.c_cc[VTIME] = 30;          // Wait up to 3 seconds (30 deciseconds)
+    dev->tty.c_cc[VMIN] = 0;            // No minimum number of characters
 
     if (tcsetattr(dev->fd, TCSANOW, &dev->tty) != 0) {
         perror("Error setting serial port attributes");
@@ -90,24 +84,10 @@ RG15Device* rg15_init(const char* device) {
         return NULL;
     }
 
-    // Clear the O_NONBLOCK flag
-    int flags = fcntl(dev->fd, F_GETFL, 0);
-    if (flags == -1) {
-        perror("Error getting flags");
-        close(dev->fd);
-        free(dev);
-        return NULL;
-    }
-    flags &= ~O_NONBLOCK;
-    if (fcntl(dev->fd, F_SETFL, flags) == -1) {
-        perror("Error setting flags");
-        close(dev->fd);
-        free(dev);
-        return NULL;
-    }
-    
+    // Flush anything in the buffer
     tcflush(dev->fd, TCIOFLUSH);
     
+    printf("Serial port configured successfully\n");
     return dev;
 }
 char* rg15_get_data(RG15Device* dev) {
