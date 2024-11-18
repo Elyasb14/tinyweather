@@ -9,6 +9,7 @@ pub fn main() !void {
         std.log.err("Can't connect to address: {any}... error: {any}", .{ address, err });
         return;
     };
+    std.log.info("\x1b[32mClient initializing communication with: {any}....\x1b[0m", .{address});
     defer stream.close();
 
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);

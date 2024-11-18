@@ -4,23 +4,26 @@ const why = @embedFile("why.html");
 const html_404 = @embedFile("404.html");
 const index = @embedFile("index.html");
 const css = @embedFile("main.css");
+const favicon = @embedFile("favicon.ico");
 
 const Endpoints = enum {
     Index,
     Why,
     Css, // NOTE: this is a hack, want to just send main.css to the client when it first gets requested
+    Favicon,
     NotFound,
 
-    pub fn fromUrl(url: []const u8) Endpoints {
+    pub fn from_url(url: []const u8) Endpoints {
         if (std.mem.eql(u8, url, "/")) return .Index;
         if (std.mem.eql(u8, url, "/why")) return .Why;
         if (std.mem.eql(u8, url, "/css")) return .Css;
+        if (std.mem.eql(u8, url, "/favicon.ico")) return .Favicon;
         return .NotFound;
     }
 };
 
 fn handle_request(req: *std.http.Server.Request) !void {
-    const target = Endpoints.fromUrl(req.head.target);
+    const target = Endpoints.from_url(req.head.target);
     std.log.info("\x1b[32mclient requested: {s}\x1b[0m", .{req.head.target});
 
     switch (target) {
@@ -35,6 +38,10 @@ fn handle_request(req: *std.http.Server.Request) !void {
         .Css => {
             std.log.info("\x1b[32msending /css\x1b[0m", .{});
             try req.respond(css, .{});
+        },
+        .Favicon => {
+            std.log.info("\x1b[32msending /favicon.ico\x1b[0m", .{});
+            try req.respond(favicon, .{});
         },
         .NotFound => {
             std.log.warn("\x1b[33mclient requested endpoint that does not exist: {s}\x1b[0m", .{req.head.target});
@@ -52,7 +59,7 @@ pub fn main() !void {
     });
 
     defer server.deinit();
-    std.log.info("\x1b[32mServer listening on {}\x1b[0m", .{server_address});
+    std.log.info("\x1b[32mHTTP Server listening on {any}\x1b[0m", .{server_address});
 
     while (true) {
         const conn = server.accept() catch |err| {
