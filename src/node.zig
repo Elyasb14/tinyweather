@@ -61,7 +61,7 @@ pub fn main() !void {
     });
 
     defer server.deinit();
-    std.log.info("\x1b[32mServer listening on {}\x1b[0m", .{server_address});
+    std.log.info("\x1b[32mTCP Server listening on {}\x1b[0m", .{server_address});
 
     while (true) {
         const connection = server.accept() catch |err| {

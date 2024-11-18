@@ -1,24 +1,72 @@
+/* Base styles */
 body {
-  font-family: 'Pixel Operator', sans-serif;
-  background-color: #2a2a2a;  /* Dark Slate background */
-  color: #00BFFF;  /* Light text color for contrast */
-  line-height: 1.6;
-  text-align: center;  /* Centering the text horizontally */
-  height: 100vh;  /* Ensure full screen height */
-  margin: 0;
-  padding: 0;
+    font-family: 'Pixel Operator', sans-serif;
+    background-color: #3a3a3a;
+    color: #00BFFF;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    min-height: 100vh;
 }
 
-.title{
-  font-size: 4rem;  /* Large size for the header */
-  color: #00BFFF;  /* Bright cyan text color */
-  letter-spacing: 5px;  /* Spaced-out text for a more digital feel */
-  text-transform: uppercase;  /* Uppercase letters for a bold, techy look */
-  margin-bottom: 20px;  /* Space below the header */
+/* Sidebar styles */
+.sidebar {
+    width: 300;
+    background-color: #1a1a1a;
+    padding: 20px;
+    border-right: 1px solid #3a3a3a;
 }
 
-div {
-  font-size: 1.5rem;
-  color: #00BFFF;
-  margin-top: 20px;  /* Space above the div */
+/* Main content area */
+.main-content {
+    flex: 1;
+    padding: 20px;
+}
+
+/* Title styling */
+.title {
+    font-size: 3rem;
+    color: #00BFFF;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    margin-bottom: 40px;
+    text-align: center;
+}
+
+/* Navigation items */
+.nav-item {
+    display: block;
+    padding: 12px 20px;
+    color: #00BFFF;
+    text-decoration: none;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+    cursor: pointer;
+}
+
+.nav-item:hover {
+    background-color: #3a3a3a;
+}
+
+/* Main text content */
+#main-text {
+    font-size: 1.2rem;
+    color: #00BFFF;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #3a3a3a;
+    border-radius: 8px;
+    text-align: left;
+}
+
+/* Product image */
+.product-image {
+    max-width: 400px;
+    height: 320px;
+    margin: 20px auto;
+    display: block;
+    border-radius: 8px;
 }

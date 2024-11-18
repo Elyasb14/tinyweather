@@ -8,12 +8,27 @@
     <link rel="stylesheet" href="css">
 </head>
 <body>
-    <h1 class="title">Tinyweather</h1>
-    <a hx-get="/why" 
-       hx-target="#main-text"
-       hx-swap="innerHTML">
-        why?
-    </a>
-    <div id="main-text"></div>
+    <div class="sidebar">
+            <a class="nav-item"
+          hx-get="/"
+        hx-target="#main-text">
+       Home
+      </a>
+
+        <a class="nav-item" 
+           hx-get="/why" 
+           hx-target="#main-text">
+            Features
+        </a>
+
+    </div>
+
+    <div class="main-content">
+        <div id="main-text"
+          hx-get="/about"    
+      >
+              
+        </div>
+    </div>
 </body>
 </html>
