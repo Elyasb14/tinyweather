@@ -10,64 +10,6 @@
 #define DEFAULT_DEVICE "/dev/ttyUSB0"
 #define DARWIN_DEVICE "/dev/tty.usbserial-0001"
 
-// typedef struct {
-//     char key[32];
-//     char value[32];
-// } KeyValuePair;
-
-// // Parse data into key-value pairs with debug info
-// KeyValuePair* rg15_parse_data(const char* data, int* count) {
-//     if (!data || !count) return NULL;
-//     
-//     printf("Parsing data string: '%s'\n", data);
-//     
-//     // First, count the number of comma-separated groups
-//     *count = 1;
-//     for (const char* p = data; *p; p++) {
-//         if (*p == ',') (*count)++;
-//     }
-//     
-//     printf("Found %d groups\n", *count);
-//
-//     KeyValuePair* pairs = malloc(*count * sizeof(KeyValuePair));
-//     if (!pairs) {
-//         perror("Failed to allocate memory for pairs");
-//         return NULL;
-//     }
-//
-//     char* data_copy = strdup(data);
-//     if (!data_copy) {
-//         perror("Failed to duplicate data string");
-//         free(pairs);
-//         return NULL;
-//     }
-//
-//     char* token = strtok(data_copy, ",");
-//     int i = 0;
-//
-//     while (token && i < *count) {
-//         printf("Processing token: '%s'\n", token);
-//         
-//         // Split each group into key and value
-//         char* space = strchr(token, ' ');
-//         if (space) {
-//             *space = '\0';
-//             strncpy(pairs[i].key, token, sizeof(pairs[i].key) - 1);
-//             strncpy(pairs[i].value, space + 1, sizeof(pairs[i].value) - 1);
-//             pairs[i].key[sizeof(pairs[i].key) - 1] = '\0';
-//             pairs[i].value[sizeof(pairs[i].value) - 1] = '\0';
-//             printf("Parsed pair - Key: '%s', Value: '%s'\n", pairs[i].key, pairs[i].value);
-//             i++;
-//         } else {
-//             printf("Warning: No space found in token\n");
-//         }
-//         token = strtok(NULL, ",");
-//     }
-//
-//     free(data_copy);
-//     return pairs;
-// }
-
 typedef struct {
     int fd;         // File descriptor
     char device[64];
