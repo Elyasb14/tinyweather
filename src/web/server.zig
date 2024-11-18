@@ -5,7 +5,9 @@ const html_404 = @embedFile("404.html");
 const index = @embedFile("index.html");
 const css = @embedFile("main.css");
 const favicon = @embedFile("favicon.ico");
+
 const about = @embedFile("about.html");
+
 
 const Endpoints = enum {
     Index,
