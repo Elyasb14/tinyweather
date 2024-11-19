@@ -137,6 +137,8 @@ test "end to end" {
             defer allocator.free(decoded_request_packet.sensors);
             try testing.expectEqualDeep(decoded_request_packet, sensor_request);
             const response_packet = tcp.SensorResponse.init(decoded_request_packet, undefined);
+
+            // testing allocator claims memory leaks here
             const encoded_response_packet = try response_packet.encode(allocator);
             defer allocator.free(encoded_response_packet);
             const new_packet = tcp.Packet.init(1, tcp.PacketType.SensorResponse, encoded_response_packet);
