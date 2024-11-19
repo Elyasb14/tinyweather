@@ -53,6 +53,8 @@ pub fn main() !void {
 
     const screen_width = 1400;
     const screen_height = 700;
+    const screen_width = 800;
+    const screen_height = 450;
     rl.initWindow(screen_width, screen_height, "tinyweather console");
     defer rl.closeWindow();
     rl.setTargetFPS(60);
@@ -67,6 +69,8 @@ pub fn main() !void {
 
     var rain_data_strings = std.ArrayList([]const u8).init(allocator);
     defer rain_data_strings.deinit();
+    const buttonx = (screen_width - button_width) / 2;
+    const buttony = screen_height - 100;
 
     while (!rl.windowShouldClose()) {
         rl.beginDrawing();
@@ -78,6 +82,9 @@ pub fn main() !void {
         const is_mouse_over_rain_button =
             mouse_pos.x >= rain_buttonx and mouse_pos.x <= rain_buttonx + button_width and
             mouse_pos.y >= rain_buttony and mouse_pos.y <= rain_buttony + button_height;
+        const is_mouse_over_button =
+            mouse_pos.x >= buttonx and mouse_pos.x <= buttonx + button_width and
+            mouse_pos.y >= buttony and mouse_pos.y <= buttony + button_height;
 
         const is_mouse_over_env_button =
             mouse_pos.x >= env_buttonx and mouse_pos.x <= env_buttonx + button_width and
@@ -111,5 +118,22 @@ pub fn main() !void {
         for (rain_data_strings.items, 0..) |str, i| {
             rl.drawText(@ptrCast(str), screen_width / 4, 50 + @as(i32, @intCast(i * 30)), 20, rl.Color.green);
         }
+        const button_color = if (is_mouse_over_button) rl.Color.light_gray else rl.Color.gray;
+
+        // Draw button rectangle
+        rl.drawRectangle(buttonx, buttony, button_width, button_height, button_color);
+
+        // Draw button text
+        rl.drawText("Get Rain Data", buttonx + 40, buttony + 15, 20, rl.Color.black);
+
+        // Check for button click
+        if (rl.isMouseButtonPressed(rl.MouseButton.mouse_button_left)) {
+            if (is_mouse_over_button) {
+                draw_rain() catch |err| {
+                    std.log.err("Error in draw_rain: {any}", .{err});
+                };
+            }
+        }
+        // Draw received rain text
     }
 }
