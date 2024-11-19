@@ -1,7 +1,4 @@
 tinyweather
 
-tinyweather is a weather station designed to be small, robust, and easy to use. this repo contains all the code used in the project. we will rely minimally on external libraries, allowing us to control what code is being run, making the platform as robust as possible. we plan on supporting a wide variety of sensors and telemetry options while making it seamless to add more of each. 
+tinyweather is a weather station designed to be small, robust, and easy to use. this repo contains all the code used in the project. we plan on supporting a wide variety of sensors and telemetry options while making it seamless to add more of each. 
 
-things that need doing
-- bme680 device driver (in progress)
-- rg15 serial device driver (in progress)
