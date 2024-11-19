@@ -139,7 +139,7 @@ body {
 /* CTA section */
 .cta {
     text-align: center;
-    background: linear-gradient(45deg, #004455, #002233);
+    background: #3a3a3a3a 
     padding: 40px;
     border-radius: 8px;
 }
