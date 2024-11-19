@@ -8,7 +8,7 @@ pub fn draw_rain() !void {
     const address = try net.Address.parseIp4("127.0.0.1", 8080);
     const stream = net.tcpConnectToAddress(address) catch |err| {
         std.log.err("Can't connect to address: {any}... error: {any}", .{ address, err });
-        return;
+        return error.ConnectionRefused;
     };
     std.log.info("\x1b[32mClient initializing communication with: {any}....\x1b[0m", .{address});
     defer stream.close();
@@ -36,10 +36,6 @@ pub fn draw_rain() !void {
     switch (decoded_packet.type) {
         .SensorResponse => {
             const decoded_sensor_response = try tcp.SensorResponse.decode(sensor_request, decoded_packet.data, allocator);
-            const format_slice = try std.fmt.allocPrint(allocator, "{any}\x00", .{decoded_sensor_response});
-            // Convert to null-terminated pointer
-            const format_ptr: [*:0]const u8 = @ptrCast(format_slice);
-            rl.drawText(format_ptr, 190, 200, 20, rl.Color.blue);
             std.log.info("\x1b[32mSensor Response Packet Received\x1b[0m: {any}", .{decoded_sensor_response});
         },
         .SensorRequest => {
