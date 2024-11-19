@@ -11,21 +11,21 @@ pub fn build(b: *std.Build) !void {
     const raylib = raylib_dep.module("raylib"); // main raylib module
     const raygui = raylib_dep.module("raygui"); // raygui module
     const raylib_artifact = raylib_dep.artifact("raylib"); // raylib C library
-    // TCP Library
+
     const tcp_lib = b.addStaticLibrary(.{ .name = "tcp", .root_source_file = b.path("src/lib/tcp.zig"), .target = target, .optimize = optimize });
     tcp_lib.addCSourceFile(.{ .file = b.path("src/lib/sensors/rg15.c"), .flags = &.{} });
     tcp_lib.linkLibC();
 
-    // Server Executable
     const server_exe = b.addExecutable(.{
         .name = "tinyweather-node",
         .root_source_file = b.path("src/node.zig"),
         .target = target,
         .optimize = optimize,
     });
+
     server_exe.addIncludePath(b.path("src"));
     server_exe.linkLibrary(tcp_lib);
-    // Client Executable
+
     const client_exe = b.addExecutable(.{
         .name = "tinyweather-client",
         .root_source_file = b.path("src/client.zig"),
@@ -33,7 +33,6 @@ pub fn build(b: *std.Build) !void {
         .optimize = optimize,
     });
 
-    // Web Server Executable
     const web_exe = b.addExecutable(.{
         .name = "tinyweather-web",
         .root_source_file = b.path("src/web/server.zig"),
@@ -53,19 +52,24 @@ pub fn build(b: *std.Build) !void {
     gui_exe.root_module.addImport("raygui", raygui);
     gui_exe.addIncludePath(b.path("src"));
     gui_exe.linkLibrary(tcp_lib);
-    gui_exe.linkSystemLibrary("GL");
-    // Install artifacts
+
+    if (target.result.os.tag == .linux) {
+        gui_exe.linkSystemLibrary("GL");
+    } else {
+        gui_exe.linkFramework("Metal");
+        gui_exe.linkFramework("Cocoa");
+    }
+
     b.installArtifact(web_exe);
     b.installArtifact(server_exe);
     b.installArtifact(client_exe);
     b.installArtifact(gui_exe);
 
-    // Run steps for each executable
     const run_server = b.addRunArtifact(server_exe);
     const run_client = b.addRunArtifact(client_exe);
     const run_web = b.addRunArtifact(web_exe);
     const run_gui = b.addRunArtifact(gui_exe);
-    // Create run steps
+
     const run_server_step = b.step("run-node", "Run the TinyWeather node server");
     run_server_step.dependOn(&run_server.step);
 
@@ -77,9 +81,7 @@ pub fn build(b: *std.Build) !void {
 
     const run_gui_step = b.step("run-gui", "Run the TinyWeather gui client");
     run_gui_step.dependOn(&run_gui.step);
-    // Add a step that runs all executables
 
-    // Tests
     const server_unit_tests = b.addTest(.{
         .root_source_file = b.path("src/node.zig"),
         .target = target,
