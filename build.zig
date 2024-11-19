@@ -4,8 +4,8 @@ pub fn build(b: *std.Build) void {
     const optimize = b.standardOptimizeOption(.{});
 
     // TCP Library
-    const tcp_lib = b.addStaticLibrary(.{ .name = "tcp", .root_source_file = b.path("src/tcp.zig"), .target = target, .optimize = optimize });
-    tcp_lib.addCSourceFile(.{ .file = b.path("src/sensors/rg15.c"), .flags = &.{} });
+    const tcp_lib = b.addStaticLibrary(.{ .name = "tcp", .root_source_file = b.path("src/lib/tcp.zig"), .target = target, .optimize = optimize });
+    tcp_lib.addCSourceFile(.{ .file = b.path("src/lib/sensors/rg15.c"), .flags = &.{} });
     tcp_lib.linkLibC();
 
     // Server Executable
@@ -71,7 +71,7 @@ pub fn build(b: *std.Build) void {
     server_unit_tests.linkLibC();
 
     const helpers_unit_tests = b.addTest(.{
-        .root_source_file = b.path("src/helpers.zig"),
+        .root_source_file = b.path("src/lib/helpers.zig"),
         .target = target,
         .optimize = optimize,
     });

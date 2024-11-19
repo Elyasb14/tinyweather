@@ -1,7 +1,7 @@
 const std = @import("std");
 const net = std.net;
 const assert = std.debug.assert;
-const tcp = @import("tcp.zig");
+const tcp = @import("lib/tcp.zig");
 
 pub fn main() !void {
     const address = try net.Address.parseIp4("127.0.0.1", 8080);
