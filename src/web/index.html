@@ -3,33 +3,70 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>tinyweather</title>
+    <title>TINYWEATHER</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/htmx/2.0.3/htmx.min.js"></script>
     <link rel="stylesheet" href="css">
 </head>
 <body>
     <div class="sidebar">
-            <a class="nav-item"
-
-          hx-get="/about"
-
-        hx-target="#main-text">
-       Home
-      </a>
-
-        <a class="nav-item" 
-           hx-get="/why" 
-           hx-target="#main-text">
-            Features
-        </a>
-
+        <div class="logo">TINY//WEATHER</div>
+        <a class="nav-item" hx-get="/home" hx-target="#main-text">HOME</a>
+        <a class="nav-item" hx-get="/features" hx-target="#main-text">FEATURES</a>
+        <a class="nav-item" hx-get="/specs" hx-target="#main-text">SPECS</a>
+        <a class="nav-item" hx-get="/order" hx-target="#main-text">ORDER</a>
     </div>
 
     <div class="main-content">
-        <div id="main-text"
-          hx-get="/about"    
-      >
-              
+        <div class="hero">
+            <h1>TINYWEATHER</h1>
+            <p>The retro-future of weather monitoring</p>
+        </div>
+
+        <div class="features-grid">
+            <div>
+                <h2 class="section-header">FEATURES</h2>
+                <ul class="features-list">
+                    <li>High-precision sensors</li>
+                    <li>8-bit inspired display</li>
+                    <li>WiFi connectivity</li>
+                    <li>7-day forecasting</li>
+                    <li>Real-time updates</li>
+                    <li>Custom alerts</li>
+                </ul>
+            </div>
+            <div class="product-image">
+                <img src="" alt="TinyWeather Station">
+            </div>
+        </div>
+
+        <div class="specs">
+            <h2 class="section-header">SPECIFICATIONS</h2>
+            <div class="specs-grid">
+                <div>
+                    <h3>Hardware</h3>
+                    <ul>
+                        <li>Display: 3.5" LCD</li>
+                        <li>Processor: ARM Cortex M4</li>
+                        <li>Battery: 2000mAh Li-ion</li>
+                        <li>Sensors: Temp/Humidity/Pressure</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Connectivity</h3>
+                    <ul>
+                        <li>WiFi: 802.11 b/g/n</li>
+                        <li>Bluetooth 5.0</li>
+                        <li>USB-C charging</li>
+                        <li>Local storage: 4GB</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="cta">
+            <h2>PRE-ORDER NOW</h2>
+            <p>Be the first to experience the future of retro weather monitoring</p>
+            <button class="cta-button">ORDER // $149.99</button>
         </div>
     </div>
 </body>
