@@ -54,7 +54,7 @@ pub fn build(b: *std.Build) !void {
     gui_exe.linkLibrary(tcp_lib);
     if (gui_exe.rootModuleTarget().os.tag == .linux) {
         const triple = try gui_exe.rootModuleTarget().linuxTriple(b.allocator);
-        gui_exe.addLibraryPath(b.path(b.fmt("/usr/lib/{s}", .{triple})));
+        gui_exe.addLibraryPath(b.path(b.fmt("/usr/lib/{s}", .{triple})).cwd_relative);
     }
     // Install artifacts
     b.installArtifact(web_exe);
