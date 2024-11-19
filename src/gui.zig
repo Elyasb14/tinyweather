@@ -47,6 +47,10 @@ pub fn get_rain(allocator: std.mem.Allocator) ![]tcp.SensorData {
 }
 
 pub fn main() !void {
+
+    // NOTE: when i didn't have this here, i was getting segfaults
+    // remember that when you allocate you need to know when things are getting freed
+    // things were getting freed at the wrong time in my tcp structs
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
     const allocator = arena.allocator();
