@@ -86,9 +86,11 @@ pub fn main() !void {
         // Check for button click
         if (rl.isMouseButtonPressed(rl.MouseButton.mouse_button_left)) {
             if (is_mouse_over_button) {
-                const ptr = &try get_rain(allocator);
-                const data = ptr.*;
-                std.debug.print("{any}\n", .{data[0]});
+                const rain_data = try get_rain(allocator);
+
+                for (rain_data) |sensor_data| {
+                    std.debug.print("Sensor Type: {}, Value: {}\n", .{ sensor_data.sensor_type, sensor_data.val });
+                }
             }
         }
         // Draw received rain text
