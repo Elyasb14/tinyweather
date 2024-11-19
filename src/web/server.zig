@@ -6,12 +6,8 @@ const index = @embedFile("index.html");
 const css = @embedFile("main.css");
 const favicon = @embedFile("favicon.ico");
 
-const about = @embedFile("about.html");
-
-
 const Endpoints = enum {
     Index,
-    About,
     Why,
     Css, // NOTE: this is a hack, want to just send main.css to the client when it first gets requested
     Favicon,
@@ -21,7 +17,6 @@ const Endpoints = enum {
         if (std.mem.eql(u8, url, "/")) return .Index;
         if (std.mem.eql(u8, url, "/why")) return .Why;
         if (std.mem.eql(u8, url, "/css")) return .Css;
-        if (std.mem.eql(u8, url, "/about")) return .About;
         if (std.mem.eql(u8, url, "/favicon.ico")) return .Favicon;
         return .NotFound;
     }
@@ -35,10 +30,6 @@ fn handle_request(req: *std.http.Server.Request) !void {
         .Index => {
             std.log.info("\x1b[32msending /\x1b[0m", .{});
             try req.respond(index, .{});
-        },
-        .About => {
-            std.log.info("\x1b[32msending /about\x1b[0m", .{});
-            try req.respond(about, .{});
         },
         .Why => {
             std.log.info("\x1b[32msending /why\x1b[0m", .{});
