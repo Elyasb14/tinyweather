@@ -84,6 +84,9 @@ pub const SensorResponse = struct {
     pub fn encode(self: Self, allocator: std.mem.Allocator) Allocator.Error![]const u8 {
         const rain_data: []const f32 = (try device.parse_rain(allocator)) orelse &[_]f32{std.math.nan(f32)} ** 4;
 
+        // TODO: we shouldn't need this since we are using arena allocators
+        defer allocator.free(rain_data);
+
         var buf = ArrayList(u8).init(allocator);
         for (self.request.sensors) |sensor| {
             switch (sensor) {
