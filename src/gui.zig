@@ -4,7 +4,7 @@ const net = std.net;
 const assert = std.debug.assert;
 const tcp = @import("lib/tcp.zig");
 
-pub fn draw_rain() !void {
+pub fn get_rain(allocator: std.mem.Allocator) ![]tcp.SensorData {
     const address = try net.Address.parseIp4("127.0.0.1", 8080);
     const stream = net.tcpConnectToAddress(address) catch |err| {
         std.log.err("Can't connect to address: {any}... error: {any}", .{ address, err });
@@ -12,10 +12,6 @@ pub fn draw_rain() !void {
     };
     std.log.info("\x1b[32mClient initializing communication with: {any}....\x1b[0m", .{address});
     defer stream.close();
-
-    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-    defer arena.deinit();
-    const allocator = arena.allocator();
 
     const sensors = &[_]tcp.SensorType{
         tcp.SensorType.RainAcc,
@@ -37,17 +33,24 @@ pub fn draw_rain() !void {
         .SensorResponse => {
             const decoded_sensor_response = try tcp.SensorResponse.decode(sensor_request, decoded_packet.data, allocator);
             std.log.info("\x1b[32mSensor Response Packet Received\x1b[0m: {any}", .{decoded_sensor_response});
+            return decoded_sensor_response.data;
         },
         .SensorRequest => {
             std.log.err("Expected SensorResponse, got SensorRequest: {any}", .{decoded_packet});
+            return tcp.TCPError.InvalidPacketType;
         },
         .Error => {
             std.log.err("Got bad packet: {any}", .{decoded_packet});
+            return tcp.TCPError.BadPacket;
         },
     }
 }
 
 pub fn main() !void {
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+    const allocator = arena.allocator();
+
     const screen_width = 800;
     const screen_height = 450;
     rl.initWindow(screen_width, screen_height, "tinyweather console");
@@ -83,9 +86,9 @@ pub fn main() !void {
         // Check for button click
         if (rl.isMouseButtonPressed(rl.MouseButton.mouse_button_left)) {
             if (is_mouse_over_button) {
-                draw_rain() catch |err| {
-                    std.log.err("Error in draw_rain: {any}", .{err});
-                };
+                const ptr = &try get_rain(allocator);
+                const data = ptr.*;
+                std.debug.print("{any}\n", .{data[0]});
             }
         }
         // Draw received rain text
