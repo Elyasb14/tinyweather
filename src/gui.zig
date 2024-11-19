@@ -54,16 +54,45 @@ pub fn draw_rain() !void {
 pub fn main() !void {
     const screenWidth = 800;
     const screenHeight = 450;
-
     rl.initWindow(screenWidth, screenHeight, "tinyweather console");
     defer rl.closeWindow();
-
     rl.setTargetFPS(60);
+
+    // Button properties
+    const buttonWidth = 200;
+    const buttonHeight = 50;
+    const buttonX = (screenWidth - buttonWidth) / 2;
+    const buttonY = screenHeight - 100;
 
     while (!rl.windowShouldClose()) {
         rl.beginDrawing();
         defer rl.endDrawing();
-
         rl.clearBackground(rl.Color.dark_gray);
+
+        // Draw button
+        const mousePos = rl.getMousePosition();
+        const isMouseOverButton =
+            mousePos.x >= buttonX and mousePos.x <= buttonX + buttonWidth and
+            mousePos.y >= buttonY and mousePos.y <= buttonY + buttonHeight;
+
+        // Button colors
+        const buttonColor = if (isMouseOverButton) rl.Color.light_gray else rl.Color.gray;
+
+        // Draw button rectangle
+        rl.drawRectangle(buttonX, buttonY, buttonWidth, buttonHeight, buttonColor);
+
+        // Draw button text
+        rl.drawText("Get Rain Data", buttonX + 40, buttonY + 15, 20, rl.Color.black);
+
+        // Check for button click
+        if (rl.isMouseButtonPressed(rl.MouseButton.mouse_button_left)) {
+            if (isMouseOverButton) {
+                draw_rain() catch |err| {
+                    std.log.err("Error in draw_rain: {any}", .{err});
+                };
+            }
+        }
+
+        // Draw received rain text
     }
 }
