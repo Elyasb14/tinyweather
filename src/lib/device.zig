@@ -2,7 +2,7 @@ const helpers = @import("helpers.zig");
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 const ArrayList = std.ArrayList;
-const c = @cImport(@cInclude("sensors/rg15.h"));
+const c = @cImport(@cInclude("lib/sensors/rg15.h"));
 const tcp = @import("tcp.zig");
 const builtin = @import("builtin");
 
