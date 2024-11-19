@@ -34,7 +34,7 @@ RG15Device* rg15_init(const char* device) {
     printf("Opening device: %s\n", dev->device);
 
     // Open serial port
-    dev->fd = open(dev->device, O_RDWR |  O_NOCTTY | O_NONBLOCK);
+    dev->fd = open(dev->device, O_RDWR);
     if (dev->fd < 0) {
         perror("Error opening serial port");
         free(dev);

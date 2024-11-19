@@ -33,7 +33,9 @@ pub const Packet = struct {
     // takes encoded buffer ([]u8), constructs a packet
     pub fn decode(buf: []const u8) TCPError!Packet {
         assert(buf.len > 0);
-        if (buf[0] != 1) return TCPError.VersionError;
+        if (buf[0] != 1) {
+            return TCPError.VersionError;
+        }
         const packet_type = @as(PacketType, @enumFromInt(buf[1]));
         return Packet.init(buf[0], packet_type, buf[2..]);
     }

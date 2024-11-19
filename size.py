@@ -49,6 +49,24 @@ def count_lines(file_path):
                         filtered_lines.append(line)
                 lines = filtered_lines
                 
+        elif extension == '.py':
+            # Remove # style comments
+            lines = [line for line in lines if not line.lstrip().startswith('#')]
+            
+            # Handle multiline string comments (''' or """)
+            in_multiline_comment = False
+            filtered_lines = []
+            for line in lines:
+                if '"""' in line or "'''" in line:
+                    quote_count = line.count('"""') + line.count("'''")
+                    if quote_count == 2:  # Single line docstring
+                        continue
+                    elif quote_count == 1:  # Start or end of multiline docstring
+                        in_multiline_comment = not in_multiline_comment
+                        continue
+                if not in_multiline_comment and line.strip():
+                    filtered_lines.append(line)
+            lines = filtered_lines
             
         return len(lines)
     except Exception as e:
@@ -66,6 +84,8 @@ def count_tokens(file_path):
         extension = file_path.suffix.lower()
         if extension in ['.c', '.h', '.zig']:
             lines = [line for line in lines if not line.lstrip().startswith('//')]
+        elif extension == '.py':
+            lines = [line for line in lines if not line.lstrip().startswith('#')]
             
         for line in lines:
             # Remove inline comments
@@ -83,7 +103,7 @@ def walk_directory(directory):
     """Yield file paths and subdirectories."""
     for root, dirs, files in os.walk(directory):
         for file in files:
-            if file.endswith((".zig", ".c", ".h")):
+            if file.endswith((".zig", ".c", ".h", ".py")):
                 yield os.path.join(root, file)
         for dir in dirs:
             yield os.path.join(root, dir)
