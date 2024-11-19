@@ -1,5 +1,5 @@
 const std = @import("std");
-pub fn build(b: *std.Build) void {
+pub fn build(b: *std.Build) !void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
     const raylib_dep = b.dependency("raylib-zig", .{
@@ -52,7 +52,10 @@ pub fn build(b: *std.Build) void {
     gui_exe.root_module.addImport("raygui", raygui);
     gui_exe.addIncludePath(b.path("src"));
     gui_exe.linkLibrary(tcp_lib);
-
+    if (gui_exe.rootModuleTarget().os.tag == .linux) {
+        const triple = try gui_exe.rootModuleTarget().linuxTriple(b.allocator);
+        gui_exe.addLibraryPath(b.path(b.fmt("/usr/lib/{s}", .{triple})));
+    }
     // Install artifacts
     b.installArtifact(web_exe);
     b.installArtifact(server_exe);
@@ -64,7 +67,6 @@ pub fn build(b: *std.Build) void {
     const run_client = b.addRunArtifact(client_exe);
     const run_web = b.addRunArtifact(web_exe);
     const run_gui = b.addRunArtifact(gui_exe);
-
     // Create run steps
     const run_server_step = b.step("run-node", "Run the TinyWeather node server");
     run_server_step.dependOn(&run_server.step);
@@ -79,6 +81,7 @@ pub fn build(b: *std.Build) void {
     run_gui_step.dependOn(&run_gui.step);
     // Add a step that runs all executables
     const run_all_step = b.step("run-all", "Run all TinyWeather executables");
+
     run_all_step.dependOn(&run_server.step);
     run_all_step.dependOn(&run_client.step);
     run_all_step.dependOn(&run_web.step);
