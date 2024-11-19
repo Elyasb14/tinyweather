@@ -1,7 +1,7 @@
 const std = @import("std");
 const net = std.net;
 const assert = std.debug.assert;
-const tcp = @import("tcp/tcp.zig");
+const tcp = @import("lib/tcp.zig");
 const ArrayList = std.ArrayList;
 
 fn handle_client(stream: net.Stream, allocator: std.mem.Allocator) !void {

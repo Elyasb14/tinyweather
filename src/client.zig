@@ -4,7 +4,7 @@ const assert = std.debug.assert;
 const tcp = @import("lib/tcp.zig");
 
 pub fn main() !void {
-    const address = try net.Address.parseIp4("10.225.139.4", 8080);
+    const address = try net.Address.parseIp4("127.0.0.1", 8080);
     const stream = net.tcpConnectToAddress(address) catch |err| {
         std.log.err("Can't connect to address: {any}... error: {any}", .{ address, err });
         return;
