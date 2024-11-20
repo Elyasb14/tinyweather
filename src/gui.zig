@@ -92,7 +92,11 @@ pub fn main() !void {
                 const rain_data = try get_rain(allocator);
 
                 for (rain_data) |sensor_data| {
-                    std.debug.print("Sensor Type: {}, Value: {}\n", .{ sensor_data.sensor_type, sensor_data.val });
+                    // std.debug.print("Sensor Type: {}, Value: {}\n", .{ sensor_data.sensor_type, sensor_data.val });
+                    const printable = try std.fmt.allocPrint(allocator, "Sensor Type: {}, Value: {}\n", .{ sensor_data.sensor_type, sensor_data.val });
+                    const ptr = @as([*:0]const u8, @ptrCast(&printable));
+                    std.debug.print("{any}\n", .{ptr});
+                    rl.drawText(ptr, 400, 225, 20, rl.Color.black);
                 }
             }
         }
