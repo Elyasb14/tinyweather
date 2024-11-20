@@ -51,8 +51,8 @@ pub fn main() !void {
     defer arena.deinit();
     const allocator = arena.allocator();
 
-    const screen_width = 800;
-    const screen_height = 450;
+    const screen_width = 1400;
+    const screen_height = 700;
     rl.initWindow(screen_width, screen_height, "tinyweather console");
     defer rl.closeWindow();
     rl.setTargetFPS(60);
