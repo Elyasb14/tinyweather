@@ -47,9 +47,6 @@ pub fn get_rain(allocator: std.mem.Allocator) ![]tcp.SensorData {
 }
 
 pub fn main() !void {
-
-    // NOTE: when i didn't have this here, i was getting segfaults
-    // it was when i call get_rain below this
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
     const allocator = arena.allocator();
@@ -65,6 +62,15 @@ pub fn main() !void {
     const button_height = 50;
     const buttonx = (screen_width - button_width) / 2;
     const buttony = screen_height - 100;
+
+    // ArrayList to store rain data strings
+    var rain_data_strings = std.ArrayList([]const u8).init(allocator);
+    defer {
+        for (rain_data_strings.items) |str| {
+            allocator.free(str);
+        }
+        rain_data_strings.deinit();
+    }
 
     while (!rl.windowShouldClose()) {
         rl.beginDrawing();
@@ -89,17 +95,24 @@ pub fn main() !void {
         // Check for button click
         if (rl.isMouseButtonPressed(rl.MouseButton.mouse_button_left)) {
             if (is_mouse_over_button) {
+                // Clear existing data strings and free memory
+                for (rain_data_strings.items) |str| {
+                    allocator.free(str);
+                }
+                rain_data_strings.clearAndFree();
+
                 const rain_data = try get_rain(allocator);
 
                 for (rain_data) |sensor_data| {
-                    // std.debug.print("Sensor Type: {}, Value: {}\n", .{ sensor_data.sensor_type, sensor_data.val });
-                    const printable = try std.fmt.allocPrint(allocator, "Sensor Type: {}, Value: {}\n", .{ sensor_data.sensor_type, sensor_data.val });
-                    const ptr = @as([*:0]const u8, @ptrCast(&printable));
-                    std.debug.print("{any}\n", .{ptr});
-                    rl.drawText(ptr, 400, 225, 20, rl.Color.black);
+                    const printable = try std.fmt.allocPrint(allocator, "Sensor Type: {}, Value: {}", .{ sensor_data.sensor_type, sensor_data.val });
+                    try rain_data_strings.append(printable);
                 }
             }
         }
-        // Draw received rain text
+
+        // Draw all stored rain data strings
+        for (rain_data_strings.items, 0..) |str, i| {
+            rl.drawText(@ptrCast(str), 50, 50 + @as(i32, @intCast(i * 30)), 20, rl.Color.black);
+        }
     }
 }
