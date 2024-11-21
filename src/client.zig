@@ -39,9 +39,7 @@ pub fn main() !void {
         },
         .SensorRequest => {
             std.log.err("Expected SensorResponse, got SensorRequest: {any}", .{decoded_packet});
-        },
-        .Error => {
-            std.log.err("Got bad packet: {any}", .{decoded_packet});
+            return tcp.TCPError.InvalidPacketType;
         },
     }
 }
