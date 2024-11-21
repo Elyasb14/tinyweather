@@ -63,14 +63,8 @@ pub fn main() !void {
     const buttonx = (screen_width - button_width) / 2;
     const buttony = screen_height - 100;
 
-    // ArrayList to store rain data strings
     var rain_data_strings = std.ArrayList([]const u8).init(allocator);
-    defer {
-        for (rain_data_strings.items) |str| {
-            allocator.free(str);
-        }
-        rain_data_strings.deinit();
-    }
+    defer rain_data_strings.deinit();
 
     while (!rl.windowShouldClose()) {
         rl.beginDrawing();
@@ -95,10 +89,6 @@ pub fn main() !void {
         // Check for button click
         if (rl.isMouseButtonPressed(rl.MouseButton.mouse_button_left)) {
             if (is_mouse_over_button) {
-                // Clear existing data strings and free memory
-                // for (rain_data_strings.items) |str| {
-                //     allocator.free(str);
-                // }
                 rain_data_strings.clearAndFree();
 
                 const rain_data = try get_rain(allocator);
