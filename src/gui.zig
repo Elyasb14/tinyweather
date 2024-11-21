@@ -60,8 +60,10 @@ pub fn main() !void {
     // Button properties
     const button_width = 200;
     const button_height = 50;
-    const buttonx = (screen_width - button_width) / 2;
-    const buttony = screen_height - 100;
+    const rain_buttonx = 50;
+    const rain_buttony = 50;
+    const env_buttonx = 50;
+    const env_buttony = 150;
 
     var rain_data_strings = std.ArrayList([]const u8).init(allocator);
     defer rain_data_strings.deinit();
@@ -73,22 +75,27 @@ pub fn main() !void {
 
         // Draw button
         const mouse_pos = rl.getMousePosition();
-        const is_mouse_over_button =
-            mouse_pos.x >= buttonx and mouse_pos.x <= buttonx + button_width and
-            mouse_pos.y >= buttony and mouse_pos.y <= buttony + button_height;
+        const is_mouse_over_rain_button =
+            mouse_pos.x >= rain_buttonx and mouse_pos.x <= rain_buttonx + button_width and
+            mouse_pos.y >= rain_buttony and mouse_pos.y <= rain_buttony + button_height;
 
+        const is_mouse_over_env_button =
+            mouse_pos.x >= env_buttonx and mouse_pos.x <= env_buttonx + button_width and
+            mouse_pos.y >= env_buttony and mouse_pos.y <= env_buttony + button_height;
         // Button colors
-        const button_color = if (is_mouse_over_button) rl.Color.light_gray else rl.Color.gray;
+        const rain_button_color = if (is_mouse_over_rain_button) rl.Color.light_gray else rl.Color.gray;
+        const env_button_color = if (is_mouse_over_env_button) rl.Color.light_gray else rl.Color.gray;
 
         // Draw button rectangle
-        rl.drawRectangle(buttonx, buttony, button_width, button_height, button_color);
+        rl.drawRectangle(rain_buttonx, rain_buttony, button_width, button_height, rain_button_color);
+        rl.drawRectangle(env_buttonx, env_buttony, button_width, button_height, env_button_color);
 
         // Draw button text
-        rl.drawText("Get Rain Data", buttonx + 40, buttony + 15, 20, rl.Color.black);
-
+        rl.drawText("Get Rain Data", rain_buttonx + 40, rain_buttony + 15, 20, rl.Color.black);
+        rl.drawText("Get Env data", env_buttonx + 40, env_buttony + 15, 20, rl.Color.black);
         // Check for button click
         if (rl.isMouseButtonPressed(rl.MouseButton.mouse_button_left)) {
-            if (is_mouse_over_button) {
+            if (is_mouse_over_rain_button) {
                 rain_data_strings.clearAndFree();
 
                 const rain_data = try get_rain(allocator);
@@ -102,7 +109,7 @@ pub fn main() !void {
 
         // Draw all stored rain data strings
         for (rain_data_strings.items, 0..) |str, i| {
-            rl.drawText(@ptrCast(str), 50, 50 + @as(i32, @intCast(i * 30)), 20, rl.Color.green);
+            rl.drawText(@ptrCast(str), screen_width / 4, 50 + @as(i32, @intCast(i * 30)), 20, rl.Color.green);
         }
     }
 }
