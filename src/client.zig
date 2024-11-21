@@ -7,7 +7,7 @@ pub fn main() !void {
     const address = try net.Address.parseIp4("127.0.0.1", 8080);
     const stream = net.tcpConnectToAddress(address) catch |err| {
         std.log.err("Can't connect to address: {any}... error: {any}", .{ address, err });
-        return;
+        return error.ConnectionRefused;
     };
     std.log.info("\x1b[32mClient initializing communication with: {any}....\x1b[0m", .{address});
     defer stream.close();
