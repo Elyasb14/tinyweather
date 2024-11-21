@@ -39,10 +39,6 @@ pub fn get_rain(allocator: std.mem.Allocator) ![]tcp.SensorData {
             std.log.err("Expected SensorResponse, got SensorRequest: {any}", .{decoded_packet});
             return tcp.TCPError.InvalidPacketType;
         },
-        .Error => {
-            std.log.err("Got bad packet: {any}", .{decoded_packet});
-            return tcp.TCPError.BadPacket;
-        },
     }
 }
 
