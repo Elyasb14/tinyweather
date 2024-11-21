@@ -96,9 +96,9 @@ pub fn main() !void {
         if (rl.isMouseButtonPressed(rl.MouseButton.mouse_button_left)) {
             if (is_mouse_over_button) {
                 // Clear existing data strings and free memory
-                for (rain_data_strings.items) |str| {
-                    allocator.free(str);
-                }
+                // for (rain_data_strings.items) |str| {
+                //     allocator.free(str);
+                // }
                 rain_data_strings.clearAndFree();
 
                 const rain_data = try get_rain(allocator);
@@ -112,7 +112,7 @@ pub fn main() !void {
 
         // Draw all stored rain data strings
         for (rain_data_strings.items, 0..) |str, i| {
-            rl.drawText(@ptrCast(str), 50, 50 + @as(i32, @intCast(i * 30)), 20, rl.Color.black);
+            rl.drawText(@ptrCast(str), 50, 50 + @as(i32, @intCast(i * 30)), 20, rl.Color.green);
         }
     }
 }
