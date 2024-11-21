@@ -39,7 +39,7 @@ pub fn parse_rain(allocator: Allocator) !?[]const f32 {
     // but it crashes the server because of an assert in std.mem.span
     // what to do about it now?
 
-    const rain_data = std.mem.span(c.get_rain());
+    const rain_data: []const u8 = std.mem.span(c.get_rain());
     if (rain_data.len < 4) return null;
 
     var split = std.mem.splitAny(u8, rain_data, " ,{}");

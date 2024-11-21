@@ -18,7 +18,7 @@ fn handle_client(stream: net.Stream, allocator: std.mem.Allocator) !void {
         std.log.info("\x1b[32mBytes read by connection\x1b[0m: {any}", .{bytes_read});
         const received_packet = tcp.Packet.decode(recv_buffer[0..bytes_read]) catch |err| {
             std.log.err("\x1b[31mClient wrote a bad packet, error\x1b[0m: {any}", .{err});
-            return;
+            return tcp.TCPError.BadPacket;
         };
 
         std.log.info("\x1b[32mPacket received from stream\x1b[0m: {any}", .{received_packet});
@@ -39,9 +39,9 @@ fn handle_client(stream: net.Stream, allocator: std.mem.Allocator) !void {
                 const encoded_response_packet = try response_packet.encode(allocator);
                 _ = try stream.write(encoded_response_packet);
             },
-            else => {
-                std.log.err("\x1b[31mUnexpected packet type\x1b[0m: {any}", .{received_packet.type});
-                return;
+            .SensorResponse => {
+                std.log.err("\x1b[31mExpected SensorRequest packet, got SensorResponse\x1b[0m: {any}", .{received_packet.type});
+                return tcp.TCPError.InvalidPacketType;
             },
         }
     }
