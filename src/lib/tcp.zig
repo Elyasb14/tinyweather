@@ -13,20 +13,20 @@ pub const TCPError = error{ VersionError, InvalidPacketType, InvalidSensorType, 
 pub const ClientHandler = struct {
     stream: net.Stream,
 
-    const Self = @This();
+    // const Self = @This();
 
     pub fn init(stream: net.Stream) ClientHandler {
-        return ClientHandler{
+        return .{
             .stream = stream,
         };
     }
 
-    pub fn deinit(self: Self) void {
+    pub fn deinit(self: *ClientHandler) void {
         std.log.info("Stream closed: {any}", .{self.stream});
         self.stream.close();
     }
 
-    pub fn handle_request(self: Self, allocator: Allocator) !?void {
+    pub fn handle_request(self: *ClientHandler, allocator: Allocator) !?void {
         var buf: [50]u8 = undefined;
         const bytes_read = try self.stream.read(&buf);
         if (bytes_read == 0) return null;
