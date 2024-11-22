@@ -13,8 +13,6 @@ pub const TCPError = error{ VersionError, InvalidPacketType, InvalidSensorType, 
 pub const ClientHandler = struct {
     stream: net.Stream,
 
-    // const Self = @This();
-
     pub fn init(stream: net.Stream) ClientHandler {
         return .{
             .stream = stream,
