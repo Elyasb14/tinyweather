@@ -6,9 +6,6 @@ pkgs.mkShell {
     zls
     zig
     python3
-    glfw
-    libGL
-    clang-tools
   ];
 
 }
