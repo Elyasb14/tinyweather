@@ -1,13 +1,13 @@
 const std = @import("std");
 const net = std.net;
 const assert = std.debug.assert;
-const tcp = @import("tcp.zig");
+const tcp = @import("lib/tcp.zig");
 
 pub fn main() !void {
     const address = try net.Address.parseIp4("127.0.0.1", 8080);
     const stream = net.tcpConnectToAddress(address) catch |err| {
         std.log.err("Can't connect to address: {any}... error: {any}", .{ address, err });
-        return;
+        return error.ConnectionRefused;
     };
     std.log.info("\x1b[32mClient initializing communication with: {any}....\x1b[0m", .{address});
     defer stream.close();
@@ -39,9 +39,7 @@ pub fn main() !void {
         },
         .SensorRequest => {
             std.log.err("Expected SensorResponse, got SensorRequest: {any}", .{decoded_packet});
-        },
-        .Error => {
-            std.log.err("Got bad packet: {any}", .{decoded_packet});
+            return tcp.TCPError.InvalidPacketType;
         },
     }
 }

@@ -2,8 +2,9 @@ const helpers = @import("helpers.zig");
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 const ArrayList = std.ArrayList;
-const c = @cImport(@cInclude("sensors/rg15.h"));
+const c = @cImport(@cInclude("lib/sensors/rg15.h"));
 const tcp = @import("tcp.zig");
+const builtin = @import("builtin");
 
 pub fn get_gas() [4]u8 {
     return helpers.f32_to_bytes(172.34);
@@ -26,7 +27,8 @@ pub fn get_pres() [4]u8 {
 pub fn parse_rain(allocator: Allocator) !?[]const f32 {
     // TODO: this is a HACK
     // this is only here because sometimes we have a null pointer if there is no rain gauge device
-    std.fs.accessAbsolute("/dev/tty.usbserial-0001", .{}) catch {
+    const rain_path = if (builtin.target.os.tag == .linux) "/dev/ttyUSB0" else "/dev/tty.usbserial-0001";
+    std.fs.accessAbsolute(rain_path, .{}) catch {
         std.log.info("\x1b[31mCould not open serial device, sending nan to the client\x1b[0m", .{});
         return null;
     };
@@ -37,7 +39,7 @@ pub fn parse_rain(allocator: Allocator) !?[]const f32 {
     // but it crashes the server because of an assert in std.mem.span
     // what to do about it now?
 
-    const rain_data = std.mem.span(c.get_rain());
+    const rain_data: []const u8 = std.mem.span(c.get_rain());
     if (rain_data.len < 4) return null;
 
     var split = std.mem.splitAny(u8, rain_data, " ,{}");
