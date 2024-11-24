@@ -54,8 +54,7 @@ pub fn main() !void {
     }
 
     var gauge = prometheus.Gauge.init("temp", "temp in c");
-
+    gauge.set(17);
     const prom_string = try gauge.to_prometheus(allocator);
-
     std.debug.print("{s}", .{prom_string});
 }

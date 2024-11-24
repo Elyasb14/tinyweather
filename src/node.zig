@@ -3,7 +3,6 @@ const net = std.net;
 const assert = std.debug.assert;
 const tcp = @import("lib/tcp.zig");
 const ArrayList = std.ArrayList;
-const builtin = @import("builtin");
 
 fn handle_client(stream: net.Stream, allocator: std.mem.Allocator) !void {
     var handler = tcp.ClientHandler.init(stream);
@@ -62,11 +61,11 @@ test "sensor request encoding and decoding" {
 
     const original_request = tcp.SensorRequest.init(&[_]tcp.SensorType{ tcp.SensorType.Hum, tcp.SensorType.Temp });
     const encoded_request = try original_request.encode(allocator);
-    defer allocator.free(encoded_request); // Free encoded_request
+    defer allocator.free(encoded_request);
 
     const decoded_request = try tcp.SensorRequest.decode(encoded_request, allocator);
     defer {
-        allocator.free(decoded_request.sensors); // Free decoded_request.sensors
+        allocator.free(decoded_request.sensors);
     }
 
     try testing.expectEqualSlices(tcp.SensorType, original_request.sensors, decoded_request.sensors);
