@@ -30,13 +30,19 @@ pub fn get_data(allocator: std.mem.Allocator, stream: net.Stream, sensors: []con
     }
 }
 
+// NOTES: how we will be getting data from sensors and displaying that for prometheus to ingest
+// prometheus will make a request to the metrics http endpoint
+// we will get the data requested in the client program
+// we will update the relevant gauges
+// we will respond to the request with the data in prometheus ingestible format
+
 pub fn main() !void {
-    const address = try net.Address.parseIp4("127.0.0.1", 8080);
-    const stream = net.tcpConnectToAddress(address) catch |err| {
-        std.log.err("Can't connect to address: {any}... error: {any}", .{ address, err });
+    const remote_address = try net.Address.parseIp4("127.0.0.1", 8080);
+    const stream = net.tcpConnectToAddress(remote_address) catch |err| {
+        std.log.err("Can't connect to address: {any}... error: {any}", .{ remote_address, err });
         return error.ConnectionRefused;
     };
-    std.log.info("\x1b[32mClient initializing communication with: {any}....\x1b[0m", .{address});
+    std.log.info("\x1b[32mClient initializing communication with remote address: {any}....\x1b[0m", .{remote_address});
     defer stream.close();
 
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
@@ -48,13 +54,47 @@ pub fn main() !void {
         tcp.SensorType.RainTotalAcc,
         tcp.SensorType.RainEventAcc,
     };
-    const data = try get_data(allocator, stream, &sensors);
-    for (data) |x| {
-        std.debug.print("Sensor: {any}, Val: {d}\n", .{ x.sensor_type, x.val });
-    }
+    while (true) {
+        const server_address = try net.Address.parseIp("127.0.0.1", 8081);
+        var server = try net.Address.listen(server_address, .{
+            .kernel_backlog = 1024,
+            .reuse_address = true,
+            .reuse_port = true,
+        });
 
-    var gauge = prometheus.Gauge.init("temp", "temp in c");
-    gauge.set(17);
-    const prom_string = try gauge.to_prometheus(allocator);
-    std.debug.print("{s}", .{prom_string});
+        defer server.deinit();
+        std.log.info("\x1b[32mHTTP Server listening on {any}\x1b[0m", .{server_address});
+
+        const conn = server.accept() catch |err| {
+            std.log.err("\x1b[31mServer failed to connect to client:\x1b[0m {any}", .{err});
+            continue;
+        };
+        std.log.info("\x1b[32mConnection established with\x1b[0m: {any}", .{conn.address});
+        defer conn.stream.close();
+
+        var buf: [1024]u8 = undefined;
+
+        var http_server = std.http.Server.init(conn, &buf);
+        while (http_server.state == .ready) {
+            const request = http_server.receiveHead() catch |err| {
+                if (err != error.HttpConnectionClosing) {
+                    std.log.debug("connection error: {s}\n", .{@errorName(err)});
+                }
+                continue;
+            };
+            const target = request.head.target;
+            std.log.info("\x1b[32mclient requested: {s}\x1b[0m", .{target});
+
+            const data = try get_data(allocator, stream, &sensors);
+            for (data) |x| {
+                std.debug.print("Sensor: {any}, Val: {d}\n", .{ x.sensor_type, x.val });
+            }
+
+            var gauge = prometheus.Gauge.init("temp", "temp in c");
+            gauge.set(17);
+            const prom_string = try gauge.to_prometheus(allocator);
+            std.debug.print("{s}", .{prom_string});
+            std.time.sleep(3e10);
+        }
+    }
 }
