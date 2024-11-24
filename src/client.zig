@@ -2,9 +2,9 @@ const std = @import("std");
 const net = std.net;
 const assert = std.debug.assert;
 const tcp = @import("lib/tcp.zig");
+const prometheus = @import("lib/prometheus/gauge.zig");
 
 pub fn get_data(allocator: std.mem.Allocator, stream: net.Stream, sensors: []const tcp.SensorType) ![]tcp.SensorData {
-
     const sensor_request = tcp.SensorRequest.init(sensors);
     const sensor_request_encoded = try sensor_request.encode(allocator);
     const packet = tcp.Packet.init(1, tcp.PacketType.SensorRequest, sensor_request_encoded);
@@ -50,6 +50,12 @@ pub fn main() !void {
     };
     const data = try get_data(allocator, stream, &sensors);
     for (data) |x| {
-        std.debug.print("Sensor: {any}, Val: {d}\n", .{x.sensor_type, x.val});
+        std.debug.print("Sensor: {any}, Val: {d}\n", .{ x.sensor_type, x.val });
     }
+
+    var gauge = prometheus.Gauge.init("temp", "temp in c");
+
+    const prom_string = try gauge.to_prometheus(allocator);
+
+    std.debug.print("{s}", .{prom_string});
 }
