@@ -38,12 +38,12 @@ pub fn get_data(allocator: std.mem.Allocator, stream: net.Stream, sensors: []con
 
 pub fn main() !void {
     const remote_address = try net.Address.parseIp4("127.0.0.1", 8080);
-    const stream = net.tcpConnectToAddress(remote_address) catch |err| {
+    const remote_stream = net.tcpConnectToAddress(remote_address) catch |err| {
         std.log.err("Can't connect to address: {any}... error: {any}", .{ remote_address, err });
         return error.ConnectionRefused;
     };
     std.log.info("\x1b[32mClient initializing communication with remote address: {any}....\x1b[0m", .{remote_address});
-    defer stream.close();
+    defer remote_stream.close();
 
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
@@ -56,58 +56,55 @@ pub fn main() !void {
     };
 
     const server_address = try net.Address.parseIp("127.0.0.1", 8081);
-    var server = try net.Address.listen(server_address, .{
+    var tcp_server = try net.Address.listen(server_address, .{
         .kernel_backlog = 1024,
         .reuse_address = true,
         .reuse_port = true,
     });
 
-    defer server.deinit();
+    defer tcp_server.deinit();
     std.log.info("\x1b[32mHTTP Server listening on {any}\x1b[0m", .{server_address});
 
-    var gauge = prometheus.Gauge.init("temp_c", "Temp in c");
-    gauge.set(17.0);
+    var gauge = prometheus.Gauge.init("room_temperature_celsius", "Current room temperature in Celsius");
+    gauge.set(17.1);
     const prom_string = try gauge.to_prometheus(allocator);
 
     while (true) {
-        const conn = server.accept() catch |err| {
+        const conn = tcp_server.accept() catch |err| {
             std.log.err("\x1b[31mServer failed to connect to client:\x1b[0m {any}", .{err});
             continue;
         };
-        std.log.info("\x1b[32mConnection established with\x1b[0m: {any}", .{conn.address});
-        defer conn.stream.close();
 
-        var buf: [1024]u8 = undefined;
-
-        var http_server = std.http.Server.init(conn, &buf);
-        while (http_server.state == .ready) {
-            var request = http_server.receiveHead() catch |err| {
-                if (err != error.HttpConnectionClosing) {
-                    std.log.debug("connection error: {s}\n", .{@errorName(err)});
-                }
-                continue;
-            };
-            // try handle_client(allocator, &request, stream, prom_string, &sensors);
-            var mutex = std.Thread.Mutex{};
-            mutex.lock();
-
-            const thread = try std.Thread.spawn(.{}, handle_client, .{ allocator, &request, stream, prom_string, &sensors });
-            thread.detach();
-            mutex.unlock();
-        }
+        const thread = try std.Thread.spawn(.{}, handle_client, .{ allocator, conn, remote_stream, prom_string, &sensors });
+        thread.detach();
     }
 }
-pub fn handle_client(allocator: std.mem.Allocator, request: *std.http.Server.Request, stream: std.net.Stream, prom_string: []const u8, sensors: []const tcp.SensorType) !void {
-    const target = request.head.target;
-    if (std.mem.eql(u8, target, "/metrics")) {
-        const data = try get_data(allocator, stream, sensors);
-        for (data) |x| {
-            std.debug.print("Sensor: {any}, Val: {d}\n", .{ x.sensor_type, x.val });
+pub fn handle_client(allocator: std.mem.Allocator, conn: std.net.Server.Connection, remote_stream: std.net.Stream, prom_string: []const u8, sensors: []const tcp.SensorType) !void {
+    std.log.info("\x1b[32mConnection established with\x1b[0m: {any}", .{conn.address});
+    defer conn.stream.close();
+
+    var buf: [1024]u8 = undefined;
+
+    var http_server = std.http.Server.init(conn, &buf);
+    while (http_server.state == .ready) {
+        var request = http_server.receiveHead() catch |err| {
+            if (err != error.HttpConnectionClosing) {
+                std.log.debug("connection error: {s}\n", .{@errorName(err)});
+            }
+            continue;
+        };
+
+        const target = request.head.target;
+        if (std.mem.eql(u8, target, "/metrics")) {
+            const data = try get_data(allocator, remote_stream, sensors);
+            for (data) |x| {
+                std.debug.print("Sensor: {any}, Val: {d}\n", .{ x.sensor_type, x.val });
+            }
+            std.log.info("Prometeus string being sent:\n{s}", .{prom_string});
+
+            try request.respond(prom_string, .{ .reason = "GET", .extra_headers = &.{.{ .name = "Content-Type", .value = "text/plain; version=0.0.4" }} });
+        } else {
+            try request.respond("404 content not found", .{ .status = .not_found });
         }
-        std.log.info("Prometeus string being sent:\n{s}", .{prom_string});
-        try request.respond(prom_string, .{ .reason = "GET" });
-    } else {
-        try request.respond("404 content not found", .{ .status = .not_found });
     }
-    stream.close();
 }
