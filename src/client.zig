@@ -87,17 +87,27 @@ pub fn main() !void {
                 }
                 continue;
             };
-            const target = request.head.target;
-            if (std.mem.eql(u8, target, "/metrics")) {
-                const data = try get_data(allocator, stream, &sensors);
-                for (data) |x| {
-                    std.debug.print("Sensor: {any}, Val: {d}\n", .{ x.sensor_type, x.val });
-                }
-                std.log.info("Prometeus string being sent:\n{s}", .{prom_string});
-                try request.respond(prom_string, .{ .reason = "GET" });
-            } else {
-                try request.respond("404 content not found", .{ .status = .not_found });
-            }
+            // try handle_client(allocator, &request, stream, prom_string, &sensors);
+            var mutex = std.Thread.Mutex{};
+            mutex.lock();
+
+            const thread = try std.Thread.spawn(.{}, handle_client, .{ allocator, &request, stream, prom_string, &sensors });
+            thread.detach();
+            mutex.unlock();
         }
     }
+}
+pub fn handle_client(allocator: std.mem.Allocator, request: *std.http.Server.Request, stream: std.net.Stream, prom_string: []const u8, sensors: []const tcp.SensorType) !void {
+    const target = request.head.target;
+    if (std.mem.eql(u8, target, "/metrics")) {
+        const data = try get_data(allocator, stream, sensors);
+        for (data) |x| {
+            std.debug.print("Sensor: {any}, Val: {d}\n", .{ x.sensor_type, x.val });
+        }
+        std.log.info("Prometeus string being sent:\n{s}", .{prom_string});
+        try request.respond(prom_string, .{ .reason = "GET" });
+    } else {
+        try request.respond("404 content not found", .{ .status = .not_found });
+    }
+    stream.close();
 }
