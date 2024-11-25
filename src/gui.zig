@@ -94,7 +94,10 @@ pub fn main() !void {
             if (is_mouse_over_rain_button) {
                 rain_data_strings.clearAndFree();
 
-                const rain_data = try get_rain(allocator);
+                const rain_data = get_rain(allocator) catch {
+                    std.log.warn("\x1b[33mCouldn't connect to server\x1b[0m", .{});
+                    continue;
+                };
 
                 for (rain_data) |sensor_data| {
                     const printable = try std.fmt.allocPrint(allocator, "Sensor Type: {}, Value: {}", .{ sensor_data.sensor_type, sensor_data.val });
