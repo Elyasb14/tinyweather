@@ -19,7 +19,7 @@ pub fn get_data(allocator: std.mem.Allocator, stream: net.Stream, sensors: []con
     switch (decoded_packet.type) {
         .SensorResponse => {
             const decoded_sensor_response = try tcp.SensorResponse.decode(sensor_request, decoded_packet.data, allocator);
-            std.log.info("\x1b[32mSensor Response Packet Received\x1b[0m: {any}", .{decoded_sensor_response});
+            // std.log.info("\x1b[32mSensor Response Packet Received\x1b[0m: {any}", .{decoded_sensor_response});
             const sensor_data = decoded_sensor_response.data;
             return sensor_data;
         },
@@ -54,17 +54,22 @@ pub fn main() !void {
         tcp.SensorType.RainTotalAcc,
         tcp.SensorType.RainEventAcc,
     };
+
+    const server_address = try net.Address.parseIp("127.0.0.1", 8081);
+    var server = try net.Address.listen(server_address, .{
+        .kernel_backlog = 1024,
+        .reuse_address = true,
+        .reuse_port = true,
+    });
+
+    defer server.deinit();
+    std.log.info("\x1b[32mHTTP Server listening on {any}\x1b[0m", .{server_address});
+
+    var gauge = prometheus.Gauge.init("temp_c", "Temp in c");
+    gauge.set(17.0);
+    const prom_string = try gauge.to_prometheus(allocator);
+
     while (true) {
-        const server_address = try net.Address.parseIp("127.0.0.1", 8081);
-        var server = try net.Address.listen(server_address, .{
-            .kernel_backlog = 1024,
-            .reuse_address = true,
-            .reuse_port = true,
-        });
-
-        defer server.deinit();
-        std.log.info("\x1b[32mHTTP Server listening on {any}\x1b[0m", .{server_address});
-
         const conn = server.accept() catch |err| {
             std.log.err("\x1b[31mServer failed to connect to client:\x1b[0m {any}", .{err});
             continue;
@@ -76,25 +81,23 @@ pub fn main() !void {
 
         var http_server = std.http.Server.init(conn, &buf);
         while (http_server.state == .ready) {
-            const request = http_server.receiveHead() catch |err| {
+            var request = http_server.receiveHead() catch |err| {
                 if (err != error.HttpConnectionClosing) {
                     std.log.debug("connection error: {s}\n", .{@errorName(err)});
                 }
                 continue;
             };
             const target = request.head.target;
-            std.log.info("\x1b[32mclient requested: {s}\x1b[0m", .{target});
-
-            const data = try get_data(allocator, stream, &sensors);
-            for (data) |x| {
-                std.debug.print("Sensor: {any}, Val: {d}\n", .{ x.sensor_type, x.val });
+            if (std.mem.eql(u8, target, "/metrics")) {
+                const data = try get_data(allocator, stream, &sensors);
+                for (data) |x| {
+                    std.debug.print("Sensor: {any}, Val: {d}\n", .{ x.sensor_type, x.val });
+                }
+                std.log.info("Prometeus string being sent:\n{s}", .{prom_string});
+                try request.respond(prom_string, .{ .reason = "GET" });
+            } else {
+                try request.respond("404 content not found", .{ .status = .not_found });
             }
-
-            var gauge = prometheus.Gauge.init("temp", "temp in c");
-            gauge.set(17);
-            const prom_string = try gauge.to_prometheus(allocator);
-            std.debug.print("{s}", .{prom_string});
-            std.time.sleep(3e10);
         }
     }
 }
