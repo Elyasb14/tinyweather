@@ -66,8 +66,6 @@ pub fn main() !void {
     std.log.info("\x1b[32mHTTP Server listening on {any}\x1b[0m", .{server_address});
 
     var gauge = prometheus.Gauge.init("room_temperature_celsius", "Current room temperature in Celsius");
-    gauge.set(17.1);
-    const prom_string = try gauge.to_prometheus(allocator);
 
     while (true) {
         const conn = tcp_server.accept() catch |err| {
@@ -75,11 +73,11 @@ pub fn main() !void {
             continue;
         };
 
-        const thread = try std.Thread.spawn(.{}, handle_client, .{ allocator, conn, remote_stream, prom_string, &sensors });
+        const thread = try std.Thread.spawn(.{}, handle_client, .{ allocator, conn, remote_stream, &sensors, &gauge });
         thread.detach();
     }
 }
-pub fn handle_client(allocator: std.mem.Allocator, conn: std.net.Server.Connection, remote_stream: std.net.Stream, prom_string: []const u8, sensors: []const tcp.SensorType) !void {
+pub fn handle_client(allocator: std.mem.Allocator, conn: std.net.Server.Connection, remote_stream: std.net.Stream, sensors: []const tcp.SensorType, gauge: *prometheus.Gauge) !void {
     std.log.info("\x1b[32mConnection established with\x1b[0m: {any}", .{conn.address});
     defer conn.stream.close();
 
@@ -97,6 +95,11 @@ pub fn handle_client(allocator: std.mem.Allocator, conn: std.net.Server.Connecti
         const target = request.head.target;
         if (std.mem.eql(u8, target, "/metrics")) {
             const data = try get_data(allocator, remote_stream, sensors);
+            var rand_impl = std.rand.DefaultPrng.init(@as(u64, @bitCast(std.time.milliTimestamp())));
+            const num = @mod(rand_impl.random().float(f32), 32);
+            gauge.set(num);
+            const prom_string = try gauge.to_prometheus(allocator);
+
             for (data) |x| {
                 std.debug.print("Sensor: {any}, Val: {d}\n", .{ x.sensor_type, x.val });
             }
