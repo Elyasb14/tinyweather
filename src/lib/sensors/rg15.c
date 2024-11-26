@@ -31,7 +31,6 @@ RG15Device* rg15_init(const char* device) {
         strncpy(dev->device, device ? device : DEFAULT_DEVICE, sizeof(dev->device) - 1);
     #endif
 
-    printf("Opening device: %s\n", dev->device);
 
     // Open serial port
     dev->fd = open(dev->device, O_RDWR |  O_NOCTTY | O_NONBLOCK);
@@ -41,7 +40,6 @@ RG15Device* rg15_init(const char* device) {
         return NULL;
     }
 
-    printf("Successfully opened device with fd: %d\n", dev->fd);
 
     // Configure serial port
     if (tcgetattr(dev->fd, &dev->tty) != 0) {
@@ -87,7 +85,6 @@ RG15Device* rg15_init(const char* device) {
     // Flush anything in the buffer
     tcflush(dev->fd, TCIOFLUSH);
     
-    printf("Serial port configured successfully\n");
     return dev;
 }
 char* rg15_get_data(RG15Device* dev) {
