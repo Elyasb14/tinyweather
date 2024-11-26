@@ -51,9 +51,7 @@ pub fn handle_client(allocator: std.mem.Allocator, conn: std.net.Server.Connecti
         const target = request.head.target;
         if (std.mem.eql(u8, target, "/metrics")) {
             const data = try get_data(allocator, remote_stream, sensors);
-            for (data) |x| {
-                std.debug.print("Sensor: {any}, Val: {d}\n", .{ x.sensor_type, x.val });
-            }
+
             for (data, gauges.items) |x, *gauge| {
                 gauge.set(x.val);
                 try prom_string.append(try gauge.to_prometheus(allocator));
