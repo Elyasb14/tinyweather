@@ -12,8 +12,14 @@ pub fn get_data(allocator: std.mem.Allocator, stream: net.Stream, sensors: []con
 
     var buf: [50]u8 = undefined;
     std.log.info("\x1b[32mPacket Sent\x1b[0m: {any}", .{packet});
-    _ = try stream.write(encoded_packet);
+    _ = stream.write(encoded_packet) catch |err| {
+        std.log.warn("Can't write to the node: {s}", .{@errorName(err)});
+        return err;
+    };
     const n = try stream.read(&buf);
+    if (n == 0) {
+        return tcp.TCPError.BadPacket;
+    }
     std.log.info("\x1b[32mBytes read by stream\x1b[0m: {any}", .{n});
     const decoded_packet = try tcp.Packet.decode(buf[0..n]);
     switch (decoded_packet.type) {
@@ -50,7 +56,10 @@ pub fn handle_client(allocator: std.mem.Allocator, conn: std.net.Server.Connecti
 
         const target = request.head.target;
         if (std.mem.eql(u8, target, "/metrics")) {
-            const data = try get_data(allocator, remote_stream, sensors);
+            const data = get_data(allocator, remote_stream, sensors) catch |err| {
+                std.log.warn("failed to get data: {s}", .{@errorName(err)});
+                continue;
+            };
 
             for (data, gauges.items) |x, *gauge| {
                 gauge.set(x.val);

@@ -32,13 +32,8 @@ pub fn parse_rain(allocator: Allocator) !?[]const f32 {
         std.log.info("\x1b[31mCould not open serial device, sending nan to the client\x1b[0m", .{});
         return null;
     };
+
     var buf = ArrayList(f32).init(allocator);
-
-    // TODO: c.get_rain() can return a null pointer (see rg15.c get_rain())
-    // This will eventually get handled when we rewrite rg15.c in zig
-    // but it crashes the server because of an assert in std.mem.span
-    // what to do about it now?
-
     const rain_data: []const u8 = std.mem.span(c.get_rain());
     if (rain_data.len < 4) return null;
 
