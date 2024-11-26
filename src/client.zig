@@ -47,7 +47,7 @@ pub fn handle_client(allocator: std.mem.Allocator, conn: std.net.Server.Connecti
     while (http_server.state == .ready) {
         var request = http_server.receiveHead() catch |err| {
             if (err != error.HttpConnectionClosing) {
-                std.log.debug("connection error: {s}\n", .{@errorName(err)});
+                std.log.warn("\x1b[33mConnection error\x1b[0m: {s}\n", .{@errorName(err)});
             }
             continue;
         };
@@ -55,7 +55,7 @@ pub fn handle_client(allocator: std.mem.Allocator, conn: std.net.Server.Connecti
         const target = request.head.target;
         if (std.mem.eql(u8, target, "/metrics")) {
             const data = get_data(allocator, remote_stream, sensors) catch |err| {
-                std.log.warn("failed to get data: {s}", .{@errorName(err)});
+                std.log.warn("\x1b[33mFailed to get data\x1b[0m: {s}", .{@errorName(err)});
                 continue;
             };
 
