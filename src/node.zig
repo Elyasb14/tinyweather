@@ -4,8 +4,8 @@ const assert = std.debug.assert;
 const tcp = @import("lib/tcp.zig");
 const ArrayList = std.ArrayList;
 
-fn handle_client(stream: net.Stream, allocator: std.mem.Allocator) !void {
-    var handler = tcp.ClientHandler.init(stream);
+fn handle_client(connection: net.Server.Connection, allocator: std.mem.Allocator) !void {
+    var handler = tcp.ClientHandler.init(connection.stream);
     defer handler.deinit();
     while (true) {
         try handler.handle_request(allocator) orelse break;
@@ -33,9 +33,10 @@ pub fn main() !void {
             continue;
         };
         std.log.info("\x1b[32mConnection established with\x1b[0m: {any}", .{connection.address});
-        const client_stream = connection.stream;
 
-        try handle_client(client_stream, allocator);
+        // try handle_client(client_stream, allocator);
+        const thread = try std.Thread.spawn(.{}, handle_client, .{ connection, allocator });
+        thread.detach();
     }
 }
 

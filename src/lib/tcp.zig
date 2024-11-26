@@ -140,8 +140,8 @@ pub const SensorResponse = struct {
         const rain_data: []const f32 = (try device.parse_rain(allocator)) orelse &[_]f32{std.math.nan(f32)} ** 4;
 
         const parse_end = timer.read();
-        const parse_duration = parse_end - parse_start;
-        std.debug.print("Encode function duration: {d:5} nano-seconds\n", .{parse_duration});
+        const parse_duration = (parse_end - parse_start) / 1000000;
+        std.debug.print("Encode function duration: {d:5} mili-seconds\n", .{parse_duration});
         var buf = ArrayList(u8).init(allocator);
         for (self.request.sensors) |sensor| {
             switch (sensor) {
