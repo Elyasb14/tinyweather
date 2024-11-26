@@ -82,13 +82,6 @@ pub fn handle_client(allocator: std.mem.Allocator, conn: std.net.Server.Connecti
 pub fn main() !void {
     // NOTE: this can only happen once
     // if the node dies, the client can't reconnect unless you shut down the program and restart it
-    const remote_address = try net.Address.parseIp4("127.0.0.1", 8080);
-    const remote_stream = net.tcpConnectToAddress(remote_address) catch |err| {
-        std.log.err("Can't connect to address: {any}... error: {any}", .{ remote_address, err });
-        return error.ConnectionRefused;
-    };
-    std.log.info("\x1b[32mClient initializing communication with remote address: {any}....\x1b[0m", .{remote_address});
-    defer remote_stream.close();
 
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
@@ -118,6 +111,13 @@ pub fn main() !void {
     std.log.info("\x1b[32mHTTP Server listening on {any}\x1b[0m", .{server_address});
 
     while (true) {
+        const remote_address = try net.Address.parseIp4("127.0.0.1", 8080);
+        const remote_stream = net.tcpConnectToAddress(remote_address) catch |err| {
+            std.log.err("Can't connect to address: {any}... error: {any}", .{ remote_address, err });
+            continue;
+        };
+        std.log.info("\x1b[32mClient initializing communication with remote address: {any}....\x1b[0m", .{remote_address});
+        defer remote_stream.close();
         const conn = tcp_server.accept() catch |err| {
             std.log.err("\x1b[31mServer failed to connect to client:\x1b[0m {any}", .{err});
             continue;
