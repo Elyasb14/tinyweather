@@ -133,15 +133,10 @@ pub const SensorResponse = struct {
     }
 
     pub fn encode(self: Self, allocator: std.mem.Allocator) ![]const u8 {
-        var timer = try std.time.Timer.start();
-        const parse_start = timer.read();
 
         // Existing rain data parsing
         const rain_data: []const f32 = (try device.parse_rain(allocator)) orelse &[_]f32{std.math.nan(f32)} ** 4;
 
-        const parse_end = timer.read();
-        const parse_duration = (parse_end - parse_start) / 1000000;
-        std.debug.print("Encode function duration: {d:5} mili-seconds\n", .{parse_duration});
         var buf = ArrayList(u8).init(allocator);
         for (self.request.sensors) |sensor| {
             switch (sensor) {
