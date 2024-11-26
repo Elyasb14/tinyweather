@@ -117,7 +117,7 @@ pub const SensorRequest = struct {
     }
 };
 
-pub const SensorData = struct { sensor_type: SensorType, val: f32 };
+pub const SensorData = packed struct { sensor_type: SensorType, val: f32 };
 
 pub const SensorResponse = struct {
     request: SensorRequest,
@@ -132,15 +132,16 @@ pub const SensorResponse = struct {
         };
     }
 
-    pub fn encode(self: Self, allocator: std.mem.Allocator) Allocator.Error![]const u8 {
-        const start_time = std.time.nanoTimestamp();
+    pub fn encode(self: Self, allocator: std.mem.Allocator) ![]const u8 {
+        var timer = try std.time.Timer.start();
+        const parse_start = timer.read();
 
+        // Existing rain data parsing
         const rain_data: []const f32 = (try device.parse_rain(allocator)) orelse &[_]f32{std.math.nan(f32)} ** 4;
 
-        const end_time = std.time.nanoTimestamp();
-        const mili_seconds = end_time - start_time;
-
-        std.debug.print("Encode function duration: {d:5} seconds\n", .{mili_seconds});
+        const parse_end = timer.read();
+        const parse_duration = parse_end - parse_start;
+        std.debug.print("Encode function duration: {d:5} nano-seconds\n", .{parse_duration});
         var buf = ArrayList(u8).init(allocator);
         for (self.request.sensors) |sensor| {
             switch (sensor) {
