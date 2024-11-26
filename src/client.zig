@@ -13,7 +13,7 @@ pub fn get_data(allocator: std.mem.Allocator, stream: net.Stream, sensors: []con
     var buf: [50]u8 = undefined;
     std.log.info("\x1b[32mPacket Sent\x1b[0m: {any}", .{packet});
     _ = stream.write(encoded_packet) catch |err| {
-        std.log.warn("Can't write to the node: {s}", .{@errorName(err)});
+        std.log.warn("\x1b[33mCan't write to the node\x1b[0m: {s}", .{@errorName(err)});
         return err;
     };
     const n = try stream.read(&buf);
@@ -25,12 +25,11 @@ pub fn get_data(allocator: std.mem.Allocator, stream: net.Stream, sensors: []con
     switch (decoded_packet.type) {
         .SensorResponse => {
             const decoded_sensor_response = try tcp.SensorResponse.decode(sensor_request, decoded_packet.data, allocator);
-            // std.log.info("\x1b[32mSensor Response Packet Received\x1b[0m: {any}", .{decoded_sensor_response});
             const sensor_data = decoded_sensor_response.data;
             return sensor_data;
         },
         .SensorRequest => {
-            std.log.err("Expected SensorResponse, got SensorRequest: {any}", .{decoded_packet});
+            std.log.err("\x1b[31mExpected SensorResponse, got SensorRequest\x1b[0m: {any}", .{decoded_packet});
             return tcp.TCPError.InvalidPacketType;
         },
     }
@@ -39,7 +38,6 @@ pub fn get_data(allocator: std.mem.Allocator, stream: net.Stream, sensors: []con
 pub fn handle_client(allocator: std.mem.Allocator, conn: std.net.Server.Connection, remote_stream: std.net.Stream, sensors: []const tcp.SensorType, gauges: std.ArrayList(prometheus.Gauge)) !void {
     std.log.info("\x1b[32mConnection established with\x1b[0m: {any}", .{conn.address});
     defer conn.stream.close();
-    // var gauge = prometheus.Gauge.init("room_temperature_celsius", "Current room temperature in Celsius", std.Thread.Mutex{});
 
     var prom_string = std.ArrayList([]const u8).init(allocator);
 
@@ -82,6 +80,8 @@ pub fn handle_client(allocator: std.mem.Allocator, conn: std.net.Server.Connecti
 // we will update the relevant gauges
 // we will respond to the request with the data in prometheus ingestible format
 pub fn main() !void {
+    // NOTE: this can only happen once
+    // if the node dies, the client can't reconnect unless you shut down the program and restart it
     const remote_address = try net.Address.parseIp4("127.0.0.1", 8080);
     const remote_stream = net.tcpConnectToAddress(remote_address) catch |err| {
         std.log.err("Can't connect to address: {any}... error: {any}", .{ remote_address, err });
