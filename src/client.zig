@@ -39,8 +39,6 @@ pub fn handle_client(allocator: std.mem.Allocator, conn: std.net.Server.Connecti
 
     var buf: [1024]u8 = undefined;
 
-    std.debug.print("Gauges: {any}", .{gauges});
-
     var http_server = std.http.Server.init(conn, &buf);
     while (http_server.state == .ready) {
         var request = http_server.receiveHead() catch |err| {
@@ -53,18 +51,17 @@ pub fn handle_client(allocator: std.mem.Allocator, conn: std.net.Server.Connecti
         const target = request.head.target;
         if (std.mem.eql(u8, target, "/metrics")) {
             const data = try get_data(allocator, remote_stream, sensors);
+            for (data) |x| {
+                std.debug.print("Sensor: {any}, Val: {d}\n", .{ x.sensor_type, x.val });
+            }
             for (data, gauges.items) |x, *gauge| {
-                gauge.set(x.val * 17.2);
+                gauge.set(x.val);
                 try prom_string.append(try gauge.to_prometheus(allocator));
             }
             // var rand_impl = std.rand.DefaultPrng.init(@as(u64, @bitCast(std.time.milliTimestamp())));
             // const num = @mod(rand_impl.random().float(f32), 32);
             // gauge.set(num);
             // const prom_string = try gauge.to_prometheus(allocator);
-
-            for (data) |x| {
-                std.debug.print("Sensor: {any}, Val: {d}\n", .{ x.sensor_type, x.val });
-            }
 
             const ret = try std.mem.join(allocator, "\n", try prom_string.toOwnedSlice());
             try request.respond(ret, .{ .reason = "GET", .extra_headers = &.{.{ .name = "Content-Type", .value = "text/plain; version=0.0.4" }} });
