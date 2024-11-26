@@ -58,10 +58,6 @@ pub fn handle_client(allocator: std.mem.Allocator, conn: std.net.Server.Connecti
                 gauge.set(x.val);
                 try prom_string.append(try gauge.to_prometheus(allocator));
             }
-            // var rand_impl = std.rand.DefaultPrng.init(@as(u64, @bitCast(std.time.milliTimestamp())));
-            // const num = @mod(rand_impl.random().float(f32), 32);
-            // gauge.set(num);
-            // const prom_string = try gauge.to_prometheus(allocator);
 
             const ret = try std.mem.join(allocator, "\n", try prom_string.toOwnedSlice());
             try request.respond(ret, .{ .reason = "GET", .extra_headers = &.{.{ .name = "Content-Type", .value = "text/plain; version=0.0.4" }} });
