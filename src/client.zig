@@ -30,12 +30,57 @@ pub fn get_data(allocator: std.mem.Allocator, stream: net.Stream, sensors: []con
     }
 }
 
+pub fn handle_client(allocator: std.mem.Allocator, conn: std.net.Server.Connection, remote_stream: std.net.Stream, sensors: []const tcp.SensorType, gauges: std.ArrayList(prometheus.Gauge)) !void {
+    std.log.info("\x1b[32mConnection established with\x1b[0m: {any}", .{conn.address});
+    defer conn.stream.close();
+    // var gauge = prometheus.Gauge.init("room_temperature_celsius", "Current room temperature in Celsius", std.Thread.Mutex{});
+
+    var prom_string = std.ArrayList([]const u8).init(allocator);
+
+    var buf: [1024]u8 = undefined;
+
+    std.debug.print("Gauges: {any}", .{gauges});
+
+    var http_server = std.http.Server.init(conn, &buf);
+    while (http_server.state == .ready) {
+        var request = http_server.receiveHead() catch |err| {
+            if (err != error.HttpConnectionClosing) {
+                std.log.debug("connection error: {s}\n", .{@errorName(err)});
+            }
+            continue;
+        };
+
+        const target = request.head.target;
+        if (std.mem.eql(u8, target, "/metrics")) {
+            const data = try get_data(allocator, remote_stream, sensors);
+            for (data, gauges.items) |x, *gauge| {
+                gauge.set(x.val * 17.2);
+                try prom_string.append(try gauge.to_prometheus(allocator));
+            }
+            // var rand_impl = std.rand.DefaultPrng.init(@as(u64, @bitCast(std.time.milliTimestamp())));
+            // const num = @mod(rand_impl.random().float(f32), 32);
+            // gauge.set(num);
+            // const prom_string = try gauge.to_prometheus(allocator);
+
+            for (data) |x| {
+                std.debug.print("Sensor: {any}, Val: {d}\n", .{ x.sensor_type, x.val });
+            }
+
+            const ret = try std.mem.join(allocator, "\n", try prom_string.toOwnedSlice());
+            try request.respond(ret, .{ .reason = "GET", .extra_headers = &.{.{ .name = "Content-Type", .value = "text/plain; version=0.0.4" }} });
+
+            std.log.info("Prometeus string being sent:\n{s}", .{ret});
+        } else {
+            try request.respond("404 content not found", .{ .status = .not_found });
+        }
+    }
+}
+
 // NOTES: how we will be getting data from sensors and displaying that for prometheus to ingest
 // prometheus will make a request to the metrics http endpoint
 // we will get the data requested in the client program
 // we will update the relevant gauges
 // we will respond to the request with the data in prometheus ingestible format
-
 pub fn main() !void {
     const remote_address = try net.Address.parseIp4("127.0.0.1", 8080);
     const remote_stream = net.tcpConnectToAddress(remote_address) catch |err| {
@@ -55,6 +100,13 @@ pub fn main() !void {
         tcp.SensorType.RainEventAcc,
     };
 
+    var gauges = std.ArrayList(prometheus.Gauge).init(allocator);
+
+    for (sensors) |sensor| {
+        const gauge = prometheus.Gauge.init(@tagName(sensor), @tagName(sensor), std.Thread.Mutex{});
+        try gauges.append(gauge);
+    }
+
     const server_address = try net.Address.parseIp("127.0.0.1", 8081);
     var tcp_server = try net.Address.listen(server_address, .{
         .kernel_backlog = 1024,
@@ -65,49 +117,13 @@ pub fn main() !void {
     defer tcp_server.deinit();
     std.log.info("\x1b[32mHTTP Server listening on {any}\x1b[0m", .{server_address});
 
-    var gauge = prometheus.Gauge.init("room_temperature_celsius", "Current room temperature in Celsius");
-
     while (true) {
         const conn = tcp_server.accept() catch |err| {
             std.log.err("\x1b[31mServer failed to connect to client:\x1b[0m {any}", .{err});
             continue;
         };
 
-        const thread = try std.Thread.spawn(.{}, handle_client, .{ allocator, conn, remote_stream, &sensors, &gauge });
+        const thread = try std.Thread.spawn(.{}, handle_client, .{ allocator, conn, remote_stream, &sensors, gauges });
         thread.detach();
-    }
-}
-pub fn handle_client(allocator: std.mem.Allocator, conn: std.net.Server.Connection, remote_stream: std.net.Stream, sensors: []const tcp.SensorType, gauge: *prometheus.Gauge) !void {
-    std.log.info("\x1b[32mConnection established with\x1b[0m: {any}", .{conn.address});
-    defer conn.stream.close();
-
-    var buf: [1024]u8 = undefined;
-
-    var http_server = std.http.Server.init(conn, &buf);
-    while (http_server.state == .ready) {
-        var request = http_server.receiveHead() catch |err| {
-            if (err != error.HttpConnectionClosing) {
-                std.log.debug("connection error: {s}\n", .{@errorName(err)});
-            }
-            continue;
-        };
-
-        const target = request.head.target;
-        if (std.mem.eql(u8, target, "/metrics")) {
-            const data = try get_data(allocator, remote_stream, sensors);
-            var rand_impl = std.rand.DefaultPrng.init(@as(u64, @bitCast(std.time.milliTimestamp())));
-            const num = @mod(rand_impl.random().float(f32), 32);
-            gauge.set(num);
-            const prom_string = try gauge.to_prometheus(allocator);
-
-            for (data) |x| {
-                std.debug.print("Sensor: {any}, Val: {d}\n", .{ x.sensor_type, x.val });
-            }
-            std.log.info("Prometeus string being sent:\n{s}", .{prom_string});
-
-            try request.respond(prom_string, .{ .reason = "GET", .extra_headers = &.{.{ .name = "Content-Type", .value = "text/plain; version=0.0.4" }} });
-        } else {
-            try request.respond("404 content not found", .{ .status = .not_found });
-        }
     }
 }
