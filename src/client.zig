@@ -2,7 +2,7 @@ const std = @import("std");
 const net = std.net;
 const assert = std.debug.assert;
 const tcp = @import("lib/tcp.zig");
-const prometheus = @import("lib/prometheus/gauge.zig");
+const prometheus = @import("lib/prometheus.zig");
 
 pub fn get_data(allocator: std.mem.Allocator, stream: net.Stream, sensors: []const tcp.SensorType) ![]tcp.SensorData {
     const sensor_request = tcp.SensorRequest.init(sensors);
