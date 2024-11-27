@@ -38,8 +38,8 @@ pub fn get_data(allocator: std.mem.Allocator, stream: net.Stream, sensors: []con
 pub fn handle_client(allocator: std.mem.Allocator, conn: std.net.Server.Connection, sensors: []const tcp.SensorType, gauges: std.ArrayList(prometheus.Gauge)) !void {
     const remote_address = try net.Address.parseIp4("127.0.0.1", 8080);
     const remote_stream = net.tcpConnectToAddress(remote_address) catch |err| {
-        std.log.err("Can't connect to address: {any}... error: {any}", .{ remote_address, err });
-        return tcp.TCPError.ConnectionError;
+        std.log.warn("\x1b[33mCan't connect to address: {any}... error: {any}\x1b[0m", .{ remote_address, err });
+        return;
     };
     std.log.info("\x1b[32mClient initializing communication with remote address: {any}....\x1b[0m", .{remote_address});
     defer remote_stream.close();
@@ -127,7 +127,9 @@ pub fn main() !void {
             continue;
         };
 
-        const thread = try std.Thread.spawn(.{}, handle_client, .{ allocator, conn, &sensors, gauges });
+        const thread = std.Thread.spawn(.{}, handle_client, .{ allocator, conn, &sensors, gauges }) catch {
+            continue;
+        };
         thread.detach();
     }
 }
