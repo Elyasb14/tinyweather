@@ -35,7 +35,14 @@ pub fn get_data(allocator: std.mem.Allocator, stream: net.Stream, sensors: []con
     }
 }
 
-pub fn handle_client(allocator: std.mem.Allocator, conn: std.net.Server.Connection, remote_stream: std.net.Stream, sensors: []const tcp.SensorType, gauges: std.ArrayList(prometheus.Gauge)) !void {
+pub fn handle_client(allocator: std.mem.Allocator, conn: std.net.Server.Connection, sensors: []const tcp.SensorType, gauges: std.ArrayList(prometheus.Gauge)) !void {
+    const remote_address = try net.Address.parseIp4("127.0.0.1", 8080);
+    const remote_stream = net.tcpConnectToAddress(remote_address) catch |err| {
+        std.log.err("Can't connect to address: {any}... error: {any}", .{ remote_address, err });
+        return tcp.TCPError.ConnectionError;
+    };
+    std.log.info("\x1b[32mClient initializing communication with remote address: {any}....\x1b[0m", .{remote_address});
+    defer remote_stream.close();
     std.log.info("\x1b[32mConnection established with\x1b[0m: {any}", .{conn.address});
     defer conn.stream.close();
 
@@ -114,20 +121,13 @@ pub fn main() !void {
         // NOTE: putting this here makes me connect to the remote node twice.
         // when I move it outside the while loop it works as desired
         // I think we want to move the connection to the remote node to handle_client
-        const remote_address = try net.Address.parseIp4("127.0.0.1", 8080);
-        const remote_stream = net.tcpConnectToAddress(remote_address) catch |err| {
-            std.log.err("Can't connect to address: {any}... error: {any}", .{ remote_address, err });
-            std.time.sleep(6e10);
-            continue;
-        };
-        std.log.info("\x1b[32mClient initializing communication with remote address: {any}....\x1b[0m", .{remote_address});
-        defer remote_stream.close();
+
         const conn = tcp_server.accept() catch |err| {
             std.log.err("\x1b[31mServer failed to connect to client:\x1b[0m {any}", .{err});
             continue;
         };
 
-        const thread = try std.Thread.spawn(.{}, handle_client, .{ allocator, conn, remote_stream, &sensors, gauges });
+        const thread = try std.Thread.spawn(.{}, handle_client, .{ allocator, conn, &sensors, gauges });
         thread.detach();
     }
 }

@@ -8,7 +8,7 @@ const net = std.net;
 
 pub const PacketType = enum(u8) { SensorRequest, SensorResponse };
 pub const SensorType = enum(u8) { Temp, Pres, Hum, Gas, RainAcc, RainEventAcc, RainTotalAcc, RainRInt };
-pub const TCPError = error{ VersionError, InvalidPacketType, InvalidSensorType, DeviceError, BadPacket };
+pub const TCPError = error{ VersionError, InvalidPacketType, InvalidSensorType, DeviceError, BadPacket, ConnectionError };
 
 pub const ClientHandler = struct {
     stream: net.Stream,
