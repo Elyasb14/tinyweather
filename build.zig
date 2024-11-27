@@ -26,6 +26,8 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    client_exe.addIncludePath(b.path("src"));
+    client_exe.linkLibrary(tcp_lib);
     // Web Server Executable
     const web_exe = b.addExecutable(.{
         .name = "tinyweather-web",
