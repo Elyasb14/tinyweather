@@ -98,6 +98,11 @@ pub fn main() !void {
         tcp.SensorType.RainAcc,
         tcp.SensorType.RainTotalAcc,
         tcp.SensorType.RainEventAcc,
+        tcp.SensorType.Temp,
+        tcp.SensorType.Hum,
+        tcp.SensorType.Pres,
+        tcp.SensorType.RainRInt,
+        tcp.SensorType.Gas,
     };
 
     var gauges = std.ArrayList(prometheus.Gauge).init(allocator);

@@ -132,6 +132,11 @@ pub const SensorResponse = struct {
         };
     }
 
+    /// if the node cannot parse the data, for whatever reason
+    /// whether it can't access the device
+    /// or anything else
+    /// the parse_* function will return null
+    /// the data will then be encoded as NaNs
     pub fn encode(self: Self, allocator: std.mem.Allocator) ![]const u8 {
 
         // Existing rain data parsing
