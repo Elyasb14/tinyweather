@@ -12,28 +12,39 @@ pub fn get_data(allocator: std.mem.Allocator, stream: net.Stream, sensors: []con
 
     var buf: [50]u8 = undefined;
     std.log.info("\x1b[32mPacket Sent\x1b[0m: {any}", .{packet});
-    _ = try stream.write(encoded_packet);
+    _ = stream.write(encoded_packet) catch |err| {
+        std.log.warn("\x1b[33mCan't write to the node\x1b[0m: {s}", .{@errorName(err)});
+        return err;
+    };
     const n = try stream.read(&buf);
+    if (n == 0) {
+        return tcp.TCPError.BadPacket;
+    }
     std.log.info("\x1b[32mBytes read by stream\x1b[0m: {any}", .{n});
     const decoded_packet = try tcp.Packet.decode(buf[0..n]);
     switch (decoded_packet.type) {
         .SensorResponse => {
             const decoded_sensor_response = try tcp.SensorResponse.decode(sensor_request, decoded_packet.data, allocator);
-            // std.log.info("\x1b[32mSensor Response Packet Received\x1b[0m: {any}", .{decoded_sensor_response});
             const sensor_data = decoded_sensor_response.data;
             return sensor_data;
         },
         .SensorRequest => {
-            std.log.err("Expected SensorResponse, got SensorRequest: {any}", .{decoded_packet});
+            std.log.err("\x1b[31mExpected SensorResponse, got SensorRequest\x1b[0m: {any}", .{decoded_packet});
             return tcp.TCPError.InvalidPacketType;
         },
     }
 }
 
-pub fn handle_client(allocator: std.mem.Allocator, conn: std.net.Server.Connection, remote_stream: std.net.Stream, sensors: []const tcp.SensorType, gauges: std.ArrayList(prometheus.Gauge)) !void {
+pub fn handle_client(allocator: std.mem.Allocator, conn: std.net.Server.Connection, sensors: []const tcp.SensorType, gauges: std.ArrayList(prometheus.Gauge)) !void {
+    const remote_address = try net.Address.parseIp4("127.0.0.1", 8080);
+    const remote_stream = net.tcpConnectToAddress(remote_address) catch {
+        std.log.warn("\x1b[33mCan't connect to address: {any}\x1b[0m", .{remote_address});
+        return;
+    };
+    std.log.info("\x1b[32mClient initializing communication with remote address: {any}....\x1b[0m", .{remote_address});
+    defer remote_stream.close();
     std.log.info("\x1b[32mConnection established with\x1b[0m: {any}", .{conn.address});
     defer conn.stream.close();
-    // var gauge = prometheus.Gauge.init("room_temperature_celsius", "Current room temperature in Celsius", std.Thread.Mutex{});
 
     var prom_string = std.ArrayList([]const u8).init(allocator);
 
@@ -43,14 +54,17 @@ pub fn handle_client(allocator: std.mem.Allocator, conn: std.net.Server.Connecti
     while (http_server.state == .ready) {
         var request = http_server.receiveHead() catch |err| {
             if (err != error.HttpConnectionClosing) {
-                std.log.debug("connection error: {s}\n", .{@errorName(err)});
+                std.log.warn("\x1b[33mConnection error\x1b[0m: {s}\n", .{@errorName(err)});
             }
             continue;
         };
 
         const target = request.head.target;
         if (std.mem.eql(u8, target, "/metrics")) {
-            const data = try get_data(allocator, remote_stream, sensors);
+            const data = get_data(allocator, remote_stream, sensors) catch |err| {
+                std.log.warn("\x1b[33mFailed to get data\x1b[0m: {s}", .{@errorName(err)});
+                continue;
+            };
 
             for (data, gauges.items) |x, *gauge| {
                 gauge.set(x.val);
@@ -73,13 +87,8 @@ pub fn handle_client(allocator: std.mem.Allocator, conn: std.net.Server.Connecti
 // we will update the relevant gauges
 // we will respond to the request with the data in prometheus ingestible format
 pub fn main() !void {
-    const remote_address = try net.Address.parseIp4("127.0.0.1", 8080);
-    const remote_stream = net.tcpConnectToAddress(remote_address) catch |err| {
-        std.log.err("Can't connect to address: {any}... error: {any}", .{ remote_address, err });
-        return error.ConnectionRefused;
-    };
-    std.log.info("\x1b[32mClient initializing communication with remote address: {any}....\x1b[0m", .{remote_address});
-    defer remote_stream.close();
+    // NOTE: this can only happen once
+    // if the node dies, the client can't reconnect unless you shut down the program and restart it
 
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
@@ -109,12 +118,18 @@ pub fn main() !void {
     std.log.info("\x1b[32mHTTP Server listening on {any}\x1b[0m", .{server_address});
 
     while (true) {
+        // NOTE: putting this here makes me connect to the remote node twice.
+        // when I move it outside the while loop it works as desired
+        // I think we want to move the connection to the remote node to handle_client
+
         const conn = tcp_server.accept() catch |err| {
             std.log.err("\x1b[31mServer failed to connect to client:\x1b[0m {any}", .{err});
             continue;
         };
 
-        const thread = try std.Thread.spawn(.{}, handle_client, .{ allocator, conn, remote_stream, &sensors, gauges });
+        const thread = std.Thread.spawn(.{}, handle_client, .{ allocator, conn, &sensors, gauges }) catch {
+            continue;
+        };
         thread.detach();
     }
 }
