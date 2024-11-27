@@ -8,7 +8,7 @@ const net = std.net;
 
 pub const PacketType = enum(u8) { SensorRequest, SensorResponse };
 pub const SensorType = enum(u8) { Temp, Pres, Hum, Gas, RainAcc, RainEventAcc, RainTotalAcc, RainRInt };
-pub const TCPError = error{ VersionError, InvalidPacketType, InvalidSensorType, DeviceError, BadPacket };
+pub const TCPError = error{ VersionError, InvalidPacketType, InvalidSensorType, DeviceError, BadPacket, ConnectionError };
 
 pub const ClientHandler = struct {
     stream: net.Stream,
@@ -117,7 +117,7 @@ pub const SensorRequest = struct {
     }
 };
 
-pub const SensorData = struct { sensor_type: SensorType, val: f32 };
+pub const SensorData = packed struct { sensor_type: SensorType, val: f32 };
 
 pub const SensorResponse = struct {
     request: SensorRequest,
@@ -132,7 +132,9 @@ pub const SensorResponse = struct {
         };
     }
 
-    pub fn encode(self: Self, allocator: std.mem.Allocator) Allocator.Error![]const u8 {
+    pub fn encode(self: Self, allocator: std.mem.Allocator) ![]const u8 {
+
+        // Existing rain data parsing
         const rain_data: []const f32 = (try device.parse_rain(allocator)) orelse &[_]f32{std.math.nan(f32)} ** 4;
 
         var buf = ArrayList(u8).init(allocator);
