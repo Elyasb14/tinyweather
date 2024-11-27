@@ -111,9 +111,13 @@ pub fn main() !void {
     std.log.info("\x1b[32mHTTP Server listening on {any}\x1b[0m", .{server_address});
 
     while (true) {
+        // NOTE: putting this here makes me connect to the remote node twice.
+        // when I move it outside the while loop it works as desired
+        // I think we want to move the connection to the remote node to handle_client
         const remote_address = try net.Address.parseIp4("127.0.0.1", 8080);
         const remote_stream = net.tcpConnectToAddress(remote_address) catch |err| {
             std.log.err("Can't connect to address: {any}... error: {any}", .{ remote_address, err });
+            std.time.sleep(6e10);
             continue;
         };
         std.log.info("\x1b[32mClient initializing communication with remote address: {any}....\x1b[0m", .{remote_address});
