@@ -4,6 +4,9 @@ const assert = std.debug.assert;
 const tcp = @import("lib/tcp.zig");
 const ArrayList = std.ArrayList;
 
+pub const std_options: std.Options = .{
+    .log_level = .debug,
+};
 fn handle_client(connection: net.Server.Connection, allocator: std.mem.Allocator) !void {
     var handler = tcp.ClientHandler.init(connection.stream);
     defer handler.deinit();
@@ -25,7 +28,7 @@ pub fn main() !void {
     });
 
     defer server.deinit();
-    std.log.info("\x1b[32mTCP Server listening on {}\x1b[0m", .{server_address});
+    std.log.info("\x1b[32mTCP Server listening on\x1b[0m: {any}", .{server_address});
 
     while (true) {
         const connection = server.accept() catch |err| {

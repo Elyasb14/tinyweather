@@ -4,6 +4,10 @@ const assert = std.debug.assert;
 const tcp = @import("lib/tcp.zig");
 const prometheus = @import("lib/prometheus.zig");
 
+pub const std_options: std.Options = .{
+    .log_level = .debug,
+};
+
 pub fn get_data(allocator: std.mem.Allocator, stream: net.Stream, sensors: []const tcp.SensorType) ![]tcp.SensorData {
     const sensor_request = tcp.SensorRequest.init(sensors);
     const sensor_request_encoded = try sensor_request.encode(allocator);
@@ -38,10 +42,10 @@ pub fn get_data(allocator: std.mem.Allocator, stream: net.Stream, sensors: []con
 pub fn handle_client(allocator: std.mem.Allocator, conn: std.net.Server.Connection, sensors: []const tcp.SensorType, gauges: std.ArrayList(prometheus.Gauge)) !void {
     const remote_address = try net.Address.parseIp4("127.0.0.1", 8080);
     const remote_stream = net.tcpConnectToAddress(remote_address) catch {
-        std.log.warn("\x1b[33mCan't connect to address: {any}\x1b[0m", .{remote_address});
+        std.log.warn("\x1b[33mCan't connect to address\x1b[0m: {any}", .{remote_address});
         return;
     };
-    std.log.info("\x1b[32mClient initializing communication with remote address: {any}....\x1b[0m", .{remote_address});
+    std.log.info("\x1b[32mProxy initializing communication with remote address\x1b[0m: {any}", .{remote_address});
     defer remote_stream.close();
     std.log.info("\x1b[32mConnection established with\x1b[0m: {any}", .{conn.address});
     defer conn.stream.close();
@@ -74,7 +78,7 @@ pub fn handle_client(allocator: std.mem.Allocator, conn: std.net.Server.Connecti
             const ret = try std.mem.join(allocator, "\n", try prom_string.toOwnedSlice());
             try request.respond(ret, .{ .reason = "GET", .extra_headers = &.{.{ .name = "Content-Type", .value = "text/plain; version=0.0.4" }} });
 
-            std.log.info("Prometeus string being sent:\n{s}", .{ret});
+            std.log.info("\x1b[32mPrometeus string being sent\x1b[0m:\n\x1b[36m{s}\x1b[0m", .{ret});
         } else {
             try request.respond("404 content not found", .{ .status = .not_found });
         }
@@ -89,7 +93,7 @@ pub fn handle_client(allocator: std.mem.Allocator, conn: std.net.Server.Connecti
 pub fn main() !void {
     // NOTE: this can only happen once
     // if the node dies, the client can't reconnect unless you shut down the program and restart it
-
+    // Initialize the file logger before using it
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
     const allocator = arena.allocator();
@@ -115,7 +119,7 @@ pub fn main() !void {
     });
 
     defer tcp_server.deinit();
-    std.log.info("\x1b[32mHTTP Server listening on {any}\x1b[0m", .{server_address});
+    std.log.info("\x1b[32mTCP Server listening on\x1b[0m: {any}", .{server_address});
 
     while (true) {
         // NOTE: putting this here makes me connect to the remote node twice.

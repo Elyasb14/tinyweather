@@ -20,7 +20,7 @@ pub const ClientHandler = struct {
     }
 
     pub fn deinit(self: *ClientHandler) void {
-        std.log.info("Stream closed: {any}", .{self.stream});
+        std.log.info("\x1b[32mStream closed\x1b[0m: {any}", .{self.stream});
         self.stream.close();
     }
 
