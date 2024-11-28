@@ -8,7 +8,6 @@ const favicon = @embedFile("favicon.ico");
 
 const about = @embedFile("about.html");
 
-
 const Endpoints = enum {
     Index,
     About,
@@ -68,7 +67,7 @@ pub fn main() !void {
     });
 
     defer server.deinit();
-    std.log.info("\x1b[32mHTTP Server listening on {any}\x1b[0m", .{server_address});
+    std.log.info("\x1b[32mHTTP Server listening on\x1b[0m: {any}", .{server_address});
 
     while (true) {
         const conn = server.accept() catch |err| {

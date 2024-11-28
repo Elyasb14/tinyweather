@@ -3,32 +3,30 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    // TCP Library
     const tcp_lib = b.addStaticLibrary(.{ .name = "tcp", .root_source_file = b.path("src/lib/tcp.zig"), .target = target, .optimize = optimize });
     tcp_lib.addCSourceFile(.{ .file = b.path("src/lib/sensors/rg15.c"), .flags = &.{} });
     tcp_lib.linkLibC();
 
-    // Server Executable
     const server_exe = b.addExecutable(.{
         .name = "tinyweather-node",
         .root_source_file = b.path("src/node.zig"),
         .target = target,
         .optimize = optimize,
     });
+
     server_exe.addIncludePath(b.path("src"));
     server_exe.linkLibrary(tcp_lib);
 
-    // Client Executable
-    const client_exe = b.addExecutable(.{
-        .name = "tinyweather-client",
-        .root_source_file = b.path("src/client.zig"),
+    const proxy_exe = b.addExecutable(.{
+        .name = "tinyweather-proxy",
+        .root_source_file = b.path("src/proxy.zig"),
         .target = target,
         .optimize = optimize,
     });
 
-    client_exe.addIncludePath(b.path("src"));
-    client_exe.linkLibrary(tcp_lib);
-    // Web Server Executable
+    proxy_exe.addIncludePath(b.path("src"));
+    proxy_exe.linkLibrary(tcp_lib);
+
     const web_exe = b.addExecutable(.{
         .name = "tinyweather-web",
         .root_source_file = b.path("src/web/server.zig"),
@@ -36,33 +34,28 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    // Install artifacts
     b.installArtifact(web_exe);
     b.installArtifact(server_exe);
-    b.installArtifact(client_exe);
+    b.installArtifact(proxy_exe);
 
-    // Run steps for each executable
     const run_server = b.addRunArtifact(server_exe);
-    const run_client = b.addRunArtifact(client_exe);
+    const run_proxy = b.addRunArtifact(proxy_exe);
     const run_web = b.addRunArtifact(web_exe);
 
-    // Create run steps
-    const run_server_step = b.step("run-node", "Run the TinyWeather node server");
+    const run_server_step = b.step("run-node", "Run the Tinyweather node server");
     run_server_step.dependOn(&run_server.step);
 
-    const run_client_step = b.step("run-client", "Run the TinyWeather client");
-    run_client_step.dependOn(&run_client.step);
+    const run_proxy_step = b.step("run-proxy", "Run the Tinyweather proxy");
+    run_proxy_step.dependOn(&run_proxy.step);
 
-    const run_web_step = b.step("run-web", "Run the TinyWeather web server");
+    const run_web_step = b.step("run-web", "Run the Tinyweather web server");
     run_web_step.dependOn(&run_web.step);
 
-    // Add a step that runs all executables
-    const run_all_step = b.step("run-all", "Run all TinyWeather executables");
+    const run_all_step = b.step("run-all", "Run all Tinyweather executables");
     run_all_step.dependOn(&run_server.step);
-    run_all_step.dependOn(&run_client.step);
+    run_all_step.dependOn(&run_proxy.step);
     run_all_step.dependOn(&run_web.step);
 
-    // Tests
     const server_unit_tests = b.addTest(.{
         .root_source_file = b.path("src/node.zig"),
         .target = target,
