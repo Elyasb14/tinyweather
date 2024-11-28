@@ -71,8 +71,8 @@ pub const Packet = struct {
     pub fn init(version: u8, packet_type: PacketType, data: []const u8) Packet {
         assert(data.len <= 50);
 
-        var hash: [32]u8 = undefined;
-        std.crypto.hash.sha2.Sha256.hash(data, &hash, .{});
+        var hash: [16]u8 = undefined;
+        std.crypto.hash.Blake3.hash(data, &hash, .{});
 
         return Packet{ .version = version, .type = packet_type, .hash = &hash, .data = data };
     }
