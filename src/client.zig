@@ -22,6 +22,7 @@ pub fn get_data(allocator: std.mem.Allocator, stream: net.Stream, sensors: []con
     }
     std.log.info("\x1b[32mBytes read by stream\x1b[0m: {any}", .{n});
     const decoded_packet = try tcp.Packet.decode(buf[0..n]);
+    std.log.info("\x1b[32mDecoded Packet\x1b[0m: {any}", .{decoded_packet});
     switch (decoded_packet.type) {
         .SensorResponse => {
             const decoded_sensor_response = try tcp.SensorResponse.decode(sensor_request, decoded_packet.data, allocator);
@@ -95,14 +96,8 @@ pub fn main() !void {
     const allocator = arena.allocator();
 
     const sensors = [_]tcp.SensorType{
-        tcp.SensorType.RainAcc,
         tcp.SensorType.RainTotalAcc,
-        tcp.SensorType.RainEventAcc,
         tcp.SensorType.Temp,
-        tcp.SensorType.Hum,
-        tcp.SensorType.Pres,
-        tcp.SensorType.RainRInt,
-        tcp.SensorType.Gas,
     };
 
     var gauges = std.ArrayList(prometheus.Gauge).init(allocator);
