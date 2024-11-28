@@ -63,6 +63,7 @@ pub const ClientHandler = struct {
 pub const Packet = struct {
     version: u8,
     type: PacketType,
+    hash: []const u8,
     data: []const u8,
 
     const Self = @This();
@@ -70,7 +71,10 @@ pub const Packet = struct {
     pub fn init(version: u8, packet_type: PacketType, data: []const u8) Packet {
         assert(data.len <= 50);
 
-        return Packet{ .version = version, .type = packet_type, .data = data };
+        var hash: [16]u8 = undefined;
+        std.crypto.hash.Blake3.hash(data, &hash, .{});
+
+        return Packet{ .version = version, .type = packet_type, .hash = &hash, .data = data };
     }
 
     pub fn encode(self: Self, allocator: std.mem.Allocator) Allocator.Error![]u8 {
@@ -86,6 +90,7 @@ pub const Packet = struct {
         assert(buf.len > 0);
         if (buf[0] != 1) return TCPError.VersionError;
         const packet_type = @as(PacketType, @enumFromInt(buf[1]));
+
         return Packet.init(buf[0], packet_type, buf[2..]);
     }
 };
@@ -132,6 +137,11 @@ pub const SensorResponse = struct {
         };
     }
 
+    /// if the node cannot parse the data, for whatever reason
+    /// whether it can't access the device
+    /// or anything else
+    /// the parse_* function will return null
+    /// the data will then be encoded as NaNs
     pub fn encode(self: Self, allocator: std.mem.Allocator) ![]const u8 {
 
         // Existing rain data parsing
