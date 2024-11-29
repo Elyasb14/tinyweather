@@ -2,6 +2,7 @@ const std = @import("std");
 const net = std.net;
 const Allocator = std.mem.Allocator;
 const tcp = @import("tcp.zig");
+const prometheus = @import("prometheus.zig");
 
 pub const ClientHandler = struct {
     stream: net.Stream,
@@ -53,4 +54,89 @@ pub const ClientHandler = struct {
     }
 };
 
-const ProxyHandler = struct {};
+pub const ProxyConnectionHandler = struct {
+    conn: net.Server.Connection,
+    sensors: []const tcp.SensorType,
+    gauges: std.ArrayList(prometheus.Gauge),
+
+    pub fn init(conn: net.Server.Connection, sensors: []const tcp.SensorType, gauges: std.ArrayList(prometheus.Gauge)) ProxyConnectionHandler {
+        return .{ .conn = conn, .sensors = sensors, .gauges = gauges };
+    }
+
+    fn get_data(allocator: std.mem.Allocator, stream: net.Stream, sensors: []const tcp.SensorType) ![]tcp.SensorData {
+        const sensor_request = tcp.SensorRequest.init(sensors);
+        const sensor_request_encoded = try sensor_request.encode(allocator);
+        const packet = tcp.Packet.init(1, tcp.PacketType.SensorRequest, sensor_request_encoded);
+        const encoded_packet = try packet.encode(allocator);
+
+        var buf: [50]u8 = undefined;
+        std.log.info("\x1b[32mPacket Sent\x1b[0m: {any}", .{packet});
+        _ = stream.write(encoded_packet) catch |err| {
+            std.log.warn("\x1b[33mCan't write to the node\x1b[0m: {s}", .{@errorName(err)});
+            return err;
+        };
+        const n = try stream.read(&buf);
+        if (n == 0) {
+            return tcp.TCPError.BadPacket;
+        }
+        std.log.info("\x1b[32mBytes read by stream\x1b[0m: {any}", .{n});
+        const decoded_packet = try tcp.Packet.decode(buf[0..n]);
+        switch (decoded_packet.type) {
+            .SensorResponse => {
+                const decoded_sensor_response = try tcp.SensorResponse.decode(sensor_request, decoded_packet.data, allocator);
+                const sensor_data = decoded_sensor_response.data;
+                return sensor_data;
+            },
+            .SensorRequest => {
+                std.log.err("\x1b[31mExpected SensorResponse, got SensorRequest\x1b[0m: {any}", .{decoded_packet});
+                return tcp.TCPError.InvalidPacketType;
+            },
+        }
+    }
+
+    pub fn handle(self: *ProxyConnectionHandler, allocator: std.mem.Allocator) !void {
+        const remote_address = try net.Address.parseIp4("127.0.0.1", 8080);
+        const remote_stream = net.tcpConnectToAddress(remote_address) catch {
+            std.log.warn("\x1b[33mCan't connect to address\x1b[0m: {any}", .{remote_address});
+            return;
+        };
+        std.log.info("\x1b[32mProxy initializing communication with remote address\x1b[0m: {any}", .{remote_address});
+        defer remote_stream.close();
+        std.log.info("\x1b[32mConnection established with\x1b[0m: {any}", .{self.conn.address});
+        defer self.conn.stream.close();
+
+        var prom_string = std.ArrayList([]const u8).init(allocator);
+
+        var buf: [1024]u8 = undefined;
+
+        var http_server = std.http.Server.init(self.conn, &buf);
+        while (http_server.state == .ready) {
+            var request = http_server.receiveHead() catch |err| {
+                if (err != error.HttpConnectionClosing) {
+                    std.log.warn("\x1b[33mConnection error\x1b[0m: {s}\n", .{@errorName(err)});
+                }
+                continue;
+            };
+
+            const target = request.head.target;
+            if (std.mem.eql(u8, target, "/metrics")) {
+                const data = get_data(allocator, remote_stream, self.sensors) catch |err| {
+                    std.log.warn("\x1b[33mFailed to get data\x1b[0m: {s}", .{@errorName(err)});
+                    continue;
+                };
+
+                for (data, self.gauges.items) |x, *gauge| {
+                    gauge.set(x.val);
+                    try prom_string.append(try gauge.to_prometheus(allocator));
+                }
+
+                const ret = try std.mem.join(allocator, "\n", try prom_string.toOwnedSlice());
+                try request.respond(ret, .{ .reason = "GET", .extra_headers = &.{.{ .name = "Content-Type", .value = "text/plain; version=0.0.4" }} });
+
+                std.log.info("\x1b[32mPrometeus string being sent\x1b[0m:\n\x1b[36m{s}\x1b[0m", .{ret});
+            } else {
+                try request.respond("404 content not found", .{ .status = .not_found });
+            }
+        }
+    }
+};
