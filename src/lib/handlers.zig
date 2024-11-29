@@ -56,11 +56,9 @@ pub const NodeConnectionHandler = struct {
 
 pub const ProxyConnectionHandler = struct {
     conn: net.Server.Connection,
-    sensors: []const tcp.SensorType,
-    gauges: std.ArrayList(prometheus.Gauge),
 
-    pub fn init(conn: net.Server.Connection, sensors: []const tcp.SensorType, gauges: std.ArrayList(prometheus.Gauge)) ProxyConnectionHandler {
-        return .{ .conn = conn, .sensors = sensors, .gauges = gauges };
+    pub fn init(conn: net.Server.Connection) ProxyConnectionHandler {
+        return .{ .conn = conn };
     }
 
     fn get_data(allocator: std.mem.Allocator, stream: net.Stream, sensors: []const tcp.SensorType) ![]tcp.SensorData {
@@ -95,6 +93,18 @@ pub const ProxyConnectionHandler = struct {
     }
 
     pub fn handle(self: *ProxyConnectionHandler, allocator: std.mem.Allocator) !void {
+        const sensors = [_]tcp.SensorType{
+            tcp.SensorType.RainEventAcc,
+            tcp.SensorType.Temp,
+        };
+
+        var gauges = std.ArrayList(prometheus.Gauge).init(allocator);
+
+        for (sensors) |sensor| {
+            const gauge = prometheus.Gauge.init(@tagName(sensor), @tagName(sensor), std.Thread.Mutex{});
+            try gauges.append(gauge);
+        }
+
         const node_address = try net.Address.parseIp4("127.0.0.1", 8080);
         const node_stream = net.tcpConnectToAddress(node_address) catch {
             std.log.warn("\x1b[33mCan't connect to address\x1b[0m: {any}", .{node_address});
@@ -127,12 +137,12 @@ pub const ProxyConnectionHandler = struct {
 
             const target = request.head.target;
             if (std.mem.eql(u8, target, "/metrics")) {
-                const data = get_data(allocator, node_stream, self.sensors) catch |err| {
+                const data = get_data(allocator, node_stream, &sensors) catch |err| {
                     std.log.warn("\x1b[33mFailed to get data\x1b[0m: {s}", .{@errorName(err)});
                     continue;
                 };
 
-                for (data, self.gauges.items) |x, *gauge| {
+                for (data, gauges.items) |x, *gauge| {
                     gauge.set(x.val);
                     try prom_string.append(try gauge.to_prometheus(allocator));
                 }

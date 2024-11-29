@@ -19,18 +19,6 @@ pub fn main() !void {
     defer arena.deinit();
     const allocator = arena.allocator();
 
-    const sensors = [_]tcp.SensorType{
-        tcp.SensorType.RainEventAcc,
-        tcp.SensorType.Temp,
-    };
-
-    var gauges = std.ArrayList(prometheus.Gauge).init(allocator);
-
-    for (sensors) |sensor| {
-        const gauge = prometheus.Gauge.init(@tagName(sensor), @tagName(sensor), std.Thread.Mutex{});
-        try gauges.append(gauge);
-    }
-
     const server_address = try net.Address.parseIp("127.0.0.1", 8081);
     var tcp_server = try net.Address.listen(server_address, .{
         .kernel_backlog = 1024,
@@ -47,7 +35,7 @@ pub fn main() !void {
             continue;
         };
 
-        var handler = handlers.ProxyConnectionHandler.init(conn, &sensors, gauges);
+        var handler = handlers.ProxyConnectionHandler.init(conn);
         const thread = std.Thread.spawn(.{}, handlers.ProxyConnectionHandler.handle, .{ &handler, allocator }) catch {
             continue;
         };
