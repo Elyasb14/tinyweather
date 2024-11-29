@@ -118,6 +118,13 @@ pub const ProxyConnectionHandler = struct {
                 continue;
             };
 
+            var iter = request.iterateHeaders();
+            while (iter.next()) |h| {
+                std.debug.print("Key: {s}, Val: {s}\n", .{ h.name, h.value });
+            }
+
+            // std.log.info("\x1b[32mHTTP request\x1b[0m: {any}", .{request.iterateHeaders()});
+
             const target = request.head.target;
             if (std.mem.eql(u8, target, "/metrics")) {
                 const data = get_data(allocator, node_stream, self.sensors) catch |err| {
