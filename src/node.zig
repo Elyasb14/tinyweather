@@ -9,7 +9,7 @@ pub const std_options: std.Options = .{
     .log_level = .debug,
 };
 fn handle_client(connection: net.Server.Connection, allocator: std.mem.Allocator) !void {
-    var handler = handlers.ClientHandler.init(connection.stream);
+    var handler = handlers.NodeConnectionHandler.init(connection.stream);
     defer handler.deinit();
     while (true) {
         try handler.handle(allocator) orelse break;

@@ -4,21 +4,21 @@ const Allocator = std.mem.Allocator;
 const tcp = @import("tcp.zig");
 const prometheus = @import("prometheus.zig");
 
-pub const ClientHandler = struct {
+pub const NodeConnectionHandler = struct {
     stream: net.Stream,
 
-    pub fn init(stream: net.Stream) ClientHandler {
+    pub fn init(stream: net.Stream) NodeConnectionHandler {
         return .{
             .stream = stream,
         };
     }
 
-    pub fn deinit(self: *ClientHandler) void {
+    pub fn deinit(self: *NodeConnectionHandler) void {
         std.log.info("\x1b[32mStream closed\x1b[0m: {any}", .{self.stream});
         self.stream.close();
     }
 
-    pub fn handle(self: *ClientHandler, allocator: Allocator) !?void {
+    pub fn handle(self: *NodeConnectionHandler, allocator: Allocator) !?void {
         var buf: [50]u8 = undefined;
         const bytes_read = try self.stream.read(&buf);
         if (bytes_read == 0) return null;
@@ -95,13 +95,13 @@ pub const ProxyConnectionHandler = struct {
     }
 
     pub fn handle(self: *ProxyConnectionHandler, allocator: std.mem.Allocator) !void {
-        const remote_address = try net.Address.parseIp4("127.0.0.1", 8080);
-        const remote_stream = net.tcpConnectToAddress(remote_address) catch {
-            std.log.warn("\x1b[33mCan't connect to address\x1b[0m: {any}", .{remote_address});
+        const node_address = try net.Address.parseIp4("127.0.0.1", 8080);
+        const node_stream = net.tcpConnectToAddress(node_address) catch {
+            std.log.warn("\x1b[33mCan't connect to address\x1b[0m: {any}", .{node_address});
             return;
         };
-        std.log.info("\x1b[32mProxy initializing communication with remote address\x1b[0m: {any}", .{remote_address});
-        defer remote_stream.close();
+        std.log.info("\x1b[32mProxy initializing communication with remote address\x1b[0m: {any}", .{node_address});
+        defer node_stream.close();
         std.log.info("\x1b[32mConnection established with\x1b[0m: {any}", .{self.conn.address});
         defer self.conn.stream.close();
 
@@ -120,7 +120,7 @@ pub const ProxyConnectionHandler = struct {
 
             const target = request.head.target;
             if (std.mem.eql(u8, target, "/metrics")) {
-                const data = get_data(allocator, remote_stream, self.sensors) catch |err| {
+                const data = get_data(allocator, node_stream, self.sensors) catch |err| {
                     std.log.warn("\x1b[33mFailed to get data\x1b[0m: {s}", .{@errorName(err)});
                     continue;
                 };
