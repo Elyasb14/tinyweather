@@ -15,9 +15,6 @@ pub const std_options: std.Options = .{
 // we will update the relevant gauges
 // we will respond to the request with the data in prometheus ingestible format
 pub fn main() !void {
-    // NOTE: this can only happen once
-    // if the node dies, the client can't reconnect unless you shut down the program and restart it
-    // Initialize the file logger before using it
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
     const allocator = arena.allocator();
@@ -46,19 +43,12 @@ pub fn main() !void {
     std.log.info("\x1b[32mTCP Server listening on\x1b[0m: {any}", .{server_address});
 
     while (true) {
-        // NOTE: putting this here makes me connect to the remote node twice.
-        // when I move it outside the while loop it works as desired
-        // I think we want to move the connection to the remote node to handle_client
-
         const conn = tcp_server.accept() catch |err| {
             std.log.err("\x1b[31mServer failed to connect to client:\x1b[0m {any}", .{err});
             continue;
         };
 
-        // Create a mutable handler
         var handler = handlers.ProxyConnectionHandler.init(conn, &sensors, gauges);
-
-        // Spawn a thread and pass a pointer to the mutable handler
         const thread = std.Thread.spawn(.{}, handlers.ProxyConnectionHandler.handle, .{ &handler, allocator }) catch {
             continue;
         };
