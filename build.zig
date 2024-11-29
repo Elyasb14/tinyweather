@@ -57,7 +57,7 @@ pub fn build(b: *std.Build) void {
     run_all_step.dependOn(&run_web.step);
 
     const server_unit_tests = b.addTest(.{
-        .root_source_file = b.path("src/node.zig"),
+        .root_source_file = b.path("src/lib/tcp.zig"),
         .target = target,
         .optimize = optimize,
     });

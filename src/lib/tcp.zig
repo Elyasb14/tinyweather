@@ -116,3 +116,49 @@ pub const SensorResponse = struct {
         return SensorResponse.init(request, data);
     }
 };
+
+const testing = std.testing;
+
+test "Packet encoding and decoding" {
+    const allocator = testing.allocator;
+
+    const original_packet = Packet.init(1, .SensorRequest, &[_]u8{ 1, 2, 3 });
+    const encoded = try original_packet.encode(allocator);
+    defer allocator.free(encoded);
+
+    const decoded = try Packet.decode(encoded);
+
+    try testing.expectEqual(original_packet.version, decoded.version);
+    try testing.expectEqual(original_packet.type, decoded.type);
+    try testing.expectEqualSlices(u8, original_packet.data, decoded.data);
+    try testing.expectEqualDeep(original_packet, decoded);
+}
+
+test "sensor request encoding and decoding" {
+    const allocator = testing.allocator;
+
+    const original_request = SensorRequest.init(&[_]SensorType{ SensorType.Hum, SensorType.Temp });
+    const encoded_request = try original_request.encode(allocator);
+    defer allocator.free(encoded_request);
+
+    const decoded_request = try SensorRequest.decode(encoded_request, allocator);
+    defer {
+        allocator.free(decoded_request.sensors);
+    }
+
+    try testing.expectEqualSlices(SensorType, original_request.sensors, decoded_request.sensors);
+    try testing.expectEqualDeep(original_request, decoded_request);
+}
+
+test "sensor response encoding and decoding" {
+    const allocator = testing.allocator;
+    const original_request = SensorRequest.init(&[_]SensorType{ SensorType.Hum, SensorType.Temp });
+    const encoded_request = try original_request.encode(allocator);
+    defer allocator.free(encoded_request);
+
+    const decoded_request = try SensorRequest.decode(encoded_request, allocator);
+    defer allocator.free(decoded_request.sensors);
+
+    try testing.expectEqualSlices(SensorType, original_request.sensors, decoded_request.sensors);
+    try testing.expectEqualDeep(original_request, decoded_request);
+}
