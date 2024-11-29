@@ -9,11 +9,6 @@ pub const std_options: std.Options = .{
     .log_level = .debug,
 };
 
-// NOTES: how we will be getting data from sensors and displaying that for prometheus to ingest
-// prometheus will make a request to the metrics http endpoint
-// we will get the data requested in the client program
-// we will update the relevant gauges
-// we will respond to the request with the data in prometheus ingestible format
 pub fn main() !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
