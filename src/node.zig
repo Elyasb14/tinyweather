@@ -3,12 +3,13 @@ const net = std.net;
 const assert = std.debug.assert;
 const tcp = @import("lib/tcp.zig");
 const ArrayList = std.ArrayList;
+const handlers = @import("lib/handlers.zig");
 
 pub const std_options: std.Options = .{
     .log_level = .debug,
 };
 fn handle_client(connection: net.Server.Connection, allocator: std.mem.Allocator) !void {
-    var handler = tcp.ClientHandler.init(connection.stream);
+    var handler = handlers.ClientHandler.init(connection.stream);
     defer handler.deinit();
     while (true) {
         try handler.handle_request(allocator) orelse break;
