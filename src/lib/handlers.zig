@@ -18,7 +18,7 @@ pub const ClientHandler = struct {
         self.stream.close();
     }
 
-    pub fn handle_request(self: *ClientHandler, allocator: Allocator) !?void {
+    pub fn handle(self: *ClientHandler, allocator: Allocator) !?void {
         var buf: [50]u8 = undefined;
         const bytes_read = try self.stream.read(&buf);
         if (bytes_read == 0) return null;

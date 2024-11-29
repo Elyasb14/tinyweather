@@ -12,7 +12,7 @@ fn handle_client(connection: net.Server.Connection, allocator: std.mem.Allocator
     var handler = handlers.ClientHandler.init(connection.stream);
     defer handler.deinit();
     while (true) {
-        try handler.handle_request(allocator) orelse break;
+        try handler.handle(allocator) orelse break;
     }
 }
 

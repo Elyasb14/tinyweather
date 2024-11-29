@@ -20,9 +20,8 @@ pub fn main() !void {
     const allocator = arena.allocator();
 
     const sensors = [_]tcp.SensorType{
-        tcp.SensorType.RainAcc,
-        tcp.SensorType.RainTotalAcc,
         tcp.SensorType.RainEventAcc,
+        tcp.SensorType.Temp,
     };
 
     var gauges = std.ArrayList(prometheus.Gauge).init(allocator);
