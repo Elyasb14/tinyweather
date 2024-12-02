@@ -27,4 +27,9 @@ Then, you need to set up a proxy. The proxys job is to take in requests for sens
 zig build run-proxy
 ```
 
-Currently, you can make an http request to the proxy at the endpoint /metrics and you will get a prometheus readable string of sensor data back. You define what sensor data you want in proxy.zig, which should change to an http header or a command line argument. In Tinyweather's current state, it is best used with prometheus as the long term data storage and hook that up to Grafana or something for viz. We will have other ways to do this in the future... I only have so much time.   
+Currently, you can make an http request to the proxy at the endpoint /metrics and you will get a prometheus readable string of sensor data back. You define what sensor data you want with http headers, the following example gets RainTotalAcc: 
+
+```bash
+curl localhost:8081/metrics -H "sensor:RainTotalAcc"  
+```
+

@@ -125,7 +125,7 @@ pub const ProxyConnectionHandler = struct {
                 while (iter.next()) |h| {
                     if (std.mem.eql(u8, "sensor", h.name)) {
                         try sensors.append(std.meta.stringToEnum(tcp.SensorType, h.value) orelse {
-                            std.log.warn("\x1b[33mIs someone sending wrong headers?\x1b[0m: {s}", .{h.value});
+                            std.log.warn("\x1b[33mIs someone sending incorrect/invalid headers?\x1b[0m: {s}", .{h.value});
                             continue;
                         });
                     } else if (std.mem.eql(u8, "address", h.name)) {
