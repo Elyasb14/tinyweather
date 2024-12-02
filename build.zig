@@ -37,6 +37,7 @@ pub fn build(b: *std.Build) void {
     b.installArtifact(web_exe);
     b.installArtifact(server_exe);
     b.installArtifact(proxy_exe);
+    b.installArtifact(tcp_lib);
 
     const run_server = b.addRunArtifact(server_exe);
     const run_proxy = b.addRunArtifact(proxy_exe);
