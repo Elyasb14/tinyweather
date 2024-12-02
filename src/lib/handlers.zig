@@ -93,18 +93,6 @@ pub const ProxyConnectionHandler = struct {
     }
 
     pub fn handle(self: *ProxyConnectionHandler, allocator: std.mem.Allocator) !void {
-        const sensors = [_]tcp.SensorType{
-            tcp.SensorType.RainEventAcc,
-            tcp.SensorType.Temp,
-        };
-
-        var gauges = std.ArrayList(prometheus.Gauge).init(allocator);
-
-        for (sensors) |sensor| {
-            const gauge = prometheus.Gauge.init(@tagName(sensor), @tagName(sensor), std.Thread.Mutex{});
-            try gauges.append(gauge);
-        }
-
         const node_address = try net.Address.parseIp4("127.0.0.1", 8080);
         const node_stream = net.tcpConnectToAddress(node_address) catch {
             std.log.warn("\x1b[33mCan't connect to address\x1b[0m: {any}", .{node_address});
@@ -128,16 +116,29 @@ pub const ProxyConnectionHandler = struct {
                 continue;
             };
 
-            var iter = request.iterateHeaders();
-            while (iter.next()) |h| {
-                std.debug.print("Key: {s}, Val: {s}\n", .{ h.name, h.value });
-            }
-
-            // std.log.info("\x1b[32mHTTP request\x1b[0m: {any}", .{request.iterateHeaders()});
-
             const target = request.head.target;
             if (std.mem.eql(u8, target, "/metrics")) {
-                const data = get_data(allocator, node_stream, &sensors) catch |err| {
+                var sensors = std.ArrayList(tcp.SensorType).init(allocator);
+                defer sensors.deinit();
+
+                var iter = request.iterateHeaders();
+                while (iter.next()) |h| {
+                    if (std.mem.eql(u8, "sensor", h.name)) {
+                        try sensors.append(std.meta.stringToEnum(tcp.SensorType, h.value) orelse {
+                            std.log.warn("\x1b[33mIs someone sending wrong headers?\x1b[0m: {s}", .{h.value});
+                            continue;
+                        });
+                    } else continue;
+                }
+
+                var gauges = std.ArrayList(prometheus.Gauge).init(allocator);
+
+                for (sensors.items) |sensor| {
+                    const gauge = prometheus.Gauge.init(@tagName(sensor), @tagName(sensor), std.Thread.Mutex{});
+                    try gauges.append(gauge);
+                }
+
+                const data = get_data(allocator, node_stream, sensors.items) catch |err| {
                     std.log.warn("\x1b[33mFailed to get data\x1b[0m: {s}", .{@errorName(err)});
                     continue;
                 };
