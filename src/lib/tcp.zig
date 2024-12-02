@@ -20,6 +20,10 @@ pub const Packet = struct {
     pub fn init(version: u8, packet_type: PacketType, data: []const u8) Packet {
         assert(data.len <= 50);
 
+        if (data.len == 0) {
+            std.log.warn("\x1b[33mTrying to construct a packet with no data, did you forget http headers? Why would we be trying to do this?\x1b[0m", .{});
+        }
+
         return Packet{ .version = version, .type = packet_type, .data = data };
     }
 
