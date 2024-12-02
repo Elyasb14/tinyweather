@@ -9,27 +9,10 @@ pub const std_options: std.Options = .{
     .log_level = .debug,
 };
 
-// NOTES: how we will be getting data from sensors and displaying that for prometheus to ingest
-// prometheus will make a request to the metrics http endpoint
-// we will get the data requested in the client program
-// we will update the relevant gauges
-// we will respond to the request with the data in prometheus ingestible format
 pub fn main() !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
     const allocator = arena.allocator();
-
-    const sensors = [_]tcp.SensorType{
-        tcp.SensorType.RainEventAcc,
-        tcp.SensorType.Temp,
-    };
-
-    var gauges = std.ArrayList(prometheus.Gauge).init(allocator);
-
-    for (sensors) |sensor| {
-        const gauge = prometheus.Gauge.init(@tagName(sensor), @tagName(sensor), std.Thread.Mutex{});
-        try gauges.append(gauge);
-    }
 
     const server_address = try net.Address.parseIp("127.0.0.1", 8081);
     var tcp_server = try net.Address.listen(server_address, .{
@@ -47,7 +30,7 @@ pub fn main() !void {
             continue;
         };
 
-        var handler = handlers.ProxyConnectionHandler.init(conn, &sensors, gauges);
+        var handler = handlers.ProxyConnectionHandler.init(conn);
         const thread = std.Thread.spawn(.{}, handlers.ProxyConnectionHandler.handle, .{ &handler, allocator }) catch {
             continue;
         };
