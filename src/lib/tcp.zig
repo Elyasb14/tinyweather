@@ -10,56 +10,6 @@ pub const PacketType = enum(u8) { SensorRequest, SensorResponse };
 pub const SensorType = enum(u8) { Temp, Pres, Hum, Gas, RainAcc, RainEventAcc, RainTotalAcc, RainRInt };
 pub const TCPError = error{ VersionError, InvalidPacketType, InvalidSensorType, DeviceError, BadPacket, ConnectionError };
 
-pub const ClientHandler = struct {
-    stream: net.Stream,
-
-    pub fn init(stream: net.Stream) ClientHandler {
-        return .{
-            .stream = stream,
-        };
-    }
-
-    pub fn deinit(self: *ClientHandler) void {
-        std.log.info("Stream closed: {any}", .{self.stream});
-        self.stream.close();
-    }
-
-    pub fn handle_request(self: *ClientHandler, allocator: Allocator) !?void {
-        var buf: [50]u8 = undefined;
-        const bytes_read = try self.stream.read(&buf);
-        if (bytes_read == 0) return null;
-        std.log.info("\x1b[32mBytes read by connection\x1b[0m: {any}", .{bytes_read});
-        const received_packet = Packet.decode(buf[0..bytes_read]) catch |err| {
-            std.log.err("\x1b[31mClient wrote a bad packet, error\x1b[0m: {any}", .{err});
-            return TCPError.BadPacket;
-        };
-
-        std.log.info("\x1b[32mPacket received from stream\x1b[0m: {any}", .{received_packet});
-
-        switch (received_packet.type) {
-            .SensorRequest => {
-                const decoded_request = try SensorRequest.decode(received_packet.data, allocator);
-
-                std.log.info("\x1b[32mDecoded Response Packet\x1b[0m: {any}", .{decoded_request});
-
-                const sensor_response = SensorResponse.init(decoded_request, undefined);
-                const encoded_response = try sensor_response.encode(allocator);
-                std.log.info("\x1b[32mEncoded SensorResponse packet\x1b[0m: {any}", .{encoded_response});
-
-                const response_packet = Packet.init(1, PacketType.SensorResponse, encoded_response);
-                std.log.info("\x1b[32mPacket response to be sent to stream\x1b[0m: {any}", .{response_packet});
-
-                const encoded_response_packet = try response_packet.encode(allocator);
-                _ = try self.stream.write(encoded_response_packet);
-            },
-            .SensorResponse => {
-                std.log.err("\x1b[31mExpected SensorRequest packet, got SensorResponse\x1b[0m: {any}", .{received_packet.type});
-                return TCPError.InvalidPacketType;
-            },
-        }
-    }
-};
-
 pub const Packet = struct {
     version: u8,
     type: PacketType,
@@ -166,3 +116,49 @@ pub const SensorResponse = struct {
         return SensorResponse.init(request, data);
     }
 };
+
+const testing = std.testing;
+
+test "Packet encoding and decoding" {
+    const allocator = testing.allocator;
+
+    const original_packet = Packet.init(1, .SensorRequest, &[_]u8{ 1, 2, 3 });
+    const encoded = try original_packet.encode(allocator);
+    defer allocator.free(encoded);
+
+    const decoded = try Packet.decode(encoded);
+
+    try testing.expectEqual(original_packet.version, decoded.version);
+    try testing.expectEqual(original_packet.type, decoded.type);
+    try testing.expectEqualSlices(u8, original_packet.data, decoded.data);
+    try testing.expectEqualDeep(original_packet, decoded);
+}
+
+test "sensor request encoding and decoding" {
+    const allocator = testing.allocator;
+
+    const original_request = SensorRequest.init(&[_]SensorType{ SensorType.Hum, SensorType.Temp });
+    const encoded_request = try original_request.encode(allocator);
+    defer allocator.free(encoded_request);
+
+    const decoded_request = try SensorRequest.decode(encoded_request, allocator);
+    defer {
+        allocator.free(decoded_request.sensors);
+    }
+
+    try testing.expectEqualSlices(SensorType, original_request.sensors, decoded_request.sensors);
+    try testing.expectEqualDeep(original_request, decoded_request);
+}
+
+test "sensor response encoding and decoding" {
+    const allocator = testing.allocator;
+    const original_request = SensorRequest.init(&[_]SensorType{ SensorType.Hum, SensorType.Temp });
+    const encoded_request = try original_request.encode(allocator);
+    defer allocator.free(encoded_request);
+
+    const decoded_request = try SensorRequest.decode(encoded_request, allocator);
+    defer allocator.free(decoded_request.sensors);
+
+    try testing.expectEqualSlices(SensorType, original_request.sensors, decoded_request.sensors);
+    try testing.expectEqualDeep(original_request, decoded_request);
+}

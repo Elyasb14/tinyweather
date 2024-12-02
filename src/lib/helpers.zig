@@ -4,12 +4,10 @@
 const std = @import("std");
 
 const Allocator = std.mem.Allocator;
-// Function to convert f32 to a byte array
 pub fn f32_to_bytes(value: f32) [4]u8 {
     return std.mem.toBytes(value);
 }
 
-// Function to convert a byte array back to f32
 pub fn bytes_to_f32(bytes: []const u8) f32 {
     return std.mem.bytesToValue(f32, bytes);
 }

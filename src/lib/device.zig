@@ -7,21 +7,24 @@ const tcp = @import("tcp.zig");
 const builtin = @import("builtin");
 
 pub fn get_gas() [4]u8 {
-    return helpers.f32_to_bytes(172.34);
+    const random_gas = std.crypto.random.float(f32) * 200.0;
+    return helpers.f32_to_bytes(random_gas);
 }
 
 pub fn get_temp() [4]u8 {
-    return helpers.f32_to_bytes(17.2);
+    const random_temp = std.crypto.random.float(f32) * 50.0 - 20.0;
+    return helpers.f32_to_bytes(random_temp);
 }
 
 pub fn get_hum() [4]u8 {
-    return helpers.f32_to_bytes(111.17);
+    const random_hum = std.crypto.random.float(f32) * 100.0;
+    return helpers.f32_to_bytes(random_hum);
 }
 
 pub fn get_pres() [4]u8 {
-    return helpers.f32_to_bytes(1111.4);
+    const random_pres = std.crypto.random.float(f32) * 500.0 + 500.0;
+    return helpers.f32_to_bytes(random_pres);
 }
-
 /// this functions returns null when the sensor returns no data or partial data
 /// in the case we do return null, the caller should "orelse" the bytearrray representing nan in f32 (std.math.nan(f32))
 pub fn parse_rain(allocator: Allocator) !?[]const f32 {
@@ -29,7 +32,7 @@ pub fn parse_rain(allocator: Allocator) !?[]const f32 {
     // this is only here because sometimes we have a null pointer if there is no rain gauge device
     const rain_path = if (builtin.target.os.tag == .linux) "/dev/ttyUSB0" else "/dev/tty.usbserial-0001";
     std.fs.accessAbsolute(rain_path, .{}) catch {
-        std.log.info("\x1b[31mCould not open serial device, sending nan to the client\x1b[0m", .{});
+        std.log.warn("\x1b[33mCould not open serial device, sending nan to the client\x1b[0m", .{});
         return null;
     };
 
