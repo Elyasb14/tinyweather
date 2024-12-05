@@ -1,4 +1,16 @@
-How to set up NGINX and Prometheus on MacOs for development
+# How to set up NGINX and Prometheus on Mac for development
+
+This doc will describe how to set up a temporary Prometheus and NGINX instance to develop Tinyweather against.
+
+## Prometheus
+
+First, download Prometheus from your package manager. Likely you will be using brew. To start a temporary Prometheus instance, you can run the following
+
+```bash
+/opt/homebrew/opt/prometheus/bin/prometheus_brew_services
+```
+
+## NGINX
 
 Docroot is: /opt/homebrew/var/www
 
