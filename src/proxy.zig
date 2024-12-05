@@ -22,11 +22,11 @@ pub fn main() !void {
     });
 
     defer tcp_server.deinit();
-    std.log.info("\x1b[32mTCP Server listening on\x1b[0m: {any}", .{server_address});
+    std.log.info("\x1b[32mProxy TCP Server listening on\x1b[0m: {any}", .{server_address});
 
     while (true) {
         const conn = tcp_server.accept() catch |err| {
-            std.log.err("\x1b[31mServer failed to connect to client:\x1b[0m {any}", .{err});
+            std.log.err("\x1b[31mProxy Server failed to connect to client:\x1b[0m {any}", .{err});
             continue;
         };
 
