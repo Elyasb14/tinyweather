@@ -30,14 +30,11 @@ scrape_configs:
 
 ## NGINX
 
-Docroot is: /opt/homebrew/var/www
+Now you need to set up the NGINX proxy. You can start a temporary instance by running the following
 
-The default port has been set in /opt/homebrew/etc/nginx/nginx.conf to 8080 so that
-nginx can run without sudo.
+```bash
+/opt/homebrew/opt/nginx/bin/nginx -g daemon\ off\;
+```
 
-nginx will load all files in /opt/homebrew/etc/nginx/servers/.
+it defaults by listening on port 8080, so you need to go into `/opt/homebrew/etc/nginx/nginx.conf` and update that port to 8082. nginx will load all files in /opt/homebrew/etc/nginx/servers/.
 
-To start nginx now and restart at login:
-  brew services start nginx
-Or, if you don't want/need a background service you can just run:
-  /opt/homebrew/opt/nginx/bin/nginx -g daemon\ off\;
