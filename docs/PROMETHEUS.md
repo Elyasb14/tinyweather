@@ -27,7 +27,6 @@ Set up Prometheus and Nginx to handle custom sensor headers for local developmen
    ```
 3. Configure `/opt/homebrew/etc/nginx/nginx.conf` with:
    ```nginx
-    user  nobody;
     worker_processes  1;
 
     events {
