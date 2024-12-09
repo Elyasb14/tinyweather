@@ -99,8 +99,6 @@ pub fn main() !void {
     var args = try Args.parse(allocator);
     defer args.deinit();
 
-    std.debug.print("address: {s}, port: {d}\n", .{ args.address, args.port });
-
     const server_address = try net.Address.parseIp(args.address, args.port);
     var server = try net.Address.listen(server_address, .{
         .kernel_backlog = 1024,
