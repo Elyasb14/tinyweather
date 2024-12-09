@@ -1,6 +1,6 @@
 const std = @import("std");
 
-const Args = @This();
+const NodeArgs = @This();
 
 port: u16,
 address: []const u8,
@@ -27,11 +27,11 @@ fn help(process_name: []const u8) noreturn {
     std.process.exit(1);
 }
 
-pub fn deinit(self: *Args) void {
+pub fn deinit(self: *NodeArgs) void {
     self.it.deinit();
 }
 
-pub fn parse(allocator: std.mem.Allocator) !Args {
+pub fn parse(allocator: std.mem.Allocator) !NodeArgs {
     var args = try std.process.argsWithAllocator(allocator);
     const process_name = args.next() orelse "tinyweather-node";
 

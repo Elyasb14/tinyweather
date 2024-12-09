@@ -4,7 +4,6 @@ const assert = std.debug.assert;
 const tcp = @import("lib/tcp.zig");
 const prometheus = @import("lib/prometheus.zig");
 const handlers = @import("lib/handlers.zig");
-const Args = @import("lib/Args.zig");
 
 pub const std_options: std.Options = .{
     .log_level = .debug,
@@ -15,10 +14,7 @@ pub fn main() !void {
     defer arena.deinit();
     const allocator = arena.allocator();
 
-    var args = try Args.parse(allocator);
-    defer args.deinit();
-
-    const server_address = try net.Address.parseIp(args.address, args.port);
+    const server_address = try net.Address.parseIp("127.0.0.1", 8080);
     var tcp_server = try net.Address.listen(server_address, .{
         .kernel_backlog = 1024,
         .reuse_address = true,
