@@ -93,6 +93,8 @@ pub const ProxyConnectionHandler = struct {
     }
 
     pub fn handle(self: *ProxyConnectionHandler, allocator: std.mem.Allocator) !void {
+        // TODO: don't hardcode this ip address, use args
+        @panic("don't hardcode this ip address, use args");
         const node_address = try net.Address.parseIp4("127.0.0.1", 8080);
         const node_stream = net.tcpConnectToAddress(node_address) catch {
             std.log.warn("\x1b[33mCan't connect to address\x1b[0m: {any}", .{node_address});
