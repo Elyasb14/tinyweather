@@ -12,13 +12,13 @@ pub const std_options: std.Options = .{
 fn help() noreturn {
     std.debug.print(
         \\Usage: 
-        \\  ./tinyweather-node --address [ip_address] --port [port]
+        \\  ./tinyweather-proxy --address [ip_address] --port [port]
         \\
         \\Options:
         \\  ip_address (optional)  The IP address to bind to (default: 127.0.0.1)
         \\  port (optional)        The port to listen on (default: 8080)
         \\Example:
-        \\  ./tinyweather-node 10.0.0.7 9090
+        \\  ./tinyweather-proxy 10.0.0.7 9090
         \\
     , .{});
     std.process.exit(1);
