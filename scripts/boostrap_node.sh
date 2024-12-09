@@ -1,5 +1,13 @@
 #!/bin/bash
 
+if [[ -f /etc/systemd/system/tinyweather-node.service ]];then 
+    systemctl stop tinyweather-node.service
+    systemctl disable tinyweather-node.service
+    rm /etc/systemd/system/tinyweather-node.service
+    systemctl daemon-reload
+    systemctl daemon-reload
+fi
+
 echo -e "\x1b[32mBeginning the bootstrapping of tinyweather-node\x1b[0m"
 zig build
 echo -e "\x1b[32mBuilt tinyweather-node, executable in ./zig-out/bin/tinyweather-node\x1b[0m"
@@ -9,16 +17,16 @@ if [[ ! -d "/opt/tinyweather" ]]; then
     mkdir /opt/tinyweather
 fi
 
-echo -e "\x1b[32mMoving executable ./zig-out/bin/tinyweather-node to /opt/tinyweather/tinyweather-node\x1b[0m"
-cp ./zig-out/bin/tinyweather-node /opt/tinyweather
-
-if [[ ! -f /etc/systemd/system/tinyweather-node.service ]]; then 
-    touch /etc/systemd/system/tinyweather-node.service
-else
-    rm /etc/systemd/system/tinyweather-node.service
+if [[ ! -f /opt/tinyweather/tinyweather-node ]]; then
+    rm /opt/tinyweather/tinyweather-node
 fi
 
-sudo echo "
+echo -e "\x1b[32mMoving executable ./zig-out/bin/tinyweather-node to /opt/tinyweather/tinyweather-node\x1b[0m"
+mv ./zig-out/bin/tinyweather-node /opt/tinyweather
+
+touch /etc/systemd/system/tinyweather-node.service
+
+echo "
 [Unit]
 Description=Tinyweather Node Service
 After=network.target
@@ -32,3 +40,6 @@ WorkingDirectory=/opt/tinyweather
 
 [Install]
 WantedBy=multi-user.target" >> /etc/systemd/system/tinyweather-node.service
+
+systemctl daemon-reload
+systemctl start tinyweather-node
