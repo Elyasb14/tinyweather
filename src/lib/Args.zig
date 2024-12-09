@@ -12,18 +12,18 @@ const Option = enum {
     @"--help",
 };
 
-fn help() noreturn {
+fn help(process_name: []const u8) noreturn {
     std.debug.print(
         \\Usage: 
-        \\  ./tinyweather-node --address [ip_address] --port [port]
+        \\  ./{s} --address [ip_address] --port [port]
         \\
         \\Options:
         \\  ip_address (optional)  The IP address to bind to (default: 127.0.0.1)
         \\  port (optional)        The port to listen on (default: 8080)
         \\Example:
-        \\  ./tinyweather-node 10.0.0.7 9090
+        \\  ./{s} 10.0.0.7 9090
         \\
-    , .{});
+    , .{ process_name, process_name });
     std.process.exit(1);
 }
 
@@ -33,7 +33,7 @@ pub fn deinit(self: *Args) void {
 
 pub fn parse(allocator: std.mem.Allocator) !Args {
     var args = try std.process.argsWithAllocator(allocator);
-    _ = args.next() orelse "tinyweather-node";
+    const process_name = args.next() orelse "tinyweather-node";
 
     var port: u16 = 8080;
     var address: []const u8 = "127.0.0.1";
@@ -41,27 +41,27 @@ pub fn parse(allocator: std.mem.Allocator) !Args {
     while (args.next()) |arg| {
         const option = std.meta.stringToEnum(Option, arg) orelse {
             std.debug.print("{s} is not a valid argument\n", .{arg});
-            help();
+            help(process_name);
         };
 
         switch (option) {
             .@"--address" => {
                 address = args.next() orelse {
                     std.debug.print("--address provided with no argument\n", .{});
-                    help();
+                    help(process_name);
                 };
             },
             .@"--port" => {
                 const port_s = args.next() orelse {
                     std.debug.print("--port provided with no argument\n", .{});
-                    help();
+                    help(process_name);
                 };
                 port = std.fmt.parseInt(u16, port_s, 10) catch {
                     std.debug.print("--port argument is not a valid u16\n", .{});
-                    help();
+                    help(process_name);
                 };
             },
-            .@"--help" => help(),
+            .@"--help" => help(process_name),
         }
     }
     return .{
