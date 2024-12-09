@@ -15,8 +15,7 @@ fn handle_client(connection: net.Server.Connection, allocator: std.mem.Allocator
         handler.handle(allocator) catch |e| {
             std.log.warn("\x1b[33mError handling client connection:\x1b[0m {s}", .{@errorName(e)});
             break;
-        }
-            orelse break;
+        } orelse break;
     }
 }
 
@@ -25,7 +24,7 @@ pub fn main() !void {
     defer arena.deinit();
     const allocator = arena.allocator();
 
-    const server_address = try net.Address.parseIp("127.0.0.1", 8081);
+    const server_address = try net.Address.parseIp("127.0.0.1", 8080);
     var server = try net.Address.listen(server_address, .{
         .kernel_backlog = 1024,
         .reuse_address = true,
