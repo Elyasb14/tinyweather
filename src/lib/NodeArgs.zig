@@ -21,7 +21,7 @@ fn help(process_name: []const u8) noreturn {
         \\  ip_address (optional)  The IP address to bind to (default: 127.0.0.1)
         \\  port (optional)        The port to listen on (default: 8080)
         \\Example:
-        \\  ./{s} 10.0.0.7 9090
+        \\  ./{s} --address 10.0.0.7 --port 9090 
         \\
     , .{ process_name, process_name });
     std.process.exit(1);

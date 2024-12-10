@@ -92,9 +92,9 @@ pub const ProxyConnectionHandler = struct {
         }
     }
 
-    pub fn handle(self: *ProxyConnectionHandler, allocator: std.mem.Allocator) !void {
+    pub fn handle(self: *ProxyConnectionHandler, remote_addr: []const u8, remote_port: u16, allocator: std.mem.Allocator) !void {
         // TODO: don't hardcode this ip address, use args
-        const node_address = try net.Address.parseIp4("127.0.0.1", 8080);
+        const node_address = try net.Address.parseIp4(remote_addr, remote_port);
         const node_stream = net.tcpConnectToAddress(node_address) catch {
             std.log.warn("\x1b[33mCan't connect to address\x1b[0m: {any}", .{node_address});
             return;
