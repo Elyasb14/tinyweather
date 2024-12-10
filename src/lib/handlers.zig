@@ -92,8 +92,9 @@ pub const ProxyConnectionHandler = struct {
         }
     }
 
-    pub fn handle(self: *ProxyConnectionHandler, allocator: std.mem.Allocator) !void {
-        const node_address = try net.Address.parseIp4("127.0.0.1", 8080);
+    pub fn handle(self: *ProxyConnectionHandler, remote_addr: []const u8, remote_port: u16, allocator: std.mem.Allocator) !void {
+        // TODO: don't hardcode this ip address, use args
+        const node_address = try net.Address.parseIp4(remote_addr, remote_port);
         const node_stream = net.tcpConnectToAddress(node_address) catch {
             std.log.warn("\x1b[33mCan't connect to address\x1b[0m: {any}", .{node_address});
             return;
@@ -129,7 +130,9 @@ pub const ProxyConnectionHandler = struct {
                             continue;
                         });
                     } else if (std.mem.eql(u8, "address", h.name)) {
+                        // TODO: get rid of remote-addr and remote-port in ProxyArgs using this?? This would unify the agrs files
                         std.log.info("\x1b[32mNode address requested\x1b[0m: {s}", .{h.value});
+                        continue;
                     } else continue;
                 }
 

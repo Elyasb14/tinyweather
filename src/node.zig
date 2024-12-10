@@ -4,10 +4,12 @@ const assert = std.debug.assert;
 const tcp = @import("lib/tcp.zig");
 const ArrayList = std.ArrayList;
 const handlers = @import("lib/handlers.zig");
+const NodeArgs = @import("lib/NodeArgs.zig");
 
 pub const std_options: std.Options = .{
     .log_level = .debug,
 };
+
 fn handle_client(connection: net.Server.Connection, allocator: std.mem.Allocator) !void {
     var handler = handlers.NodeConnectionHandler.init(connection.stream);
     defer handler.deinit();
@@ -24,7 +26,10 @@ pub fn main() !void {
     defer arena.deinit();
     const allocator = arena.allocator();
 
-    const server_address = try net.Address.parseIp("127.0.0.1", 8080);
+    var args = try NodeArgs.parse(allocator);
+    defer args.deinit();
+
+    const server_address = try net.Address.parseIp(args.address, args.port);
     var server = try net.Address.listen(server_address, .{
         .kernel_backlog = 1024,
         .reuse_address = true,

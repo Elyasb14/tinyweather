@@ -7,15 +7,15 @@ pub fn build(b: *std.Build) void {
     tcp_lib.addCSourceFile(.{ .file = b.path("src/lib/sensors/rg15.c"), .flags = &.{} });
     tcp_lib.linkLibC();
 
-    const server_exe = b.addExecutable(.{
+    const node_exe = b.addExecutable(.{
         .name = "tinyweather-node",
         .root_source_file = b.path("src/node.zig"),
         .target = target,
         .optimize = optimize,
     });
 
-    server_exe.addIncludePath(b.path("src"));
-    server_exe.linkLibrary(tcp_lib);
+    node_exe.addIncludePath(b.path("src"));
+    node_exe.linkLibrary(tcp_lib);
 
     const proxy_exe = b.addExecutable(.{
         .name = "tinyweather-proxy",
@@ -35,16 +35,16 @@ pub fn build(b: *std.Build) void {
     });
 
     b.installArtifact(web_exe);
-    b.installArtifact(server_exe);
+    b.installArtifact(node_exe);
     b.installArtifact(proxy_exe);
     b.installArtifact(tcp_lib);
 
-    const run_server = b.addRunArtifact(server_exe);
+    const run_node = b.addRunArtifact(node_exe);
     const run_proxy = b.addRunArtifact(proxy_exe);
     const run_web = b.addRunArtifact(web_exe);
 
-    const run_server_step = b.step("run-node", "Run the Tinyweather node server");
-    run_server_step.dependOn(&run_server.step);
+    const run_node_step = b.step("run-node", "Run the Tinyweather node server");
+    run_node_step.dependOn(&run_node.step);
 
     const run_proxy_step = b.step("run-proxy", "Run the Tinyweather proxy");
     run_proxy_step.dependOn(&run_proxy.step);
@@ -53,19 +53,18 @@ pub fn build(b: *std.Build) void {
     run_web_step.dependOn(&run_web.step);
 
     const run_all_step = b.step("run-all", "Run all Tinyweather executables");
-    run_all_step.dependOn(&run_server.step);
+    run_all_step.dependOn(&run_node.step);
     run_all_step.dependOn(&run_proxy.step);
     run_all_step.dependOn(&run_web.step);
 
-
-    const server_unit_tests = b.addTest(.{
+    const libtcp_unit_tests = b.addTest(.{
         .root_source_file = b.path("src/lib/tcp.zig"),
         .target = target,
         .optimize = optimize,
     });
-    server_unit_tests.addIncludePath(b.path("src"));
-    server_unit_tests.linkLibrary(tcp_lib);
-    server_unit_tests.linkLibC();
+    libtcp_unit_tests.addIncludePath(b.path("src"));
+    libtcp_unit_tests.linkLibrary(tcp_lib);
+    libtcp_unit_tests.linkLibC();
 
     const helpers_unit_tests = b.addTest(.{
         .root_source_file = b.path("src/lib/helpers.zig"),
@@ -73,7 +72,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    const run_exe_unit_tests = b.addRunArtifact(server_unit_tests);
+    const run_exe_unit_tests = b.addRunArtifact(libtcp_unit_tests);
     const run_helpers_unit_tests = b.addRunArtifact(helpers_unit_tests);
 
     const test_step = b.step("test", "Run unit tests");

@@ -4,6 +4,7 @@ const assert = std.debug.assert;
 const tcp = @import("lib/tcp.zig");
 const prometheus = @import("lib/prometheus.zig");
 const handlers = @import("lib/handlers.zig");
+const ProxyArgs = @import("lib/ProxyArgs.zig");
 
 pub const std_options: std.Options = .{
     .log_level = .debug,
@@ -14,7 +15,10 @@ pub fn main() !void {
     defer arena.deinit();
     const allocator = arena.allocator();
 
-    const server_address = try net.Address.parseIp("127.0.0.1", 8081);
+    var args = try ProxyArgs.parse(allocator);
+    defer args.deinit();
+
+    const server_address = try net.Address.parseIp(args.listen_addr, args.listen_port);
     var tcp_server = try net.Address.listen(server_address, .{
         .kernel_backlog = 1024,
         .reuse_address = true,
@@ -31,7 +35,7 @@ pub fn main() !void {
         };
 
         var handler = handlers.ProxyConnectionHandler.init(conn);
-        const thread = std.Thread.spawn(.{}, handlers.ProxyConnectionHandler.handle, .{ &handler, allocator }) catch {
+        const thread = std.Thread.spawn(.{}, handlers.ProxyConnectionHandler.handle, .{ &handler, args.remote_addr, args.remote_port, allocator }) catch {
             continue;
         };
         thread.detach();
