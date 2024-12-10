@@ -38,7 +38,7 @@ After=network.target
 Type=simple
 Restart=always
 RestartSec=5s
-ExecStart=/opt/tinyweather/tinyweather-node --address 127.0.0.1 --port 8080
+ExecStart=/opt/tinyweather/tinyweather-node --address 10.0.2.9 --port 8080
 WorkingDirectory=/opt/tinyweather
 
 [Install]
@@ -50,6 +50,6 @@ systemctl daemon-reload
 echo -e "\x1b[32mSystemd daemon reloaded successfully.\x1b[0m"
 
 echo -e "\x1b[33mStarting the tinyweather-node service...\x1b[0m"
-systemctl enable tinyweather-node
+systemctl start tinyweather-node
 echo -e "\x1b[32mtinyweather-node service started.\x1b[0m"
 
