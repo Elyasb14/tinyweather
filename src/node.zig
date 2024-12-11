@@ -4,15 +4,20 @@ const assert = std.debug.assert;
 const tcp = @import("lib/tcp.zig");
 const ArrayList = std.ArrayList;
 const handlers = @import("lib/handlers.zig");
+const NodeArgs = @import("lib/NodeArgs.zig");
 
 pub const std_options: std.Options = .{
     .log_level = .debug,
 };
+
 fn handle_client(connection: net.Server.Connection, allocator: std.mem.Allocator) !void {
     var handler = handlers.NodeConnectionHandler.init(connection.stream);
     defer handler.deinit();
     while (true) {
-        try handler.handle(allocator) orelse break;
+        handler.handle(allocator) catch |e| {
+            std.log.warn("\x1b[33mError handling client connection:\x1b[0m {s}", .{@errorName(e)});
+            break;
+        } orelse break;
     }
 }
 
@@ -21,7 +26,10 @@ pub fn main() !void {
     defer arena.deinit();
     const allocator = arena.allocator();
 
-    const server_address = try net.Address.parseIp("127.0.0.1", 8080);
+    var args = try NodeArgs.parse(allocator);
+    defer args.deinit();
+
+    const server_address = try net.Address.parseIp(args.address, args.port);
     var server = try net.Address.listen(server_address, .{
         .kernel_backlog = 1024,
         .reuse_address = true,
@@ -29,11 +37,11 @@ pub fn main() !void {
     });
 
     defer server.deinit();
-    std.log.info("\x1b[32mTCP Server listening on\x1b[0m: {any}", .{server_address});
+    std.log.info("\x1b[32mNode TCP Server listening on\x1b[0m: {any}", .{server_address});
 
     while (true) {
         const connection = server.accept() catch |err| {
-            std.log.err("\x1b[31mServer failed to connect to client:\x1b[0m {any}", .{err});
+            std.log.err("\x1b[31mNode Server failed to connect to client:\x1b[0m {any}", .{err});
             continue;
         };
         std.log.info("\x1b[32mConnection established with\x1b[0m: {any}", .{connection.address});

@@ -4,6 +4,7 @@ const assert = std.debug.assert;
 const tcp = @import("lib/tcp.zig");
 const prometheus = @import("lib/prometheus.zig");
 const handlers = @import("lib/handlers.zig");
+const ProxyArgs = @import("lib/ProxyArgs.zig");
 
 pub const std_options: std.Options = .{
     .log_level = .debug,
@@ -14,7 +15,10 @@ pub fn main() !void {
     defer arena.deinit();
     const allocator = arena.allocator();
 
-    const server_address = try net.Address.parseIp("127.0.0.1", 8081);
+    var args = try ProxyArgs.parse(allocator);
+    defer args.deinit();
+
+    const server_address = try net.Address.parseIp(args.listen_addr, args.listen_port);
     var tcp_server = try net.Address.listen(server_address, .{
         .kernel_backlog = 1024,
         .reuse_address = true,
@@ -22,16 +26,16 @@ pub fn main() !void {
     });
 
     defer tcp_server.deinit();
-    std.log.info("\x1b[32mTCP Server listening on\x1b[0m: {any}", .{server_address});
+    std.log.info("\x1b[32mProxy TCP Server listening on\x1b[0m: {any}", .{server_address});
 
     while (true) {
         const conn = tcp_server.accept() catch |err| {
-            std.log.err("\x1b[31mServer failed to connect to client:\x1b[0m {any}", .{err});
+            std.log.err("\x1b[31mProxy Server failed to connect to client:\x1b[0m {any}", .{err});
             continue;
         };
 
         var handler = handlers.ProxyConnectionHandler.init(conn);
-        const thread = std.Thread.spawn(.{}, handlers.ProxyConnectionHandler.handle, .{ &handler, allocator }) catch {
+        const thread = std.Thread.spawn(.{}, handlers.ProxyConnectionHandler.handle, .{ &handler, args.remote_addr, args.remote_port, allocator }) catch {
             continue;
         };
         thread.detach();
