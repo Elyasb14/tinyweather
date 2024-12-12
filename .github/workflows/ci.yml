@@ -73,7 +73,7 @@ jobs:
         run: sudo ./scripts/bootstrap_node.sh
 
       - name: bootstrap tinyweather-proxy
-        run: sudo ./scripts/bootstrap-proxy.sh
+        run: sudo ./scripts/bootstrap_proxy.sh
 
       - name: test curl end to end
         run: curl localhost:8081/metrics -H "sensor:Temp"
