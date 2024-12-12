@@ -89,7 +89,4 @@ jobs:
 
       - name: test proxy still alive
         run: systemctl status tinyweather-proxy
-        
-
       
-
