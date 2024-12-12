@@ -9,29 +9,27 @@ You will need to install the following dependencies
 ## installing Prometheus
 
 Turns out its really easy to build Prometheus from source. You also get `promtool` when you build the project, that'll come in handy later. Run the following to build the project 
-
 ```bash
+# get and build prometheus
 git clone https://github.com/prometheus/prometheus.git
 cd prometheus
-
 git checkout v3.0.1
-
 make build
-./prometheus --config.file=your_config.yml
 
-touch prometheus.yml
-
-# paste this into the prometheus.yml file
-"global:
+# creates a prometheus config
+echo "global:
     scrape_interval: 15s
 
 scrape_configs:
     - job_name: "prometheus"
-        static_configs:
-        - targets: ["localhost:8081"]"
+      static_configs:
+        - targets: ["localhost:8081"]" >> ./prometheus.yml
 
+# checks that the config is valid
 ./promtool check config prometheus.yml
+```
 
-# if the command above succeeds run the following to start the database!
+If everything above goes right, you can start the database!
+```bash
 ./prometheus --config.file=./prometheus.yml
 ```
