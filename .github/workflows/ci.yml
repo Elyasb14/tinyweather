@@ -69,11 +69,9 @@ jobs:
         uses: mlugg/setup-zig@v1 
         with:
           version: 0.13.0  
-
       - name: Add Zig to system-wide PATH
         run: |
-          echo "${{ steps.setup-zig.outputs.zig-path }}" >> $GITHUB_PATH
-                    sudo ln -s "${{ steps.setup-zig.outputs.zig-path }}" /usr/local/bin/zig
+          sudo ln -s "$(which zig)" /usr/local/bin/zig
       - name: bootstrap tinyweather-node
         run: sudo ./scripts/bootstrap_node.sh
 
