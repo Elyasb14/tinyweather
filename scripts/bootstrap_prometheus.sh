@@ -13,9 +13,7 @@ fi
 echo -e "\x1b[33mBootstrapping Prometheus on system"
 
 echo -e "\x1b[33mGet and build prometheus\x1b[0m"
-git clone https://github.com/prometheus/prometheus.git
 cd prometheus
-git checkout v3.0.1
 make build
 
 touch prometheus.yml
