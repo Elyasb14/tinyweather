@@ -70,8 +70,5 @@ echo -e "\x1b[33mStarting the prometheus service...\x1b[0m"
 systemctl start prometheus
 echo -e "\x1b[32mprometheus service started.\x1b[0m"
 
-cd ../ 
-rm -rf prometheus
-
 systemctl status prometheus
 
