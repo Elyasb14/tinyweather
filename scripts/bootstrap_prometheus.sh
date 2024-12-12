@@ -32,12 +32,13 @@ scrape_configs:
 # checks that the config is valid
 ./promtool check config prometheus.yml
 
-mv ./prometheus.yml /opt/prometheus/prometheus.yml
-
 rm -rf /opt/prometheus
-
 echo -e "\x1b[33mPreparing /opt/prometheus directory...\x1b[0m"
 mkdir -p /opt/prometheus
+
+mv ./prometheus.yml /opt/prometheus/prometheus.yml
+
+
 
 echo -e "\x1b[33mMoving newly built prometheus executable to /opt/prometheus\x1b[0m"
 mv ./prometheus /opt/prometheus/prometheus
