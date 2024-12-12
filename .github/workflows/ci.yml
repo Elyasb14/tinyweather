@@ -37,3 +37,27 @@ jobs:
     
       - name: Run size script
         run: python size.py
+  build_and_install_prometheus:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21.0' 
+
+      - name: Set up node.js 
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'latest'
+
+      - name: Verify installations
+        run: |
+          go version
+          node --version
+          npm --version
+      - name: Install prometheus
+        run: |
+          sudo ./scripts/bootstrap_prometheus.sh
+
