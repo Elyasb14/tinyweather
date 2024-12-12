@@ -60,6 +60,7 @@ jobs:
       - name: Bootstrap prometheus
         run: |
           sudo ./scripts/bootstrap_prometheus.sh
+
   test_end_to_end:
     runs-on: ubuntu-latest
 
@@ -69,10 +70,12 @@ jobs:
         uses: mlugg/setup-zig@v1 
         with:
           version: 0.13.0  
+
       - name: Add Zig to system-wide PATH
         run: |
           sudo ln -s "$(which zig)" /usr/local/bin/zig
-      - name: bootstrap system 
+
+      - name: bootstrap tinyweather-node 
         run: sudo ./scripts/bootstrap_node.sh
 
       - name: bootstrap tinyweather-proxy
