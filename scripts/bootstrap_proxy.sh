@@ -38,7 +38,7 @@ After=network.target
 Type=simple
 Restart=always
 RestartSec=5s
-ExecStart=/opt/tinyweather/tinyweather-proxy --listen-addr 10.0.2.10 --port 8081 --remote-addr 10.0.2.9 --remote-port 8080
+ExecStart=/opt/tinyweather/tinyweather-proxy 
 WorkingDirectory=/opt/tinyweather
 
 [Install]

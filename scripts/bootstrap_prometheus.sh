@@ -76,4 +76,3 @@ cd ../
 rm -rf prometheus
 
 systemctl status prometheus
-
