@@ -33,3 +33,7 @@ If everything above goes right, you can start the database!
 ```bash
 ./prometheus --config.file=./prometheus.yml
 ```
+
+## Install as a daemon (using systemd)
+
+There is a script, `scripts/bootstrap_prometheus.sh`
