@@ -6,3 +6,4 @@ zig-*
 .DS_Store
 *.o
 *.swp
+package-lock.json

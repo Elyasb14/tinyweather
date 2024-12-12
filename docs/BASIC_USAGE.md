@@ -3,7 +3,7 @@
 The first thing you need is zig. From there, build the project. To see what's happening there read `build.zig`. To build the project you can run 
 
 ```bash
-zig build
+zig build -Doptimize=ReleaseFast
 ```
 
 To start, you need to spin up a node. Tinyweather stations run the node software (node.zig). The node is responsible for serving sensor data. To run a node, use the following command: 
