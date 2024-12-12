@@ -38,7 +38,7 @@ After=network.target
 Type=simple
 Restart=always
 RestartSec=5s
-ExecStart=/opt/tinyweather/tinyweather-node --address 10.0.2.9 --port 8080
+ExecStart=/opt/tinyweather/tinyweather-node 
 WorkingDirectory=/opt/tinyweather
 
 [Install]

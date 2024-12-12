@@ -72,11 +72,14 @@ jobs:
       - name: Add Zig to system-wide PATH
         run: |
           sudo ln -s "$(which zig)" /usr/local/bin/zig
-      - name: bootstrap and test system 
-        run: |
-          sudo ./scripts/bootstrap_node.sh
-          sudo ./scripts/bootstrap_proxy.sh
-          curl localhost:8081/metrics -H "sensor:Temp"
+      - name: bootstrap system 
+        run: sudo ./scripts/bootstrap_node.sh
+
+      - name: bootstrap tinyweather-proxy
+        run: sudo ./scripts/bootstrap_proxy.sh
+
+      - name: test curl end to end
+        run: curl localhost:8081/metrics -H "sensor:Temp"
         
 
       
