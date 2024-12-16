@@ -101,9 +101,8 @@ pub const ProxyConnectionHandler = struct {
         };
         std.log.info("\x1b[32mProxy initializing communication with remote address\x1b[0m: {any}", .{node_address});
         defer node_stream.close();
-        std.log.info("\x1b[32mConnection established with\x1b[0m: {any}", .{self.conn.address});
-        defer self.conn.stream.close();
 
+        std.log.info("\x1b[32mConnection established with\x1b[0m: {any}", .{self.conn.address});
         var prom_string = std.ArrayList([]const u8).init(allocator);
 
         var buf: [1024]u8 = undefined;
