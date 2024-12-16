@@ -83,6 +83,12 @@ jobs:
 
       - name: test curl end to end
         run: curl -Z localhost:8081/metrics localhost:8081/metrics localhost:8081/metrics -H "sensor:Temp" -H "sensor:RainAcc"
+
+      - name: test node still live
+        run: systemctl status tinyweather-node
+
+      - name: test proxy still alive
+        run: systemctl status tinyweather-proxy
         
 
       
