@@ -61,6 +61,10 @@ pub const ProxyConnectionHandler = struct {
         return .{ .conn = conn };
     }
 
+    pub fn deinit(self: *ProxyConnectionHandler) void {
+        self.conn.stream.close();
+    }
+
     fn get_data(allocator: std.mem.Allocator, stream: net.Stream, sensors: []const tcp.SensorType) ![]tcp.SensorData {
         const sensor_request = tcp.SensorRequest.init(sensors);
         const sensor_request_encoded = try sensor_request.encode(allocator);
@@ -92,8 +96,7 @@ pub const ProxyConnectionHandler = struct {
         }
     }
 
-    pub fn handle(self: *ProxyConnectionHandler, remote_addr: []const u8, remote_port: u16, allocator: std.mem.Allocator) !void {
-        // TODO: don't hardcode this ip address, use args
+    pub fn handle(self: *ProxyConnectionHandler, remote_addr: []const u8, remote_port: u16, allocator: std.mem.Allocator) !?void {
         const node_address = try net.Address.parseIp4(remote_addr, remote_port);
         const node_stream = net.tcpConnectToAddress(node_address) catch {
             std.log.warn("\x1b[33mCan't connect to address\x1b[0m: {any}", .{node_address});
@@ -103,6 +106,7 @@ pub const ProxyConnectionHandler = struct {
         defer node_stream.close();
 
         std.log.info("\x1b[32mConnection established with\x1b[0m: {any}", .{self.conn.address});
+
         var prom_string = std.ArrayList([]const u8).init(allocator);
 
         var buf: [1024]u8 = undefined;
@@ -122,6 +126,7 @@ pub const ProxyConnectionHandler = struct {
                 defer sensors.deinit();
 
                 var iter = request.iterateHeaders();
+                if (iter.bytes.len == 0) return null;
                 while (iter.next()) |h| {
                     if (std.mem.eql(u8, "sensor", h.name)) {
                         try sensors.append(std.meta.stringToEnum(tcp.SensorType, h.value) orelse {
