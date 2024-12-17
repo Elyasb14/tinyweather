@@ -53,3 +53,4 @@ echo -e "\x1b[33mStarting the tinyweather-proxy service...\x1b[0m"
 systemctl start tinyweather-proxy
 echo -e "\x1b[32mtinyweather-proxy service started.\x1b[0m"
 
+systemctl status tinyweather-proxy
