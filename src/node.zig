@@ -46,7 +46,6 @@ pub fn main() !void {
         };
         std.log.info("\x1b[32mConnection established with\x1b[0m: {any}", .{connection.address});
 
-        // try handle_client(client_stream, allocator);
         const thread = try std.Thread.spawn(.{}, handle_client, .{ connection, allocator });
         thread.detach();
     }
