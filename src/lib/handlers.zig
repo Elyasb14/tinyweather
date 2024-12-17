@@ -66,6 +66,13 @@ pub const ProxyConnectionHandler = struct {
     }
 
     fn get_data(allocator: std.mem.Allocator, stream: net.Stream, sensors: []const tcp.SensorType) ![]tcp.SensorData {
+        const node_address = try net.Address.parseIp4(remote_addr, remote_port);
+        const node_stream = net.tcpConnectToAddress(node_address) catch {
+            std.log.warn("\x1b[33mCan't connect to address\x1b[0m: {any}", .{node_address});
+            return;
+        };
+        std.log.info("\x1b[32mProxy initializing communication with remote address\x1b[0m: {any}", .{node_address});
+        defer node_stream.close();
         const sensor_request = tcp.SensorRequest.init(sensors);
         const sensor_request_encoded = try sensor_request.encode(allocator);
         const packet = tcp.Packet.init(1, tcp.PacketType.SensorRequest, sensor_request_encoded);
@@ -97,13 +104,6 @@ pub const ProxyConnectionHandler = struct {
     }
 
     pub fn handle(self: *ProxyConnectionHandler, remote_addr: []const u8, remote_port: u16, allocator: std.mem.Allocator) !?void {
-        const node_address = try net.Address.parseIp4(remote_addr, remote_port);
-        const node_stream = net.tcpConnectToAddress(node_address) catch {
-            std.log.warn("\x1b[33mCan't connect to address\x1b[0m: {any}", .{node_address});
-            return;
-        };
-        std.log.info("\x1b[32mProxy initializing communication with remote address\x1b[0m: {any}", .{node_address});
-        defer node_stream.close();
 
         std.log.info("\x1b[32mConnection established with\x1b[0m: {any}", .{self.conn.address});
 
