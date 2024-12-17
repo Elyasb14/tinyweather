@@ -36,10 +36,10 @@ pub fn parse(allocator: std.mem.Allocator) !Args {
     const process_name = args.next() orelse "tinyweather-node";
 
     var port: u16 = 8080;
-    // if (std.mem.endsWith(u8, process_name, "tinyweather-proxy")) {
-    //     port = 8081;
-    // }
-    //
+    if (std.mem.endsWith(u8, process_name, "tinyweather-proxy")) {
+        port = 8081;
+    }
+
     var address: []const u8 = "127.0.0.1";
 
     while (args.next()) |arg| {
