@@ -1,4 +1,4 @@
-#!/bin/bash
+#! /bin/bash
 
 echo -e "\x1b[33mChecking for existing tinyweather-node service file...\x1b[0m"
 if [[ -f /etc/systemd/system/tinyweather-node.service ]]; then 
