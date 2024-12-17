@@ -82,7 +82,7 @@ jobs:
         run: sudo ./scripts/bootstrap_proxy.sh
 
       - name: test curl end to end
-        run: curl -Z localhost:8081/metrics localhost:8081/metrics localhost:8081/metrics -H "sensor:Temp" -H "sensor:RainAcc"
+        run: for i in {1..5}; do curl -Z localhost:8081/metrics localhost:8081/metrics localhost:8081/metrics -H "sensor:Temp" -H "sensor:RainAcc"; done
 
       - name: test node still live
         run: systemctl status tinyweather-node
