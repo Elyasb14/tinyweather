@@ -110,7 +110,7 @@ pub const ProxyConnectionHandler = struct {
 
         var buf: [1024]u8 = undefined;
 
-        var remote_addr: []const u8 = undefined; 
+        var remote_addr: []const u8 = undefined;
         var remote_port: u16 = undefined;
 
         var http_server = std.http.Server.init(self.conn, &buf);
@@ -136,8 +136,11 @@ pub const ProxyConnectionHandler = struct {
                             continue;
                         });
                     } else if (std.mem.eql(u8, "address", h.name)) {
-                        // TODO: get rid of remote-addr and remote-port in ProxyArgs using this?? This would unify the agrs files
                         std.log.info("\x1b[32mNode address requested\x1b[0m: {s}", .{h.value});
+
+                        remote_addr = "127.0.0.1";
+                        remote_port = 8080;
+
                         continue;
                     } else continue;
                 }
