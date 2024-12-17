@@ -65,11 +65,11 @@ pub const ProxyConnectionHandler = struct {
         self.conn.stream.close();
     }
 
-    fn get_data(allocator: std.mem.Allocator, sensors: []const tcp.SensorType) ![]tcp.SensorData {
+    fn get_data(allocator: std.mem.Allocator, remote_addr: []const u8, remote_port: u16, sensors: []const tcp.SensorType) ![]tcp.SensorData {
         const node_address = try net.Address.parseIp4(remote_addr, remote_port);
         const node_stream = net.tcpConnectToAddress(node_address) catch {
             std.log.warn("\x1b[33mCan't connect to address\x1b[0m: {any}", .{node_address});
-            return;
+            return error.ConnectionError;
         };
         std.log.info("\x1b[32mProxy initializing communication with remote address\x1b[0m: {any}", .{node_address});
         defer node_stream.close();
@@ -80,11 +80,11 @@ pub const ProxyConnectionHandler = struct {
 
         var buf: [50]u8 = undefined;
         std.log.info("\x1b[32mPacket Sent\x1b[0m: {any}", .{packet});
-        _ = stream.write(encoded_packet) catch |err| {
+        _ = node_stream.write(encoded_packet) catch |err| {
             std.log.warn("\x1b[33mCan't write to the node\x1b[0m: {s}", .{@errorName(err)});
             return err;
         };
-        const n = try stream.read(&buf);
+        const n = try node_stream.read(&buf);
         if (n == 0) {
             return tcp.TCPError.BadPacket;
         }
@@ -103,13 +103,15 @@ pub const ProxyConnectionHandler = struct {
         }
     }
 
-    pub fn handle(self: *ProxyConnectionHandler, remote_addr: []const u8, remote_port: u16, allocator: std.mem.Allocator) !?void {
-
+    pub fn handle(self: *ProxyConnectionHandler, allocator: std.mem.Allocator) !?void {
         std.log.info("\x1b[32mConnection established with\x1b[0m: {any}", .{self.conn.address});
 
         var prom_string = std.ArrayList([]const u8).init(allocator);
 
         var buf: [1024]u8 = undefined;
+
+        var remote_addr: []const u8 = undefined; 
+        var remote_port: u16 = undefined;
 
         var http_server = std.http.Server.init(self.conn, &buf);
         while (http_server.state == .ready) {
@@ -147,7 +149,7 @@ pub const ProxyConnectionHandler = struct {
                     try gauges.append(gauge);
                 }
 
-                const data = get_data(allocator, sensors.items) catch |err| {
+                const data = get_data(allocator, remote_addr, remote_port, sensors.items) catch |err| {
                     std.log.warn("\x1b[33mFailed to get data\x1b[0m: {s}", .{@errorName(err)});
                     continue;
                 };

@@ -10,11 +10,11 @@ pub const std_options: std.Options = .{
     .log_level = .debug,
 };
 
-pub fn handle_connection(connection: net.Server.Connection, args: ProxyArgs, allocator: std.mem.Allocator) !void {
+pub fn handle_connection(connection: net.Server.Connection, allocator: std.mem.Allocator) !void {
     var handler = handlers.ProxyConnectionHandler.init(connection);
     defer handler.deinit();
 
-    handler.handle(args.remote_addr, args.remote_port, allocator) catch |e| {
+    handler.handle(allocator) catch |e| {
         std.log.warn("\x1b[33mError handling client connection:\x1b[0m {s}", .{@errorName(e)});
     } orelse return;
 }
@@ -45,7 +45,7 @@ pub fn main() !void {
 
         std.log.info("\x1b[32mConnection established with\x1b[0m: {any}", .{conn.address});
 
-        const thread = std.Thread.spawn(.{}, handle_connection, .{ conn, args, allocator }) catch {
+        const thread = std.Thread.spawn(.{}, handle_connection, .{ conn, allocator }) catch {
             continue;
         };
         thread.detach();
