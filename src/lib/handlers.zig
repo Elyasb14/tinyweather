@@ -110,8 +110,8 @@ pub const ProxyConnectionHandler = struct {
 
         var buf: [1024]u8 = undefined;
 
-        var remote_addr: []const u8 = undefined;
-        var remote_port: u16 = undefined;
+        var remote_addr: []const u8 = "127.0.0.1";
+        var remote_port: u16 = 8080;
 
         var http_server = std.http.Server.init(self.conn, &buf);
         while (http_server.state == .ready) {
@@ -138,9 +138,13 @@ pub const ProxyConnectionHandler = struct {
                     } else if (std.mem.eql(u8, "address", h.name)) {
                         std.log.info("\x1b[32mNode address requested\x1b[0m: {s}", .{h.value});
 
-                        remote_addr = "127.0.0.1";
-                        remote_port = 8080;
+                        remote_addr = h.value;
 
+                        continue;
+                    } else if (std.mem.eql(u8, "port", h.name)) {
+                        const port = try std.fmt.parseInt(u16, h.value, 10);
+
+                        remote_port = port;
                         continue;
                     } else continue;
                 }
