@@ -35,6 +35,7 @@ pub fn main() !void {
         };
 
         var handler = handlers.ProxyConnectionHandler.init(conn);
+
         const thread = std.Thread.spawn(.{}, handlers.ProxyConnectionHandler.handle, .{ &handler, args.remote_addr, args.remote_port, allocator }) catch {
             continue;
         };

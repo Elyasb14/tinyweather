@@ -61,6 +61,10 @@ pub const ProxyConnectionHandler = struct {
         return .{ .conn = conn };
     }
 
+    pub fn deinit(self: *ProxyConnectionHandler) void {
+        self.conn.stream.close();
+    }
+
     fn get_data(allocator: std.mem.Allocator, stream: net.Stream, sensors: []const tcp.SensorType) ![]tcp.SensorData {
         const sensor_request = tcp.SensorRequest.init(sensors);
         const sensor_request_encoded = try sensor_request.encode(allocator);
@@ -93,7 +97,6 @@ pub const ProxyConnectionHandler = struct {
     }
 
     pub fn handle(self: *ProxyConnectionHandler, remote_addr: []const u8, remote_port: u16, allocator: std.mem.Allocator) !void {
-        // TODO: don't hardcode this ip address, use args
         const node_address = try net.Address.parseIp4(remote_addr, remote_port);
         const node_stream = net.tcpConnectToAddress(node_address) catch {
             std.log.warn("\x1b[33mCan't connect to address\x1b[0m: {any}", .{node_address});
