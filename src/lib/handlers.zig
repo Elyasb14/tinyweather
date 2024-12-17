@@ -65,7 +65,7 @@ pub const ProxyConnectionHandler = struct {
         self.conn.stream.close();
     }
 
-    fn get_data(allocator: std.mem.Allocator, stream: net.Stream, sensors: []const tcp.SensorType) ![]tcp.SensorData {
+    fn get_data(allocator: std.mem.Allocator, sensors: []const tcp.SensorType) ![]tcp.SensorData {
         const node_address = try net.Address.parseIp4(remote_addr, remote_port);
         const node_stream = net.tcpConnectToAddress(node_address) catch {
             std.log.warn("\x1b[33mCan't connect to address\x1b[0m: {any}", .{node_address});
@@ -147,7 +147,7 @@ pub const ProxyConnectionHandler = struct {
                     try gauges.append(gauge);
                 }
 
-                const data = get_data(allocator, node_stream, sensors.items) catch |err| {
+                const data = get_data(allocator, sensors.items) catch |err| {
                     std.log.warn("\x1b[33mFailed to get data\x1b[0m: {s}", .{@errorName(err)});
                     continue;
                 };
