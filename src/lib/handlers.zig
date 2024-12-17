@@ -36,6 +36,7 @@ pub const NodeConnectionHandler = struct {
 
                 std.log.info("\x1b[32mDecoded Response Packet\x1b[0m: {any}", .{decoded_request});
 
+                // TODO: why do we have to pass undefined?
                 const sensor_response = tcp.SensorResponse.init(decoded_request, undefined);
                 const encoded_response = try sensor_response.encode(allocator);
                 std.log.info("\x1b[32mEncoded SensorResponse packet\x1b[0m: {any}", .{encoded_response});
