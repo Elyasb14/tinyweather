@@ -158,6 +158,10 @@ pub const ProxyConnectionHandler = struct {
 
                 const data = get_data(allocator, remote_addr, remote_port, sensors.items) catch |err| {
                     std.log.warn("\x1b[33mFailed to get data\x1b[0m: {s}", .{@errorName(err)});
+                    if (err == error.ConnectionError) {
+                        try request.respond("Could not connect to the address and port that you requested\n", .{ .status = .not_found });
+                        continue;
+                    }
                     continue;
                 };
 
