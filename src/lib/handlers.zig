@@ -106,6 +106,7 @@ pub const ProxyConnectionHandler = struct {
         defer node_stream.close();
 
         std.log.info("\x1b[32mConnection established with\x1b[0m: {any}", .{self.conn.address});
+
         var prom_string = std.ArrayList([]const u8).init(allocator);
 
         var buf: [1024]u8 = undefined;
