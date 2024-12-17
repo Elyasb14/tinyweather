@@ -16,7 +16,7 @@ pub fn handle_connection(connection: net.Server.Connection, args: ProxyArgs, all
 
     handler.handle(args.remote_addr, args.remote_port, allocator) catch |e| {
         std.log.warn("\x1b[33mError handling client connection:\x1b[0m {s}", .{@errorName(e)});
-    };
+    } orelse return;
 }
 
 pub fn main() !void {

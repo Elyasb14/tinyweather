@@ -96,7 +96,7 @@ pub const ProxyConnectionHandler = struct {
         }
     }
 
-    pub fn handle(self: *ProxyConnectionHandler, remote_addr: []const u8, remote_port: u16, allocator: std.mem.Allocator) !void {
+    pub fn handle(self: *ProxyConnectionHandler, remote_addr: []const u8, remote_port: u16, allocator: std.mem.Allocator) !?void {
         const node_address = try net.Address.parseIp4(remote_addr, remote_port);
         const node_stream = net.tcpConnectToAddress(node_address) catch {
             std.log.warn("\x1b[33mCan't connect to address\x1b[0m: {any}", .{node_address});
@@ -126,6 +126,7 @@ pub const ProxyConnectionHandler = struct {
                 defer sensors.deinit();
 
                 var iter = request.iterateHeaders();
+                if (iter.bytes.len == 0) return null;
                 while (iter.next()) |h| {
                     if (std.mem.eql(u8, "sensor", h.name)) {
                         try sensors.append(std.meta.stringToEnum(tcp.SensorType, h.value) orelse {
