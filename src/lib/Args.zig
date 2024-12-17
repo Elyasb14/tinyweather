@@ -33,7 +33,7 @@ pub fn deinit(self: *Args) void {
 
 pub fn parse(allocator: std.mem.Allocator) !Args {
     var args = try std.process.argsWithAllocator(allocator);
-    const process_name = args.next() orelse "tinyweather-proxy";
+    const process_name = args.next() orelse "tinyweather-node";
 
     var port: u16 = 8080;
     if (std.mem.endsWith(u8, process_name, "tinyweather-proxy")) {
