@@ -43,8 +43,6 @@ pub fn main() !void {
             continue;
         };
 
-        std.log.info("\x1b[32mConnection established with\x1b[0m: {any}", .{conn.address});
-
         const thread = std.Thread.spawn(.{}, handle_connection, .{ conn, allocator }) catch {
             continue;
         };

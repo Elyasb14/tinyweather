@@ -71,6 +71,7 @@ pub const ProxyConnectionHandler = struct {
             std.log.warn("\x1b[33mCan't connect to address\x1b[0m: {any}", .{node_address});
             return error.ConnectionError;
         };
+
         std.log.info("\x1b[32mProxy initializing communication with remote address\x1b[0m: {any}", .{node_address});
         defer node_stream.close();
         const sensor_request = tcp.SensorRequest.init(sensors);
@@ -137,13 +138,11 @@ pub const ProxyConnectionHandler = struct {
                         });
                     } else if (std.mem.eql(u8, "address", h.name)) {
                         std.log.info("\x1b[32mNode address requested\x1b[0m: {s}", .{h.value});
-
                         remote_addr = h.value;
-
                         continue;
                     } else if (std.mem.eql(u8, "port", h.name)) {
                         const port = try std.fmt.parseInt(u16, h.value, 10);
-
+                        std.log.info("\x1b[32mNode port requested\x1b[0m: {s}", .{h.value});
                         remote_port = port;
                         continue;
                     } else continue;
