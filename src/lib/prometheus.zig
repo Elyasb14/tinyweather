@@ -21,7 +21,6 @@ pub const Gauge = struct {
         self.val = val;
     }
 
-    /// asserts if gauge value is NaN
     pub fn to_prometheus(self: *Gauge, allocator: std.mem.Allocator) ![]const u8 {
         return std.fmt.allocPrint(allocator, "# HELP {s} {s}\n# TYPE {s} gauge\n{s} {d}\n", .{ self.name, self.help_text, self.name, self.name, self.val });
     }
