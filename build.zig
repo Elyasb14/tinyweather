@@ -7,6 +7,8 @@ pub fn build(b: *std.Build) void {
     tcp_lib.addCSourceFile(.{ .file = b.path("src/lib/sensors/rg15.c"), .flags = &.{} });
     tcp_lib.linkLibC();
 
+    const handlers_lib = b.addStaticLibrary(.{ .name = "handlers", .root_source_file = b.path("src/lib/handlers.zig"), .target = target, .optimize = optimize });
+
     const node_exe = b.addExecutable(.{
         .name = "tinyweather-node",
         .root_source_file = b.path("src/node.zig"),
@@ -16,6 +18,7 @@ pub fn build(b: *std.Build) void {
 
     node_exe.addIncludePath(b.path("src"));
     node_exe.linkLibrary(tcp_lib);
+    node_exe.linkLibrary(handlers_lib);
 
     const proxy_exe = b.addExecutable(.{
         .name = "tinyweather-proxy",
@@ -26,6 +29,7 @@ pub fn build(b: *std.Build) void {
 
     proxy_exe.addIncludePath(b.path("src"));
     proxy_exe.linkLibrary(tcp_lib);
+    proxy_exe.linkLibrary(handlers_lib);
 
     const web_exe = b.addExecutable(.{
         .name = "tinyweather-web",
@@ -38,6 +42,7 @@ pub fn build(b: *std.Build) void {
     b.installArtifact(node_exe);
     b.installArtifact(proxy_exe);
     b.installArtifact(tcp_lib);
+    b.installArtifact(handlers_lib);
 
     const run_node = b.addRunArtifact(node_exe);
     const run_proxy = b.addRunArtifact(proxy_exe);

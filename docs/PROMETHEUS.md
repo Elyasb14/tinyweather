@@ -46,6 +46,8 @@ Set up Prometheus and Nginx to handle custom sensor headers for local developmen
             location /{
                 proxy_pass http://localhost:8081;
                 proxy_set_header sensor "Temp";
+                proxy_set_header address "127.0.0.1";
+                proxy_set_header port 8080;
             }
 
             error_page   500 502 503 504  /50x.html;
@@ -60,7 +62,7 @@ Set up Prometheus and Nginx to handle custom sensor headers for local developmen
 
 ## Test
 ```bash
-curl localhost:8081/metrics -H "sensor:RainTotalAcc"
+curl localhost:8081/metrics -H "sensor:RainTotalAcc" -H "address:127.0.0.1" -H "port:8080"
 ```
 
 This setup lets you add custom headers to Prometheus requests.
