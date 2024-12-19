@@ -72,7 +72,7 @@ pub const ProxyConnectionHandler = struct {
             return error.ConnectionError;
         };
 
-        std.log.info("\x1b[32mProxy initializing communication with remote address\x1b[0m: {any}", .{node_address});
+        std.log.info("\x1b[32mProxy initializing communication with remote node\x1b[0m: {any}", .{node_address});
         defer node_stream.close();
         const sensor_request = tcp.SensorRequest.init(sensors);
         const sensor_request_encoded = try sensor_request.encode(allocator);
