@@ -38,7 +38,7 @@ After=network.target
 Type=simple
 Restart=always
 RestartSec=5s
-ExecStart=/opt/tinyweather/tinyweather-proxy 
+ExecStart=/opt/tinyweather/tinyweather-proxy --address 127.0.0.1 --port 8081 
 WorkingDirectory=/opt/tinyweather
 
 [Install]
@@ -53,3 +53,4 @@ echo -e "\x1b[33mStarting the tinyweather-proxy service...\x1b[0m"
 systemctl start tinyweather-proxy
 echo -e "\x1b[32mtinyweather-proxy service started.\x1b[0m"
 
+systemctl status tinyweather-proxy

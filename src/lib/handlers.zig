@@ -65,7 +65,15 @@ pub const ProxyConnectionHandler = struct {
         self.conn.stream.close();
     }
 
-    fn get_data(allocator: std.mem.Allocator, stream: net.Stream, sensors: []const tcp.SensorType) ![]tcp.SensorData {
+    fn get_data(allocator: std.mem.Allocator, remote_addr: []const u8, remote_port: u16, sensors: []const tcp.SensorType) ![]tcp.SensorData {
+        const node_address = try net.Address.parseIp4(remote_addr, remote_port);
+        const node_stream = net.tcpConnectToAddress(node_address) catch {
+            std.log.warn("\x1b[33mCan't connect to address\x1b[0m: {any}", .{node_address});
+            return error.ConnectionError;
+        };
+
+        std.log.info("\x1b[32mProxy initializing communication with remote node\x1b[0m: {any}", .{node_address});
+        defer node_stream.close();
         const sensor_request = tcp.SensorRequest.init(sensors);
         const sensor_request_encoded = try sensor_request.encode(allocator);
         const packet = tcp.Packet.init(1, tcp.PacketType.SensorRequest, sensor_request_encoded);
@@ -73,11 +81,11 @@ pub const ProxyConnectionHandler = struct {
 
         var buf: [50]u8 = undefined;
         std.log.info("\x1b[32mPacket Sent\x1b[0m: {any}", .{packet});
-        _ = stream.write(encoded_packet) catch |err| {
+        _ = node_stream.write(encoded_packet) catch |err| {
             std.log.warn("\x1b[33mCan't write to the node\x1b[0m: {s}", .{@errorName(err)});
             return err;
         };
-        const n = try stream.read(&buf);
+        const n = try node_stream.read(&buf);
         if (n == 0) {
             return tcp.TCPError.BadPacket;
         }
@@ -96,20 +104,15 @@ pub const ProxyConnectionHandler = struct {
         }
     }
 
-    pub fn handle(self: *ProxyConnectionHandler, remote_addr: []const u8, remote_port: u16, allocator: std.mem.Allocator) !?void {
-        const node_address = try net.Address.parseIp4(remote_addr, remote_port);
-        const node_stream = net.tcpConnectToAddress(node_address) catch {
-            std.log.warn("\x1b[33mCan't connect to address\x1b[0m: {any}", .{node_address});
-            return;
-        };
-        std.log.info("\x1b[32mProxy initializing communication with remote address\x1b[0m: {any}", .{node_address});
-        defer node_stream.close();
-
+    pub fn handle(self: *ProxyConnectionHandler, allocator: std.mem.Allocator) !?void {
         std.log.info("\x1b[32mConnection established with\x1b[0m: {any}", .{self.conn.address});
 
         var prom_string = std.ArrayList([]const u8).init(allocator);
 
         var buf: [1024]u8 = undefined;
+
+        var remote_addr: []const u8 = "127.0.0.1";
+        var remote_port: u16 = 8080;
 
         var http_server = std.http.Server.init(self.conn, &buf);
         while (http_server.state == .ready) {
@@ -134,12 +137,18 @@ pub const ProxyConnectionHandler = struct {
                             continue;
                         });
                     } else if (std.mem.eql(u8, "address", h.name)) {
-                        // TODO: get rid of remote-addr and remote-port in ProxyArgs using this?? This would unify the agrs files
                         std.log.info("\x1b[32mNode address requested\x1b[0m: {s}", .{h.value});
+                        remote_addr = h.value;
+                        continue;
+                    } else if (std.mem.eql(u8, "port", h.name)) {
+                        const port = try std.fmt.parseInt(u16, h.value, 10);
+                        std.log.info("\x1b[32mNode port requested\x1b[0m: {s}", .{h.value});
+                        remote_port = port;
                         continue;
                     } else continue;
                 }
 
+                // TODO: can combile these two for loops?
                 var gauges = std.ArrayList(prometheus.Gauge).init(allocator);
 
                 for (sensors.items) |sensor| {
@@ -147,8 +156,12 @@ pub const ProxyConnectionHandler = struct {
                     try gauges.append(gauge);
                 }
 
-                const data = get_data(allocator, node_stream, sensors.items) catch |err| {
+                const data = get_data(allocator, remote_addr, remote_port, sensors.items) catch |err| {
                     std.log.warn("\x1b[33mFailed to get data\x1b[0m: {s}", .{@errorName(err)});
+                    if (err == error.ConnectionError) {
+                        try request.respond("Could not connect to the address and port that you requested\n", .{ .status = .not_found });
+                        continue;
+                    }
                     continue;
                 };
 

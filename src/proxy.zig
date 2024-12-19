@@ -4,17 +4,17 @@ const assert = std.debug.assert;
 const tcp = @import("lib/tcp.zig");
 const prometheus = @import("lib/prometheus.zig");
 const handlers = @import("lib/handlers.zig");
-const ProxyArgs = @import("lib/ProxyArgs.zig");
+const Args = @import("lib/Args.zig");
 
 pub const std_options: std.Options = .{
     .log_level = .debug,
 };
 
-pub fn handle_connection(connection: net.Server.Connection, args: ProxyArgs, allocator: std.mem.Allocator) !void {
+pub fn handle_connection(connection: net.Server.Connection, allocator: std.mem.Allocator) !void {
     var handler = handlers.ProxyConnectionHandler.init(connection);
     defer handler.deinit();
 
-    handler.handle(args.remote_addr, args.remote_port, allocator) catch |e| {
+    handler.handle(allocator) catch |e| {
         std.log.warn("\x1b[33mError handling client connection:\x1b[0m {s}", .{@errorName(e)});
     } orelse return;
 }
@@ -24,10 +24,10 @@ pub fn main() !void {
     defer arena.deinit();
     const allocator = arena.allocator();
 
-    var args = try ProxyArgs.parse(allocator);
+    var args = try Args.parse(allocator);
     defer args.deinit();
 
-    const server_address = try net.Address.parseIp(args.listen_addr, args.listen_port);
+    const server_address = try net.Address.parseIp(args.address, args.port);
     var tcp_server = try net.Address.listen(server_address, .{
         .kernel_backlog = 1024,
         .reuse_address = true,
@@ -43,9 +43,7 @@ pub fn main() !void {
             continue;
         };
 
-        std.log.info("\x1b[32mConnection established with\x1b[0m: {any}", .{conn.address});
-
-        const thread = std.Thread.spawn(.{}, handle_connection, .{ conn, args, allocator }) catch {
+        const thread = std.Thread.spawn(.{}, handle_connection, .{ conn, allocator }) catch {
             continue;
         };
         thread.detach();
