@@ -148,6 +148,7 @@ pub const ProxyConnectionHandler = struct {
                     } else continue;
                 }
 
+                // TODO: can combile these two for loops?
                 var gauges = std.ArrayList(prometheus.Gauge).init(allocator);
 
                 for (sensors.items) |sensor| {
