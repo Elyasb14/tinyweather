@@ -7,3 +7,4 @@ zig-*
 *.o
 *.swp
 package-lock.json
+main

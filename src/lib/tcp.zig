@@ -94,7 +94,7 @@ pub const SensorResponse = struct {
         var buf = ArrayList(u8).init(allocator);
         for (self.request.sensors) |sensor| {
             switch (sensor) {
-                .Gas => try buf.appendSlice(&device.get_gas()),
+                .Gas => try buf.appendSlice(&try device.get_gas()),
                 .Temp => try buf.appendSlice(&device.get_temp()),
                 .Pres => try buf.appendSlice(&device.get_pres()),
                 .Hum => try buf.appendSlice(&device.get_hum()),
