@@ -4,12 +4,13 @@ const Allocator = std.mem.Allocator;
 const ArrayList = std.ArrayList;
 const c = @cImport({
     @cInclude("lib/sensors/rg15/rg15.h");
-    @cInclude("lib/sensors/bme680/bme68x.h");
 });
 const tcp = @import("tcp.zig");
 const builtin = @import("builtin");
+const bme = @import("sensors/bme680/bme680.zig");
 
-pub fn get_gas() [4]u8 {
+pub fn get_gas() ![4]u8 {
+    try bme.bme_init();
     const random_gas = std.crypto.random.float(f32) * 200.0;
     return helpers.f32_to_bytes(random_gas);
 }
