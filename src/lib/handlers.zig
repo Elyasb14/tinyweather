@@ -104,7 +104,7 @@ pub const ProxyConnectionHandler = struct {
         }
     }
 
-    pub fn handle(self: *ProxyConnectionHandler, allocator: std.mem.Allocator) !?void {
+    pub fn handle(self: *ProxyConnectionHandler, allocator: std.mem.Allocator) !void {
         std.log.info("\x1b[32mConnection established with\x1b[0m: {any}", .{self.conn.address});
 
         var prom_string = std.ArrayList([]const u8).init(allocator);
@@ -129,7 +129,6 @@ pub const ProxyConnectionHandler = struct {
                 defer sensors.deinit();
 
                 var iter = request.iterateHeaders();
-                if (iter.bytes.len == 0) return null;
                 while (iter.next()) |h| {
                     if (std.mem.eql(u8, "sensor", h.name)) {
                         try sensors.append(std.meta.stringToEnum(tcp.SensorType, h.value) orelse {
