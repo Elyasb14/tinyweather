@@ -3,8 +3,8 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const ArrayList = std.ArrayList;
 const c = @cImport({
-    @cInclude("lib/sensors/rg15.h");
-    @cInclude("lib/sensors/bme68x.h");
+    @cInclude("lib/sensors/rg15/rg15.h");
+    @cInclude("lib/sensors/bme680/bme68x.h");
 });
 const tcp = @import("tcp.zig");
 const builtin = @import("builtin");
