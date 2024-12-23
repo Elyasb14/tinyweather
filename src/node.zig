@@ -4,7 +4,7 @@ const assert = std.debug.assert;
 const tcp = @import("lib/tcp.zig");
 const ArrayList = std.ArrayList;
 const handlers = @import("lib/handlers.zig");
-const NodeArgs = @import("lib/NodeArgs.zig");
+const Args = @import("lib/Args.zig");
 
 pub const std_options: std.Options = .{
     .log_level = .debug,
@@ -26,7 +26,7 @@ pub fn main() !void {
     defer arena.deinit();
     const allocator = arena.allocator();
 
-    var args = try NodeArgs.parse(allocator);
+    var args = try Args.parse(allocator);
     defer args.deinit();
 
     const server_address = try net.Address.parseIp(args.address, args.port);
@@ -46,7 +46,6 @@ pub fn main() !void {
         };
         std.log.info("\x1b[32mConnection established with\x1b[0m: {any}", .{connection.address});
 
-        // try handle_client(client_stream, allocator);
         const thread = try std.Thread.spawn(.{}, handle_client, .{ connection, allocator });
         thread.detach();
     }

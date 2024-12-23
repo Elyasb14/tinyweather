@@ -1,4 +1,4 @@
-#!/bin/bash
+#! /bin/bash
 
 echo -e "\x1b[33mChecking for existing tinyweather-node service file...\x1b[0m"
 if [[ -f /etc/systemd/system/tinyweather-node.service ]]; then 
@@ -38,7 +38,7 @@ After=network.target
 Type=simple
 Restart=always
 RestartSec=5s
-ExecStart=/opt/tinyweather/tinyweather-node --address 10.0.2.9 --port 8080
+ExecStart=/opt/tinyweather/tinyweather-node --address 127.0.0.1 --port 8080 
 WorkingDirectory=/opt/tinyweather
 
 [Install]
@@ -53,3 +53,4 @@ echo -e "\x1b[33mStarting the tinyweather-node service...\x1b[0m"
 systemctl start tinyweather-node
 echo -e "\x1b[32mtinyweather-node service started.\x1b[0m"
 
+systemctl status tinyweather-node
