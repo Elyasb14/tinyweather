@@ -62,6 +62,7 @@ pub const ProxyConnectionHandler = struct {
     }
 
     pub fn deinit(self: *ProxyConnectionHandler) void {
+        std.log.info("\x1b[32mStream closed\x1b[0m: {any}", .{self.conn.stream});
         self.conn.stream.close();
     }
 
