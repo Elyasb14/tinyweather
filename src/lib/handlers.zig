@@ -76,10 +76,8 @@ pub const ProxyConnectionHandler = struct {
         defer node_stream.close();
         const sensor_request = tcp.SensorRequest.init(sensors);
         const sensor_request_encoded = try sensor_request.encode(allocator);
-        defer allocator.free(sensor_request_encoded);
         const packet = tcp.Packet.init(1, tcp.PacketType.SensorRequest, sensor_request_encoded);
         const encoded_packet = try packet.encode(allocator);
-        defer allocator.free(encoded_packet);
 
         var buf: [50]u8 = undefined;
         std.log.info("\x1b[32mPacket Sent\x1b[0m: {any}", .{packet});
