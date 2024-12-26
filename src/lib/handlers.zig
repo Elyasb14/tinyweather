@@ -76,8 +76,10 @@ pub const ProxyConnectionHandler = struct {
         defer node_stream.close();
         const sensor_request = tcp.SensorRequest.init(sensors);
         const sensor_request_encoded = try sensor_request.encode(allocator);
+        defer allocator.free(sensor_request_encoded);
         const packet = tcp.Packet.init(1, tcp.PacketType.SensorRequest, sensor_request_encoded);
         const encoded_packet = try packet.encode(allocator);
+        defer allocator.free(encoded_packet);
 
         var buf: [50]u8 = undefined;
         std.log.info("\x1b[32mPacket Sent\x1b[0m: {any}", .{packet});
@@ -147,8 +149,9 @@ pub const ProxyConnectionHandler = struct {
                     } else continue;
                 }
 
-                // TODO: can combile these two for loops?
+                // TODO: can combine these two for loops?
                 var gauges = std.ArrayList(prometheus.Gauge).init(allocator);
+                defer gauges.deinit();
 
                 for (sensors.items) |sensor| {
                     const gauge = prometheus.Gauge.init(@tagName(sensor), @tagName(sensor), std.Thread.Mutex{});
@@ -170,6 +173,7 @@ pub const ProxyConnectionHandler = struct {
                 }
 
                 const ret = try std.mem.join(allocator, "\n", try prom_string.toOwnedSlice());
+                defer allocator.free(ret);
                 try request.respond(ret, .{ .extra_headers = &.{.{ .name = "Content-Type", .value = "text/plain; version=0.0.4" }} });
 
                 std.log.info("\x1b[32mPrometeus string being sent\x1b[0m:\n\x1b[36m{s}\x1b[0m", .{ret});
