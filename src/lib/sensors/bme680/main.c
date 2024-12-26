@@ -1,93 +1,56 @@
-/**
- * Copyright (C) 2023 Bosch Sensortec GmbH
- *
- * SPDX-License-Identifier: BSD-3-Clause
- *
- */
-
+#include "linux/i2c-dev.h"
+#include <fcntl.h>
+#include <stdint.h>
 #include <stdio.h>
+#include <string.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
 
-#include "bme68x.h"
+#define BME_DEV_ADDR 0x77
+#define BME_LEN_TEMP_COEFF_1 UINT8_C(23)
+#define BME68X_REG_COEFF2 UINT8_C(0xe1)
 
-/***********************************************************************/
-/*                         Macros                                      */
-/***********************************************************************/
+static int t1_cal, t2_cal, t3_cal; //temp calibration
 
-/* Macro for count of samples to be displayed */
-#define SAMPLE_COUNT  UINT16_C(300)
+int main() {
+  int bme_fd = open("/dev/i2c-1", O_RDWR);
+  if (bme_fd < 0) {
+    printf("can't open device: %d\n", bme_fd);
+    return -1;
+  }
 
-/***********************************************************************/
-/*                         Test code                                   */
-/***********************************************************************/
+  // this ioctl sets any read or writes to bme_fd to use the i2c slave addr 0x77
+  if (ioctl(bme_fd, I2C_SLAVE, BME_DEV_ADDR) < 0) {
+    printf("can't call ioctl");
+    return -1;
+  }
 
-int main(void)
-{
-    struct bme68x_dev bme;
-    int8_t rslt;
-    struct bme68x_conf conf;
-    struct bme68x_heatr_conf heatr_conf;
-    struct bme68x_data data;
-    uint32_t del_period;
-    uint32_t time_ms = 0;
-    uint8_t n_fields;
-    uint16_t sample_count = 1;
+  unsigned char reg_buf[32];
+  int ret_code, res;
 
+  // 0xd0 is the chip id register
+  // write the reg addr to the bme_fd, read the result
+  // result should be 0x61 (or 97)
+  reg_buf[0] = 0xd0;
+  ret_code = write(bme_fd, reg_buf, 1);
+  res = read(bme_fd, reg_buf, 1);
+  if (reg_buf[0] != 97 || ret_code < 0 || res != 1) {
+    printf("%d is the wrong chip id\n", reg_buf[0]);
+    return -1;
+  }
 
-    rslt = bme68x_init(&bme);
+  // get temp calib data
+  reg_buf[0] = 0xe9;
+  ret_code = write(bme_fd, reg_buf, 1);
+  res = read(bme_fd, reg_buf, BME_LEN_TEMP_COEFF_1);
+  if (ret_code < 0 || res != BME_LEN_TEMP_COEFF_1) {
+    printf("ret_code: %d, res: %d", ret_code, res);
+    return -1;
+  }
 
-    /* Check if rslt == BME68X_OK, report or handle if otherwise */
-    conf.filter = BME68X_FILTER_OFF;
-    conf.odr = BME68X_ODR_NONE;
-    conf.os_hum = BME68X_OS_16X;
-    conf.os_pres = BME68X_OS_1X;
-    conf.os_temp = BME68X_OS_2X;
-    rslt = bme68x_set_conf(&conf, &bme);
-
-    /* Check if rslt == BME68X_OK, report or handle if otherwise */
-    heatr_conf.enable = BME68X_ENABLE;
-    heatr_conf.heatr_temp = 300;
-    heatr_conf.heatr_dur = 100;
-    rslt = bme68x_set_heatr_conf(BME68X_FORCED_MODE, &heatr_conf, &bme);
-
-    printf("Sample, TimeStamp(ms), Temperature(deg C), Pressure(Pa), Humidity(%%), Gas resistance(ohm), Status\n");
-
-    while (sample_count <= SAMPLE_COUNT)
-    {
-        rslt = bme68x_set_op_mode(BME68X_FORCED_MODE, &bme);
-
-        /* Calculate delay period in microseconds */
-        del_period = bme68x_get_meas_dur(BME68X_FORCED_MODE, &conf, &bme) + (heatr_conf.heatr_dur * 1000);
-        bme.delay_us(del_period, bme.intf_ptr);
+  t1_cal = reg_buf[0];
 
 
-        /* Check if rslt == BME68X_OK, report or handle if otherwise */
-        rslt = bme68x_get_data(BME68X_FORCED_MODE, &data, &n_fields, &bme);
 
-        if (n_fields)
-        {
-#ifdef BME68X_USE_FPU
-            printf("%u, %lu, %.2f, %.2f, %.2f, %.2f, 0x%x\n",
-                   sample_count,
-                   (long unsigned int)time_ms,
-                   data.temperature,
-                   data.pressure,
-                   data.humidity,
-                   data.gas_resistance,
-                   data.status);
-#else
-            printf("%u, %lu, %d, %lu, %lu, %lu, 0x%x\n",
-                   sample_count,
-                   (long unsigned int)time_ms,
-                   (data.temperature / 100),
-                   (long unsigned int)data.pressure,
-                   (long unsigned int)(data.humidity / 1000),
-                   (long unsigned int)data.gas_resistance,
-                   data.status);
-#endif
-            sample_count++;
-        }
-    }
-
-
-    return rslt;
+  return 0;
 }
