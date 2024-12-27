@@ -35,7 +35,7 @@ pub const Packet = struct {
         return buf.toOwnedSlice();
     }
 
-    // takes encoded buffer ([]u8), constructs a packet
+    /// takes encoded buffer ([]const u8), constructs a packet
     pub fn decode(buf: []const u8) TCPError!Packet {
         assert(buf.len > 0);
         if (buf[0] != 1) return TCPError.VersionError;
