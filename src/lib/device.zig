@@ -33,18 +33,12 @@ pub fn parse_bme(allocator: Allocator) !?[]const f32 {
     var buf = ArrayList(f32).init(allocator);
 
     const bme_data = try bme.exec_python(allocator) orelse return null;
-    std.debug.print("{s}\n", .{bme_data});
-    var split = std.mem.splitAny(u8, bme_data, " ");
+    var split = std.mem.splitAny(u8, bme_data, " \n");
     while (split.next()) |token| {
-        const val = std.fmt.parseFloat(f32, token) catch {
-            const temp = std.fmt.parseInt(u64, token, 10) catch continue;
-            try buf.append(@floatFromInt(temp));
-            continue;
-        };
+        const val = std.fmt.parseFloat(f32, token) catch continue;
         try buf.append(val);
     }
     const data = try buf.toOwnedSlice();
-    std.debug.print("{any}\n", .{data});
     return data;
 }
 
