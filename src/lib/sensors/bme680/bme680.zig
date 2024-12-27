@@ -3,6 +3,7 @@ const c = @cImport({
     @cInclude("linux/i2c.h");
     @cInclude("linux/i2c-dev.h");
     @cInclude("sys/ioctl.h");
+    @cInclude("bme_defs.h");
 });
 
 const i2c_device = "/dev/i2c-1";
