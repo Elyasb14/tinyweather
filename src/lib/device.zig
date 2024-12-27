@@ -32,7 +32,10 @@ const c = @cImport({
 pub fn parse_bme(allocator: Allocator) !?[]const f32 {
     var buf = ArrayList(f32).init(allocator);
 
-    const bme_data = try bme.exec_python(allocator) orelse return null;
+    const bme_data = try bme.exec_python(allocator) orelse {
+        std.log.warn("\x1b[33mCouldn't read bme sensor, sending nan to the client\x1b[0m", .{});
+        return null;
+    };
     var split = std.mem.splitAny(u8, bme_data, " \n");
     while (split.next()) |token| {
         const val = std.fmt.parseFloat(f32, token) catch continue;
