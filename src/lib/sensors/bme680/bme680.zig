@@ -1,44 +1,20 @@
 const std = @import("std");
+const c = @cImport({
+    @cInclude("linux/i2c.h");
+    @cInclude("linux/i2c-dev.h");
+    @cInclude("sys/ioctl.h");
+});
 
-// int bme_fd = open("/dev/i2c-1", O_RDWR);
-//   if (bme_fd < 0) {
-//     printf("can't open device: %d\n", bme_fd);
-//     return -1;
-//   }
-//
-//   // this ioctl sets any read or writes to bme_fd to use the i2c slave addr 0x77
-//   if (ioctl(bme_fd, I2C_SLAVE, BME_DEV_ADDR) < 0) {
-//     printf("can't call ioctl");
-//     return -1;
-//   }
-//
-//   unsigned char reg_buf[32];
-//   int ret_code, res;
-//
-//   // 0xd0 is the chip id register
-//   // write the reg addr to the bme_fd, read the result
-//   // result should be 0x61 (or 97)
-//   reg_buf[0] = 0xd0;
-//   ret_code = write(bme_fd, reg_buf, 1);
-//   res = read(bme_fd, reg_buf, 1);
-//   if (reg_buf[0] != 97 || ret_code < 0 || res != 1) {
-//     printf("%d is the wrong chip id", reg_buf[0]);
-//     return -1;
-//
-//
-//
+const i2c_device = "/dev/i2c-1";
+const i2c_addr: c_int = 0x77;
 
-pub fn bme_init() !void {
-    const file = try std.fs.cwd().openFile("/dev/i2c-1", .{});
+pub fn main() !void {
+    const fd = try std.fs.openFileAbsolute(i2c_device, fs.File.OpenFlags{ .write = true, .read = true });
+    defer fd.close();
 
-    if (std.c.ioctl(@intCast(file.handle), @intCast(0x0703), @as(c_uint, @intCast(0x77))) < 0) {
-        std.debug.print("can't call ioctl\n", .{});
+    if (c.ioctl(fd.handle, c.I2C_SLAVE, i2c_addr) < 0) {
+        std.debug.print("ioctl failed, errno: {any}\n", c.errno);
     }
 
-    var buf: [32]u8 = undefined;
-
-    buf[0] = 0xd0;
-
-    _ = try file.write(&buf);
-    std.debug.assert(buf[0] == 97);
+    std.debug.print("Init successful\n", .{});
 }
