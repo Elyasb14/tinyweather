@@ -2,7 +2,6 @@
 #include <fcntl.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <string.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
 
@@ -35,7 +34,7 @@ int main() {
   ret_code = write(bme_fd, reg_buf, 1);
   res = read(bme_fd, reg_buf, 1);
   if (reg_buf[0] != 97 || ret_code < 0 || res != 1) {
-    printf("%d is the wrong chip id", reg_buf[0]);
+    printf("%d is the wrong chip id\n", reg_buf[0]);
     return -1;
   }
 
@@ -49,11 +48,8 @@ int main() {
   }
 
   t1_cal = reg_buf[0];
-  
+
 
 
   return 0;
-
-
 }
-
