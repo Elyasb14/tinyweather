@@ -4,7 +4,6 @@ const Allocator = std.mem.Allocator;
 const ArrayList = std.ArrayList;
 const tcp = @import("tcp.zig");
 const builtin = @import("builtin");
-const bme = @import("sensors/bme680/bme680.zig");
 const c = @cImport({
     @cInclude("lib/sensors/rg15/rg15.h");
 });

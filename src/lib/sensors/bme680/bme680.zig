@@ -7,17 +7,33 @@ const c = @cImport({
 });
 
 const i2c_device = "/dev/i2c-1";
-const i2c_addr: c_int = 0x77;
 
-pub fn main() !void {
-    const fd = try std.fs.openFileAbsolute(i2c_device, .{ .write = true, .read = true });
-    defer fd.close();
+const Device = struct {
+    fd: std.fs.File.Handle,
 
-    comptime {
-        if (c.ioctl(fd.handle, c.I2C_SLAVE, i2c_addr) < 0) {
-            std.debug.print("ioctl failed, errno: {any}\n", c.errno);
+    pub fn init(path: []const u8) !Device {
+        const fd = try std.fs.openFileAbsolute(path, .{ .mode = .read_write });
+        defer fd.close();
+
+        if (c.ioctl(fd.handle, c.I2C_SLAVE, c.BME68X_CHIP_ID) < 0) {
+            std.debug.print("ioctl failed, errno\n", .{});
         }
 
-        std.debug.print("Init successful\n", .{});
+        return .{ .fd = fd.handle };
     }
+
+    fn write() void {}
+    
+fn read() void {}
+
+    pub fn set_registers(register_addr: c_int, register_data: c_int, len: u32, device: *Device) u8 {
+        
+}
+};
+
+pub fn main() !void {
+    const device = try Device.init(i2c_device);
+    const register_buf: [32]u8 = undefined;
+
+    std.debug.print("{any}{any}\n", .{ device, register_buf });
 }
