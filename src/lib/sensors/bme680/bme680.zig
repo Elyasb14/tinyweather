@@ -9,7 +9,7 @@ const i2c_device = "/dev/i2c-1";
 const i2c_addr: c_int = 0x77;
 
 pub fn main() !void {
-    const fd = try std.fs.openFileAbsolute(i2c_device, fs.File.OpenFlags{ .write = true, .read = true });
+    const fd = try std.fs.openFileAbsolute(i2c_device, .{ .write = true, .read = true });
     defer fd.close();
 
     if (c.ioctl(fd.handle, c.I2C_SLAVE, i2c_addr) < 0) {
