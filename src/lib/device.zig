@@ -2,15 +2,14 @@ const helpers = @import("helpers.zig");
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 const ArrayList = std.ArrayList;
-const c = @cImport({
-    @cInclude("lib/sensors/rg15/rg15.h");
-});
 const tcp = @import("tcp.zig");
 const builtin = @import("builtin");
 const bme = @import("sensors/bme680/bme680.zig");
+const c = @cImport({
+    @cInclude("lib/sensors/rg15/rg15.h");
+});
 
-pub fn get_gas() ![4]u8 {
-    try bme.bme_init();
+pub fn get_gas() [4]u8 {
     const random_gas = std.crypto.random.float(f32) * 200.0;
     return helpers.f32_to_bytes(random_gas);
 }

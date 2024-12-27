@@ -5,7 +5,6 @@ pub fn build(b: *std.Build) void {
 
     const tcp_lib = b.addStaticLibrary(.{ .name = "tcp", .root_source_file = b.path("src/lib/tcp.zig"), .target = target, .optimize = optimize });
     tcp_lib.addCSourceFile(.{ .file = b.path("src/lib/sensors/rg15/rg15.c"), .flags = &.{} });
-    tcp_lib.addCSourceFile(.{ .file = b.path("src/lib/sensors/bme680/bme68x.c"), .flags = &.{} });
     tcp_lib.linkLibC();
 
     const handlers_lib = b.addStaticLibrary(.{ .name = "handlers", .root_source_file = b.path("src/lib/handlers.zig"), .target = target, .optimize = optimize });

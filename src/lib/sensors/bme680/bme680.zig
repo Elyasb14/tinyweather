@@ -13,9 +13,11 @@ pub fn main() !void {
     const fd = try std.fs.openFileAbsolute(i2c_device, .{ .write = true, .read = true });
     defer fd.close();
 
-    if (c.ioctl(fd.handle, c.I2C_SLAVE, i2c_addr) < 0) {
-        std.debug.print("ioctl failed, errno: {any}\n", c.errno);
-    }
+    comptime {
+        if (c.ioctl(fd.handle, c.I2C_SLAVE, i2c_addr) < 0) {
+            std.debug.print("ioctl failed, errno: {any}\n", c.errno);
+        }
 
-    std.debug.print("Init successful\n", .{});
+        std.debug.print("Init successful\n", .{});
+    }
 }
