@@ -17,7 +17,23 @@ There is a sript `scripts/bootstrap_proxy.sh`. This will start `tinyweather-prox
 
 ## NGINX proxies
 
-For prometheus to be able to talk to nodes through the proxy, we need to be able to pass custom headers to `tinyweather-proxy`. Unfortunately Prometheus doesn't support this, so we need to have nginx between prometheus and `tinyweather-proxy`. This is how you should configure your nginx servers.
+For prometheus to be able to talk to nodes through the proxy, we need to be able to pass custom headers to the proxy. Unfortunately Prometheus doesn't support this, so we need to have nginx between prometheus and the proxy. The config for your nginx servers should look something like this:
 
+```nginx
+server {
+    listen 8082;
 
+    location /{
+        proxy_pass http://localhost:8081;
+        proxy_set_header sensor "Temp";
+        proxy_set_header sensor "RainTotalAcc"
+        proxy_set_header address "127.0.0.1";
+        proxy_set_header port 8080;
+    }
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   html;
+    }
+}
+```
 
