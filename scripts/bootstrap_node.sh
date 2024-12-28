@@ -13,7 +13,7 @@ fi
 
 echo -e "\x1b[32mBeginning the bootstrapping of tinyweather-node\x1b[0m"
 echo -e "\x1b[33mBuilding tinyweather-node with 'zig build'...\x1b[0m"
-/usr/local/bin/zig/zig build
+zig build
 
 
 echo -e "\x1b[33mPreparing /opt/tinyweather directory...\x1b[0m"
