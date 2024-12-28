@@ -92,6 +92,7 @@ pub const ProxyConnectionHandler = struct {
         if (n == 0) {
             return tcp.TCPError.BadPacket;
         }
+
         std.log.info("\x1b[32mBytes read by stream\x1b[0m: {any}", .{n});
         const decoded_packet = try tcp.Packet.decode(buf[0..n]);
         switch (decoded_packet.type) {

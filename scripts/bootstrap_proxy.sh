@@ -1,6 +1,7 @@
 #! /bin/bash
 
 echo -e "\x1b[33mChecking for existing tinyweather-proxy service file...\x1b[0m"
+
 if [[ -f /etc/systemd/system/tinyweather-proxy.service ]]; then 
     systemctl stop tinyweather-proxy.service
     systemctl disable tinyweather-proxy.service
