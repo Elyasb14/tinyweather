@@ -41,4 +41,3 @@ RainTotalAcc nan
 # TYPE Temp gauge
 Temp 17.13
 ```
-
