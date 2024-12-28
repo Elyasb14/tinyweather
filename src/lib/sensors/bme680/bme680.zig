@@ -1,41 +1,19 @@
 const std = @import("std");
-const c = @cImport({
-    @cInclude("linux/i2c.h");
-    @cInclude("linux/i2c-dev.h");
-    @cInclude("sys/ioctl.h");
-    @cInclude("bme_defs.h");
-});
 
-const i2c_device = "/dev/i2c-1";
+pub fn exec_python(allocator: std.mem.Allocator) !?[]const u8 {
+    const source =
+        \\import board
+        \\import adafruit_bme680
+        \\i2c = board.I2C()
+        \\sensor = adafruit_bme680.Adafruit_BME680_I2C(i2c)
+        \\print(sensor.temperature, sensor.pressure, sensor.humidity, sensor.gas)
+    ;
 
-const Device = struct {
-    fd: std.fs.File,
-
-    pub fn init(path: []const u8) !Device {
-        const fd = try std.fs.openFileAbsolute(path, .{ .mode = .read_write });
-        defer fd.close();
-
-        if (c.ioctl(fd.handle, c.I2C_SLAVE, c.BME68X_CHIP_ID) < 0) {
-            std.debug.print("ioctl failed, errno\n", .{});
-        }
-
-        return .{ .fd = fd };
+    const arg: [3][]const u8 = .{ "python3", "-c", source };
+    const result = try std.process.Child.run(.{ .allocator = allocator, .argv = &arg });
+    if (!std.mem.eql(u8, result.stderr, "")) {
+        std.log.warn("\x1b[33mStderr for python execution: {s}\x1b[0m", .{result.stderr});
+        return null;
     }
-
-    fn write(self: *Device) void {
-        var buf: [32]u8 = undefined;
-        const ret_code = self.fd.write(&buf);
-        std.debug.print("{any}\n", .{ret_code});
-    }
-    fn read() void {}
-
-    // pub fn set_registers(register_addr: c_int, register_data: c_int, len: u32, device: *Device) u8 {
-
-};
-
-pub fn main() !void {
-    const device = try Device.init(i2c_device);
-    device.write();
-
-    std.debug.print("{any}\n", .{device});
+    return result.stdout;
 }
