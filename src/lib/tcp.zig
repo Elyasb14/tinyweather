@@ -71,7 +71,7 @@ pub const SensorRequest = struct {
     }
 };
 
-pub const SensorData = packed struct { sensor_type: SensorType, val: f32 };
+pub const SensorData = struct { sensor_type: SensorType, val: f32 };
 
 pub const SensorResponse = struct {
     request: SensorRequest,
