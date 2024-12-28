@@ -9,6 +9,8 @@ const c = @cImport({
     @cInclude("lib/sensors/rg15/rg15.h");
 });
 
+/// this functions returns null when the sensor returns no data or partial data
+/// in the case we do return null, the caller should "orelse" the bytearrray representing nan in f32 (std.math.nan(f32))
 pub fn parse_bme(allocator: Allocator) !?[]const f32 {
     var buf = ArrayList(f32).init(allocator);
 
