@@ -7,6 +7,9 @@ pub fn build(b: *std.Build) void {
     tcp_lib.addCSourceFile(.{ .file = b.path("src/lib/sensors/rg15/rg15.c"), .flags = &.{} });
     tcp_lib.linkLibC();
 
+    const tcp_module = b.addModule("tcp", .{
+        .root_source_file = b.path("src/lib/tcp.zig"),
+    });
     const handlers_lib = b.addStaticLibrary(.{ .name = "handlers", .root_source_file = b.path("src/lib/handlers.zig"), .target = target, .optimize = optimize });
 
     const node_exe = b.addExecutable(.{
@@ -38,9 +41,22 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    const bench_exe = b.addExecutable(.{
+        .name = "tinyweather-bench",
+        .root_source_file = b.path("src/benchmark/main.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    bench_exe.addIncludePath(b.path("src"));
+    bench_exe.linkLibrary(tcp_lib);
+    bench_exe.root_module.addIncludePath(b.path("src"));
+    bench_exe.root_module.addImport("tcp", tcp_module);
+
     b.installArtifact(web_exe);
     b.installArtifact(node_exe);
     b.installArtifact(proxy_exe);
+    b.installArtifact(bench_exe);
     b.installArtifact(tcp_lib);
     b.installArtifact(handlers_lib);
 
