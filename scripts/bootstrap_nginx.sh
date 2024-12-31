@@ -50,7 +50,7 @@ fi
 mkdir -p /etc/nginx/sites-available
 mkdir -p /etc/nginx/sites-enabled
 
-touch /etc/nginx/sites-available/node-127001
+touch /etc/nginx/sites-available/node-127.0.0.1
 
 echo "
 server {
@@ -67,9 +67,9 @@ server {
     location = /50x.html {
         root   html;
     }
-}" >> /etc/nginx/sites-available/node-127001
+}" >> /etc/nginx/sites-available/node-127.0.0.1
 
-ln -s /etc/nginx/sites-available/node-127001 /etc/nginx/sites-enabled/
+ln -s /etc/nginx/sites-available/node-127.0.0.1 /etc/nginx/sites-enabled/
 
 nginx -t
 systemctl reload nginx
