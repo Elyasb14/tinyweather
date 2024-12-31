@@ -81,12 +81,18 @@ jobs:
       - name: bootstrap tinyweather-proxy
         run: sudo ./scripts/bootstrap_proxy.sh
 
+      - name: bootstrap nginx
+        run: sudo ./scripts/bootstrap_nginx.sh
+
       - name: test curl end to end
-        run: for i in {1..5}; do curl --parallel localhost:8081/metrics localhost:8081/metrics localhost:8081/metrics localhost:8081/metrics -H "sensor:Temp" -H "sensor:RainAcc" -H "address:127.0.0.1" -H "port:8080"; done
+        run: for i in {1..5}; do curl --parallel localhost:8082/metrics localhost:8082/metrics localhost:8082/metrics localhost:8081/metrics; done
 
       - name: test node still alive
         run: systemctl status tinyweather-node
 
       - name: test proxy still alive
         run: systemctl status tinyweather-proxy
+
+      - name: test nginx still alive
+        run: systemctl status nginx
       
