@@ -44,13 +44,13 @@ if [[ -d /etc/nginx/sites-available ]]; then
 fi
 
 if [[ -d /etc/nginx/sites-enabled ]]; then
-  rm -rf /etc/nginx/sites-enables
+  rm -rf /etc/nginx/sites-enabled
 fi
 
-mkdir /etc/nginx/sites-available
-mkdir /etc/nginx/sites-available
+mkdir -p /etc/nginx/sites-available
+mkdir -p /etc/nginx/sites-enabled
 
-touch /etc/sites-available/node-127.0.0.1
+touch /etc/nginx/sites-available/node-127.0.0.1
 
 echo "
 server {
