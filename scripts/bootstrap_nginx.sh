@@ -50,7 +50,8 @@ fi
 mkdir -p /etc/nginx/sites-available
 mkdir -p /etc/nginx/sites-enabled
 
-touch /etc/nginx/sites-available/node-127.0.0.1
+touch /etc/nginx/sites-available/node-127.0.0.1-0
+touch /etc/nginx/sites-available/node-127.0.0.1-1
 
 echo "
 server {
@@ -67,9 +68,29 @@ server {
     location = /50x.html {
         root   html;
     }
-}" >> /etc/nginx/sites-available/node-127.0.0.1
+}" >> /etc/nginx/sites-available/node-127.0.0.1-0
 
-ln -s /etc/nginx/sites-available/node-127.0.0.1 /etc/nginx/sites-enabled/
+echo "
+server {
+    listen 8083;
+
+    location /{
+        proxy_pass http://localhost:8081;
+        proxy_set_header sensor "Temp";
+        proxy_set_header sensor "RainTotalAcc";
+        proxy_set_header sensor "Hum";
+        proxy_set_header address "127.0.0.1";
+        proxy_set_header port 8080;
+    }
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   html;
+    }
+}" >> /etc/nginx/sites-available/node-127.0.0.1-1
+
+
+ln -s /etc/nginx/sites-available/node-127.0.0.1-0 /etc/nginx/sites-enabled/
+ln -s /etc/nginx/sites-available/node-127.0.0.1-1 /etc/nginx/sites-enabled/
 
 nginx -t
 systemctl reload nginx
