@@ -11,7 +11,7 @@ fi
 touch /etc/nginx/nginx.conf
 
 echo "
-user nginx;                  # User to run NGINX
+user www-data;                  # User to run NGINX
 worker_processes auto;       # Automatically determine the number of worker processes
 pid /var/run/nginx.pid;      # Location of the PID file
 
@@ -50,7 +50,7 @@ fi
 mkdir -p /etc/nginx/sites-available
 mkdir -p /etc/nginx/sites-enabled
 
-touch /etc/nginx/sites-available/node-127.0.0.1
+touch /etc/nginx/sites-available/node-127001
 
 echo "
 server {
@@ -67,9 +67,9 @@ server {
     location = /50x.html {
         root   html;
     }
-}" >> /etc/sites-available/node-127.0.0.1
+}" >> /etc/sites-available/node-127001
 
-ln -s /etc/nginx/sites-available/node-127.0.0.1 /etc/nginx/sites-enabled/
+ln -s /etc/nginx/sites-available/node-127001 /etc/nginx/sites-enabled/
 
 nginx -t
 systemctl reload nginx
