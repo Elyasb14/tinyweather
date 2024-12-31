@@ -67,7 +67,7 @@ server {
     location = /50x.html {
         root   html;
     }
-}" >> /etc/sites-available/node-127001
+}" >> /etc/nginx/sites-available/node-127001
 
 ln -s /etc/nginx/sites-available/node-127001 /etc/nginx/sites-enabled/
 
