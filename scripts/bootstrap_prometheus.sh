@@ -25,7 +25,7 @@ echo "global:
     scrape_interval: 15s
 
 scrape_configs:
-    - job_name: "prometheus"
+    - job_name: "localhost"
       static_configs:
         - targets: ["localhost:8081"]" >> ./prometheus.yml
 
