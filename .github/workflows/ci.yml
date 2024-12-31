@@ -84,6 +84,10 @@ jobs:
       - name: bootstrap nginx
         run: sudo ./scripts/bootstrap_nginx.sh
 
+      - name: start nginx service
+        run: sudo systemctl start nginx
+
+
       - name: test curl end to end
         run: for i in {1..5}; do curl --parallel localhost:8082/metrics localhost:8082/metrics localhost:8082/metrics localhost:8081/metrics; done
 
