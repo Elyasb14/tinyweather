@@ -1,4 +1,4 @@
-# Basic Tinyweather Usage
+# Tinyweather Usage
 
 The first thing you need is zig. From there, build the project. To see what's happening there read `build.zig`. To build the project you can run 
 
@@ -26,7 +26,7 @@ Then, you need to set up a proxy. The proxys job is to take in requests for sens
 info: Proxy TCP Server listening on: 127.0.0.1:8081
 ```
 
-Currently, you can make an http request to the proxy at the endpoint /metrics and you will get a prometheus readable string of sensor data back. You define what sensor data you want with http headers, the following example gets RainTotalAcc and Temp: 
+Currently, you can make an http request to the proxy at the endpoint /metrics and you will get a prometheus readable string of sensor data back. You define what sensor data and what address and port you want that data from with http headers, the following example gets RainTotalAcc and Temp and requests from node address 127.0.0.1:8080: 
 
 ```bash
 curl localhost:8081/metrics -H "sensor:RainTotalAcc" -H "sensor:Temp" -H "address:127.0.0.1" -H "port:8080" 
