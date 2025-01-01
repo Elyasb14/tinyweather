@@ -1,4 +1,4 @@
-# BASIC TINYWEATHER USAGE
+# Basic Tinyweather Usage
 
 The first thing you need is zig. From there, build the project. To see what's happening there read `build.zig`. To build the project you can run 
 
@@ -41,3 +41,5 @@ RainTotalAcc nan
 # TYPE Temp gauge
 Temp 17.13
 ```
+
+
