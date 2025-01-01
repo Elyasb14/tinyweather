@@ -1,4 +1,4 @@
-# How To Run a Proxy
+# To Run a Proxy
 
 You will need to install the following dependencies
 
@@ -9,7 +9,7 @@ You will need to install the following dependencies
 
 ## installing Prometheus
 
-There is a script, `scripts/bootstrap_prometheus.sh`. This starts prometheus as a systemd service.
+There is a script, `scripts/bootstrap_prometheus.sh`. This builds prometheus from source (warning this takes a while) and starts prometheus as a systemd service.
 
 ## Installing the proxy
 
@@ -17,23 +17,4 @@ There is a sript `scripts/bootstrap_proxy.sh`. This will start `tinyweather-prox
 
 ## NGINX proxies
 
-For prometheus to be able to talk to nodes through the proxy, we need to be able to pass custom headers to the proxy. Unfortunately Prometheus doesn't support this, so we need to have nginx between prometheus and the proxy. The config for your nginx servers should look something like this:
-
-```nginx
-server {
-    listen 8082;
-
-    location /{
-        proxy_pass http://localhost:8081;
-        proxy_set_header sensor "Temp";
-        proxy_set_header sensor "RainTotalAcc";
-        proxy_set_header address "127.0.0.1";
-        proxy_set_header port 8080;
-    }
-    error_page   500 502 503 504  /50x.html;
-    location = /50x.html {
-        root   html;
-    }
-}
-```
-
+For prometheus to be able to talk to nodes through the proxy, we need to be able to pass custom headers to the proxy. Unfortunately Prometheus doesn't support this, so we need to have nginx between prometheus and the proxy. There is a script that will install a shell version of what you want here, it is located at `./scripts/bootstrap_nginx.sh`. You should read that script and make sure the configs make sense for what you are trying to do.  
