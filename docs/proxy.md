@@ -7,7 +7,7 @@ You will need to install the following dependencies
 - go version 1.17 or greater [link](https://go.dev/doc/install)
 - npm version 7 or greater
 
-## installing Prometheus
+## Installing Prometheus
 
 There is a script, `scripts/bootstrap_prometheus.sh`. This builds prometheus from source (warning this takes a while) and starts prometheus as a systemd service.
 
