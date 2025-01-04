@@ -10,6 +10,6 @@ Tinyweather is a weather station designed to be small, robust, and easy to use. 
 ## SUPPORTED TELEMETRY OPTIONS
 
 - TCP/IP (see src/lib/tcp.zig and src/lib/handlers.zig)
-  - with Prometheus (https://github.com/prometheus/prometheus) for long term storage
+  - with [Prometheus](https://github.com/prometheus/prometheus) for long term storage
 
 
