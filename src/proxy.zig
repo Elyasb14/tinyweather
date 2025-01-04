@@ -2,7 +2,6 @@ const std = @import("std");
 const net = std.net;
 const assert = std.debug.assert;
 const tcp = @import("lib/tcp.zig");
-const prometheus = @import("lib/prometheus.zig");
 const handlers = @import("lib/handlers.zig");
 const Args = @import("lib/Args.zig");
 
