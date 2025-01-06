@@ -4,16 +4,20 @@ pub const Gauge = struct {
     name: []const u8,
     help_text: []const u8,
     val: f32,
+    lock: std.Thread.Mutex,
 
-    pub fn init(name: []const u8, help_text: []const u8) Gauge {
+    pub fn init(name: []const u8, help_text: []const u8, lock: std.Thread.Mutex) Gauge {
         return .{
             .name = name,
             .help_text = help_text,
             .val = std.math.nan(f32),
+            .lock = lock{},
         };
     }
 
     pub fn set(self: *Gauge, val: f32) void {
+        self.lock.lock();
+        defer self.lock.unlock();
         self.val = val;
     }
 
