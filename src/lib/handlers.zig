@@ -149,7 +149,7 @@ pub const ProxyConnectionHandler = struct {
                     } else continue;
                 }
 
-                // TODO: can combine these two for loops?
+                // FIXME: this is so sketchy
                 var gauges = std.ArrayList(prometheus.Gauge).init(allocator);
                 defer gauges.deinit();
 
@@ -173,7 +173,7 @@ pub const ProxyConnectionHandler = struct {
                 }
 
                 const ret = try std.mem.join(allocator, "\n", try prom_string.toOwnedSlice());
-                defer allocator.free(ret);
+                // defer allocator.free(ret);
                 try request.respond(ret, .{ .extra_headers = &.{.{ .name = "Content-Type", .value = "text/plain; version=0.0.4" }} });
 
                 std.log.info("\x1b[32mPrometeus string being sent\x1b[0m:\n\x1b[36m{s}\x1b[0m", .{ret});

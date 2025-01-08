@@ -88,7 +88,7 @@ pub const SensorResponse = struct {
 
     pub fn encode(self: Self, allocator: std.mem.Allocator) ![]const u8 {
         const rain_data: []const f32 = (try device.parse_rain(allocator)) orelse &[_]f32{std.math.nan(f32)} ** 4;
-        const bme_data: []const f32 = (try device.parse_bme(allocator)) orelse &[_]f32{std.math.nan(f32)} ** 4;
+        const bme_data: []const f32 = &[_]f32{std.math.nan(f32)} ** 4;
 
         var buf = ArrayList(u8).init(allocator);
         for (self.request.sensors) |sensor| {

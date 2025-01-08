@@ -18,6 +18,7 @@ pub const Gauge = struct {
     }
 
     pub fn to_prometheus(self: *Gauge, allocator: std.mem.Allocator) ![]const u8 {
+        // TODO: remove allocPrint here and replace with arraylist
         return std.fmt.allocPrint(allocator, "# HELP {s} {s}\n# TYPE {s} gauge\n{s} {d}\n", .{ self.name, self.help_text, self.name, self.name, self.val });
     }
 };
