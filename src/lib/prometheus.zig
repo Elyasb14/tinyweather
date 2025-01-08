@@ -11,7 +11,7 @@ pub const Gauge = struct {
             .name = name,
             .help_text = help_text,
             .val = std.math.nan(f32),
-            .lock = lock{},
+            .lock = lock,
         };
     }
 

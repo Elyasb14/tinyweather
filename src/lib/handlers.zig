@@ -8,10 +8,10 @@ pub const NodeConnectionHandler = struct {
     stream: net.Stream,
     mutex: std.Thread.Mutex,
 
-    pub fn init(stream: net.Stream) NodeConnectionHandler {
+    pub fn init(stream: net.Stream, mutex: std.Thread.Mutex) NodeConnectionHandler {
         return .{
             .stream = stream,
-            .mutex = std.Thread.Mutex{},
+            .mutex = mutex,
         };
     }
 
