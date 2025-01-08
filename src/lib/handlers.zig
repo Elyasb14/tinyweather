@@ -6,12 +6,10 @@ const prometheus = @import("prometheus.zig");
 
 pub const NodeConnectionHandler = struct {
     stream: net.Stream,
-    mutex: std.Thread.Mutex,
 
     pub fn init(stream: net.Stream) NodeConnectionHandler {
         return .{
             .stream = stream,
-            .mutex = std.Thread.Mutex{},
         };
     }
 
@@ -39,7 +37,7 @@ pub const NodeConnectionHandler = struct {
                 std.log.info("\x1b[32mDecoded Response Packet\x1b[0m: {any}", .{decoded_request});
 
                 const sensor_response = tcp.SensorResponse.init(decoded_request, undefined);
-                const encoded_response = try sensor_response.encode(allocator, &self.mutex);
+                const encoded_response = try sensor_response.encode(allocator);
                 std.log.info("\x1b[32mEncoded SensorResponse packet\x1b[0m: {any}", .{encoded_response});
 
                 const response_packet = tcp.Packet.init(1, tcp.PacketType.SensorResponse, encoded_response);
@@ -47,6 +45,7 @@ pub const NodeConnectionHandler = struct {
 
                 const encoded_response_packet = try response_packet.encode(allocator);
                 _ = try self.stream.write(encoded_response_packet);
+                return;
             },
             .SensorResponse => {
                 std.log.err("\x1b[31mExpected SensorRequest packet, got SensorResponse\x1b[0m: {any}", .{received_packet.type});
@@ -109,9 +108,12 @@ pub const ProxyConnectionHandler = struct {
     }
 
     pub fn handle(self: *ProxyConnectionHandler, allocator: std.mem.Allocator) !void {
+        // Create a struct to hold related data together
+        const GaugeData = struct {
+            gauge: prometheus.Gauge,
+            value: f32,
+        };
         std.log.info("\x1b[32mConnection established with\x1b[0m: {any}", .{self.conn.address});
-
-        var prom_string = std.ArrayList([]const u8).init(allocator);
 
         var buf: [1024]u8 = undefined;
 
@@ -151,34 +153,46 @@ pub const ProxyConnectionHandler = struct {
                     } else continue;
                 }
 
-                // TODO: can combine these two for loops?
-                var gauges = std.ArrayList(prometheus.Gauge).init(allocator);
-                defer gauges.deinit();
+                // Initialize array for storing gauge data
+                var gauge_data = std.ArrayList(GaugeData).init(allocator);
+                defer gauge_data.deinit();
 
-                for (sensors.items) |sensor| {
-                    const gauge = prometheus.Gauge.init(@tagName(sensor), @tagName(sensor), std.Thread.Mutex{});
-                    try gauges.append(gauge);
-                }
-
-                const data = get_data(allocator, remote_addr, remote_port, sensors.items) catch |err| {
+                // Get sensor data and create gauges in one pass
+                const sensor_data = get_data(allocator, remote_addr, remote_port, sensors.items) catch |err| {
                     std.log.warn("\x1b[33mFailed to get data\x1b[0m: {s}", .{@errorName(err)});
                     if (err == error.ConnectionError) {
-                        try request.respond("Could not connect to the address and port that you requested\n", .{ .status = .not_found });
-                        continue;
+                        return request.respond("Could not connect to the address and port that you requested\n", .{ .status = .not_found });
                     }
-                    continue;
+                    return err;
                 };
 
-                for (data, gauges.items) |x, *gauge| {
-                    gauge.set(x.val);
-                    try prom_string.append(try gauge.to_prometheus(allocator));
+                // Build gauge data in a single loop
+                for (sensors.items, sensor_data) |sensor, data| {
+                    try gauge_data.append(.{
+                        .gauge = prometheus.Gauge.init(@tagName(sensor), @tagName(sensor)),
+                        .value = data.val,
+                    });
                 }
 
-                const ret = try std.mem.join(allocator, "\n", try prom_string.toOwnedSlice());
-                defer allocator.free(ret);
-                try request.respond(ret, .{ .extra_headers = &.{.{ .name = "Content-Type", .value = "text/plain; version=0.0.4" }} });
+                // Build the prometheus string
+                var prom_string = std.ArrayList(u8).init(allocator);
+                defer prom_string.deinit();
 
-                std.log.info("\x1b[32mPrometeus string being sent\x1b[0m:\n\x1b[36m{s}\x1b[0m", .{ret});
+                for (gauge_data.items) |*data| {
+                    data.gauge.set(data.value);
+                    try prom_string.appendSlice(try data.gauge.to_prometheus(allocator));
+                    try prom_string.append('\n');
+                }
+
+                // Remove the trailing newline if any
+                if (prom_string.items.len > 0) {
+                    _ = prom_string.pop();
+                }
+
+                // Send the response
+                try request.respond(prom_string.items, .{ .extra_headers = &.{.{ .name = "Content-Type", .value = "text/plain; version=0.0.4" }} });
+                std.log.info("\x1b[32mPrometeus string being sent\x1b[0m:\n\x1b[36m{s}\x1b[0m", .{prom_string.items});
+                return;
             } else {
                 try request.respond("404 content not found", .{ .status = .not_found });
             }
