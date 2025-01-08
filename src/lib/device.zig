@@ -10,7 +10,7 @@ const c = @cImport({
 });
 
 /// this functions returns null when the sensor returns no data or partial data
-/// in the case we do return null, the caller should "orelse" the bytearrray representing nan in f32 (std.math.nan(f32))
+/// in the case we do return null, the caller should "orelse" the bytearrray representing nan in f32 (helpers.f32_to_bytes(std.math.nan(f32)))
 pub fn parse_bme(allocator: Allocator, mutex: *std.Thread.Mutex) !?[]const f32 {
     mutex.lock();
     defer mutex.unlock();
@@ -30,7 +30,7 @@ pub fn parse_bme(allocator: Allocator, mutex: *std.Thread.Mutex) !?[]const f32 {
 }
 
 /// this functions returns null when the sensor returns no data or partial data
-/// in the case we do return null, the caller should "orelse" the bytearrray representing nan in f32 (std.math.nan(f32))
+/// in the case we do return null, the caller should "orelse" the bytearrray representing nan in f32 (helpers.f32_to_bytes(std.math.nan(f32)))
 pub fn parse_rain(allocator: Allocator, mutex: *std.Thread.Mutex) !?[]const f32 {
     // TODO: this is a HACK
     // this is only here because sometimes we have a null pointer if there is no rain gauge device
