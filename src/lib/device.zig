@@ -11,9 +11,7 @@ const c = @cImport({
 
 /// this functions returns null when the sensor returns no data or partial data
 /// in the case we do return null, the caller should "orelse" the bytearrray representing nan in f32 (helpers.f32_to_bytes(std.math.nan(f32)))
-pub fn parse_bme(allocator: Allocator, mutex: *std.Thread.Mutex) !?[]const f32 {
-    mutex.lock();
-    defer mutex.unlock();
+pub fn parse_bme(allocator: Allocator) !?[]const f32 {
     var buf = ArrayList(f32).init(allocator);
 
     const bme_data = try bme.exec_python(allocator) orelse {
@@ -31,11 +29,7 @@ pub fn parse_bme(allocator: Allocator, mutex: *std.Thread.Mutex) !?[]const f32 {
 
 /// this functions returns null when the sensor returns no data or partial data
 /// in the case we do return null, the caller should "orelse" the bytearrray representing nan in f32 (helpers.f32_to_bytes(std.math.nan(f32)))
-pub fn parse_rain(allocator: Allocator, mutex: *std.Thread.Mutex) !?[]const f32 {
-    // TODO: this is a HACK
-    // this is only here because sometimes we have a null pointer if there is no rain gauge device
-    mutex.lock();
-    defer mutex.unlock();
+pub fn parse_rain(allocator: Allocator) !?[]const f32 {
     const rain_path = if (builtin.target.os.tag == .linux) "/dev/ttyUSB0" else "/dev/tty.usbserial-0001";
     std.fs.accessAbsolute(rain_path, .{}) catch {
         std.log.warn("\x1b[33mCould not open serial device, sending nan to the client\x1b[0m", .{});

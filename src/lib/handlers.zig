@@ -6,12 +6,10 @@ const prometheus = @import("prometheus.zig");
 
 pub const NodeConnectionHandler = struct {
     stream: net.Stream,
-    mutex: std.Thread.Mutex,
 
-    pub fn init(stream: net.Stream, mutex: std.Thread.Mutex) NodeConnectionHandler {
+    pub fn init(stream: net.Stream) NodeConnectionHandler {
         return .{
             .stream = stream,
-            .mutex = mutex,
         };
     }
 
@@ -39,7 +37,7 @@ pub const NodeConnectionHandler = struct {
                 std.log.info("\x1b[32mDecoded Response Packet\x1b[0m: {any}", .{decoded_request});
 
                 const sensor_response = tcp.SensorResponse.init(decoded_request, undefined);
-                const encoded_response = try sensor_response.encode(allocator, &self.mutex);
+                const encoded_response = try sensor_response.encode(allocator);
                 std.log.info("\x1b[32mEncoded SensorResponse packet\x1b[0m: {any}", .{encoded_response});
 
                 const response_packet = tcp.Packet.init(1, tcp.PacketType.SensorResponse, encoded_response);
@@ -156,7 +154,7 @@ pub const ProxyConnectionHandler = struct {
                 defer gauges.deinit();
 
                 for (sensors.items) |sensor| {
-                    const gauge = prometheus.Gauge.init(@tagName(sensor), @tagName(sensor), std.Thread.Mutex{});
+                    const gauge = prometheus.Gauge.init(@tagName(sensor), @tagName(sensor));
                     try gauges.append(gauge);
                 }
 
