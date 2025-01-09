@@ -24,7 +24,6 @@ if __name__ == "__main__":
     # Run zig build
     result = subprocess.run(["zig", "build"], check=True)
     assert result.returncode == 0, "zig build failed"
-    time.sleep(1)
     print("\x1b[32mzig build ran successfully\x1b[0m")
 
     # Start the tinyweather-node
