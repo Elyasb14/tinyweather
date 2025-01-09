@@ -58,7 +58,7 @@ jobs:
           python-version: 3.12
     
       - name: Run local_test 
-        run: python scripts/local_test.py 
+        run: python test/test_local.py 
   # build_and_install_prometheus:
   #   runs-on: ubuntu-latest
   #
