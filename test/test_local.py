@@ -1,6 +1,7 @@
 import subprocess
 import time
 import os
+import platform
 
 
 if __name__ == "__main__":
@@ -16,8 +17,9 @@ if __name__ == "__main__":
         print("\x1b[32mCreating Python3 virtual environment...\x1b[0m")
         subprocess.run(["python3", "-m", "venv", ".venv"], check=True)
 
-    # Use the virtual environment's pip to install dependencies
-    subprocess.run([venv_pip, "install", "adafruit-circuitpython-bme680", "adafruit-blinka", "RPi.GPIO"], check=True)
+    if platform.system == "Linux":
+        # Use the virtual environment's pip to install dependencies
+        subprocess.run([venv_pip, "install", "adafruit-circuitpython-bme680", "adafruit-blinka", "RPi.GPIO"], check=True)
 
     # Run zig build
     result = subprocess.run(["zig", "build"], check=True)
