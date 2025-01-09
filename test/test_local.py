@@ -22,17 +22,17 @@ if __name__ == "__main__":
     # Run zig build
     result = subprocess.run(["zig", "build"], check=True)
     assert result.returncode == 0, "zig build failed"
-    time.sleep(0.6)
+    time.sleep(1)
     print("\x1b[32mzig build ran successfully\x1b[0m")
 
     # Start the tinyweather-node
     subprocess.Popen(["./zig-out/bin/tinyweather-node"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    time.sleep(0.6)
+    time.sleep(1)
     print("\x1b[32mNode started...\x1b[0m")
 
     # Start the tinyweather-proxy
     subprocess.Popen(["./zig-out/bin/tinyweather-proxy"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    time.sleep(0.6)
+    time.sleep(1)
     print("\x1b[32mProxy started...\x1b[0m")
 
     # Run the curl command
