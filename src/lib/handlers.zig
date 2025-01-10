@@ -184,13 +184,12 @@ pub const ProxyConnectionHandler = struct {
                     try prom_string.append('\n');
                 }
 
-                // Send the response
                 try request.respond(prom_string.items, .{ .extra_headers = &.{.{ .name = "Content-Type", .value = "text/plain; version=0.0.4" }} });
                 std.log.info("\x1b[32mPrometeus string being sent\x1b[0m:\n\x1b[36m{s}\x1b[0m", .{prom_string.items});
                 return;
             } else {
                 try request.respond("404 content not found", .{ .status = .not_found });
-                break;
+                continue;
             }
         }
     }
