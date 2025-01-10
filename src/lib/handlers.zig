@@ -184,11 +184,6 @@ pub const ProxyConnectionHandler = struct {
                     try prom_string.append('\n');
                 }
 
-                // Remove the trailing newline if any
-                if (prom_string.items.len > 0) {
-                    _ = prom_string.pop();
-                }
-
                 // Send the response
                 try request.respond(prom_string.items, .{ .extra_headers = &.{.{ .name = "Content-Type", .value = "text/plain; version=0.0.4" }} });
                 std.log.info("\x1b[32mPrometeus string being sent\x1b[0m:\n\x1b[36m{s}\x1b[0m", .{prom_string.items});
