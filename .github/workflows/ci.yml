@@ -110,7 +110,7 @@ jobs:
         run: sudo ./scripts/bootstrap_nginx.sh
 
       - name: test curl end to end
-        run: for i in {1..5}; do curl --parallel localhost:8082/metrics localhost:8082/metrics localhost:8083/metrics localhost:8083/metrics; done
+        run: for i in {1..50}; do curl --parallel localhost:8082/metrics localhost:8082/metrics localhost:8083/metrics localhost:8083/metrics; done
 
       - name: test node still alive
         run: systemctl status tinyweather-node
