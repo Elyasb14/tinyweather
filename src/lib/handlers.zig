@@ -190,6 +190,7 @@ pub const ProxyConnectionHandler = struct {
                 return;
             } else {
                 try request.respond("404 content not found", .{ .status = .not_found });
+                return;
             }
         }
     }
