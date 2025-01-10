@@ -24,6 +24,7 @@ pub fn parse_bme(allocator: Allocator) !?[]const f32 {
         try buf.append(val);
     }
     const data = try buf.toOwnedSlice();
+    if (data.len < 4) return null;
     return data;
 }
 
