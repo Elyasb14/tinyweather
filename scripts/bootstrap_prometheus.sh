@@ -27,7 +27,7 @@ echo "global:
 scrape_configs:
     - job_name: "localhost"
       static_configs:
-        - targets: ["localhost:8081"]" >> ./prometheus.yml
+        - targets: ["localhost:8082", "localhost:8083"]" >> ./prometheus.yml
 
 # checks that the config is valid
 ./promtool check config prometheus.yml
