@@ -60,7 +60,6 @@ server {
     location /{
         proxy_pass http://localhost:8081;
         proxy_set_header sensor "Temp";
-        proxy_set_header sensor "RainTotalAcc";
         proxy_set_header address "127.0.0.1";
         proxy_set_header port 8080;
     }
@@ -76,8 +75,6 @@ server {
 
     location /{
         proxy_pass http://localhost:8081;
-        proxy_set_header sensor "Temp";
-        proxy_set_header sensor "RainTotalAcc";
         proxy_set_header sensor "Hum";
         proxy_set_header address "127.0.0.1";
         proxy_set_header port 8080;
