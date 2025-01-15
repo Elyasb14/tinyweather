@@ -18,10 +18,9 @@ pub const NodeConnectionHandler = struct {
         self.stream.close();
     }
 
-    pub fn handle(self: *NodeConnectionHandler, allocator: Allocator) !?void {
+    pub fn handle(self: *NodeConnectionHandler, allocator: Allocator) !void {
         var buf: [50]u8 = undefined;
         const bytes_read = try self.stream.read(&buf);
-        if (bytes_read == 0) return null;
         std.log.info("\x1b[32mBytes read by connection\x1b[0m: {any}", .{bytes_read});
         const received_packet = tcp.Packet.decode(buf[0..bytes_read]) catch |err| {
             std.log.err("\x1b[31mClient wrote a bad packet, error\x1b[0m: {any}", .{err});
