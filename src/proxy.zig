@@ -39,6 +39,7 @@ pub fn main() !void {
     std.log.info("\x1b[32mProxy TCP Server listening on\x1b[0m: {any}", .{server_address});
 
     const epoll_fd = try posix.epoll_create1(0);
+    defer posix.close(epoll_fd);
 
     while (true) {
         const conn = tcp_server.accept() catch |err| {
