@@ -112,6 +112,11 @@ jobs:
       - name: test curl end to end
         run: for i in {1..50}; do curl --parallel localhost:8082/metrics localhost:8082/metrics localhost:8083/metrics localhost:8083/metrics; done
 
+      - name: dump tinyweather-node logs
+        run: journalctl -u tinyweather-node.service
+
+      - name: dump tinyweather-proxy logs
+        run: journalctl -u tinyweather-proxy.service
       - name: test node still alive
         run: systemctl status tinyweather-node
 
@@ -121,9 +126,4 @@ jobs:
       - name: test nginx still alive
         run: systemctl status nginx
 
-      - name: dump tinyweather-node logs
-        run: journalctl -u tinyweather-node.service
-
-      - name: dump tinyweather-proxy logs
-        run: journalctl -u tinyweather-proxy.service
       
