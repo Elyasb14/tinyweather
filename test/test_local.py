@@ -39,6 +39,8 @@ if __name__ == "__main__":
     # Run the curl command
     subprocess.run([
         'curl',
+        '--parallel',
+        'localhost:8081/metrics',
         'localhost:8081/metrics',
         '-H', 'sensor:Temp',
         '-H', 'sensor:RainTotalAcc'
