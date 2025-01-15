@@ -117,6 +117,7 @@ jobs:
 
       - name: dump tinyweather-proxy logs
         run: journalctl -u tinyweather-proxy.service
+
       - name: test node still alive
         run: systemctl status tinyweather-node
 
