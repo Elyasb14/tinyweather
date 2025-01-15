@@ -49,6 +49,7 @@ pub fn main() !void {
         const thread = std.Thread.spawn(.{}, handle_connection, .{ conn, allocator }) catch {
             continue;
         };
+
         thread.detach();
     }
 }
