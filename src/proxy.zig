@@ -4,6 +4,7 @@ const assert = std.debug.assert;
 const tcp = @import("lib/tcp.zig");
 const handlers = @import("lib/handlers.zig");
 const Args = @import("lib/Args.zig");
+const posix = std.posix;
 
 pub const std_options: std.Options = .{
     .log_level = .debug,
@@ -36,6 +37,8 @@ pub fn main() !void {
 
     defer tcp_server.deinit();
     std.log.info("\x1b[32mProxy TCP Server listening on\x1b[0m: {any}", .{server_address});
+
+    const epoll_fd = try posix.epoll_create1(0);
 
     while (true) {
         const conn = tcp_server.accept() catch |err| {
