@@ -26,6 +26,10 @@ echo "global:
 
 scrape_configs:
     - job_name: "localhost"
+      http_headers:
+        address:
+          values: 
+            - "127.0.0.1"
       static_configs:
         - targets: ["localhost:8082", "localhost:8083"]" >> ./prometheus.yml
 
