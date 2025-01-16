@@ -60,16 +60,6 @@ jobs:
       - name: Run test_local 
         run: python test/test_local.py 
 
-  install_prometheus:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Bootstrap prometheus
-        run: |
-          sudo ./scripts/bootstrap_prometheus.sh
-
   test_end_to_end:
     runs-on: ubuntu-latest
 
@@ -90,20 +80,26 @@ jobs:
       - name: bootstrap tinyweather-proxy
         run: sudo ./scripts/bootstrap_proxy.sh
 
-      # - name: start nginx service
-      #   run: sudo systemctl start nginx
-      #
-      # - name: bootstrap nginx
-      #   run: sudo ./scripts/bootstrap_nginx.sh
+      - name: bootstrap prometheus
+        run: sudo ./scripts/bootstrap_prometheus.sh
 
       - name: test curl end to end parallel
         run: for i in {1..30}; do curl --parallel localhost:8081/metrics localhost:8081/metrics -H "Sensor:Temp"; done 
+      
+      - name: query prometheus server
+
+        run: |
+          sleep 16
+          promtool query instant --server=http://localhost:9090 'Temp'
 
       - name: dump tinyweather-node logs
         run: journalctl -u tinyweather-node.service
 
       - name: dump tinyweather-proxy logs
         run: journalctl -u tinyweather-proxy.service
+
+      - name: dump prometheus logs
+        run: journalctl -u prometheus.service
 
       - name: test node still alive
         run: systemctl status tinyweather-node
