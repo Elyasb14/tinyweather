@@ -13,23 +13,11 @@ fi
 echo -e "\x1b[33mBootstrapping Prometheus on system"
 
 echo -e "\x1b[33mGet and build prometheus\x1b[0m"
-git clone https://github.com/prometheus/prometheus.git
-cd prometheus
-git checkout v3.0.1
-make build
+
+wget https://github.com/prometheus/prometheus/releases/download/v3.1.0/prometheus-3.1.0.linux-amd64.tar.gz
+tar xf prometheus-3.1.0.linux-amd64.tar.gz
 
 touch prometheus.yml
-
-
-scrape_configs:
-  - job_name: tinyweather 
-
-    static_configs:
-      - targets: ["localhost:8081"]
-
-    http_headers:
-      Sensor:
-        values: ["Temp"]
 
 # creates a prometheus config
 echo "global:
@@ -46,8 +34,9 @@ scrape_configs:
         values: [\"8082\"]
       Sensor:
         values: [\"Temp\"]" >> ./prometheus.yml
+
 # checks that the config is valid
-./promtool check config prometheus.yml
+./prometheus-3.1.0.linux-amd64/promtool check config prometheus.yml
 
 rm -rf /opt/prometheus
 echo -e "\x1b[33mPreparing /opt/prometheus directory...\x1b[0m"
@@ -55,14 +44,11 @@ mkdir -p /opt/prometheus
 
 mv ./prometheus.yml /opt/prometheus/prometheus.yml
 
-
-
 echo -e "\x1b[33mMoving newly built prometheus executable to /opt/prometheus\x1b[0m"
-mv ./prometheus /opt/prometheus/prometheus
+mv ./prometheus-3.1.0.linux-amd64/prometheus /opt/prometheus/prometheus
 
 echo -e "\x1b[33mCreating systemd service file at /etc/systemd/system/prometheus.service...\x1b[0m"
 touch /etc/systemd/system/prometheus.service
-
 
 echo -e "\x1b[33mWriting service configuration to /etc/systemd/system/prometheus.service...\x1b[0m"
 echo "
@@ -89,7 +75,5 @@ echo -e "\x1b[33mStarting the prometheus service...\x1b[0m"
 systemctl start prometheus
 echo -e "\x1b[32mprometheus service started.\x1b[0m"
 
-cd ../ 
-rm -rf prometheus
-
+rm -rf prometheus-3.1.0.linux-amd64
 systemctl status prometheus
