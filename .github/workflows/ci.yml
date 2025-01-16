@@ -90,7 +90,7 @@ jobs:
 
         run: |
           sleep 16
-          promtool query instant --server=http://localhost:9090 'Temp'
+          /opt/prometheus/promtool query instant --server=http://localhost:9090 'Temp'
 
       - name: dump tinyweather-node logs
         run: journalctl -u tinyweather-node.service
