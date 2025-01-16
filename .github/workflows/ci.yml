@@ -96,7 +96,7 @@ jobs:
       # - name: bootstrap nginx
       #   run: sudo ./scripts/bootstrap_nginx.sh
 
-      - name: test curl end to end
+      - name: test curl end to end parallel
         run: for i in {1..30}; do curl --parallel localhost:8081/metrics localhost:8081/metrics -H "Sensor:Temp"; done 
 
       - name: dump tinyweather-node logs
