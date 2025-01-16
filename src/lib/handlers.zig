@@ -136,16 +136,17 @@ pub const ProxyConnectionHandler = struct {
 
                 var iter = request.iterateHeaders();
                 while (iter.next()) |h| {
-                    if (std.mem.eql(u8, "sensor", h.name)) {
+                    std.debug.print("Headers: {s} {s}\n", .{ h.name, h.value });
+                    if (std.mem.eql(u8, "Sensor", h.name)) {
                         try sensors.append(std.meta.stringToEnum(tcp.SensorType, h.value) orelse {
                             std.log.warn("\x1b[33mIs someone sending incorrect/invalid headers?\x1b[0m: {s}", .{h.value});
                             continue;
                         });
-                    } else if (std.mem.eql(u8, "address", h.name)) {
+                    } else if (std.mem.eql(u8, "Address", h.name)) {
                         std.log.info("\x1b[32mNode address requested\x1b[0m: {s}", .{h.value});
                         remote_addr = h.value;
                         continue;
-                    } else if (std.mem.eql(u8, "port", h.name)) {
+                    } else if (std.mem.eql(u8, "Port", h.name)) {
                         const port = try std.fmt.parseInt(u16, h.value, 10);
                         std.log.info("\x1b[32mNode port requested\x1b[0m: {s}", .{h.value});
                         remote_port = port;

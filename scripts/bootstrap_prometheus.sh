@@ -20,19 +20,32 @@ make build
 
 touch prometheus.yml
 
-# creates a prometheus config
-echo "global:
-    scrape_interval: 15s
 
 scrape_configs:
-    - job_name: "localhost"
-      http_headers:
-        address:
-          values: 
-            - "127.0.0.1"
-      static_configs:
-        - targets: ["localhost:8082", "localhost:8083"]" >> ./prometheus.yml
+  - job_name: tinyweather 
 
+    static_configs:
+      - targets: ["localhost:8081"]
+
+    http_headers:
+      Sensor:
+        values: ["Temp"]
+
+# creates a prometheus config
+echo "global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: tinyweather-localhost 
+    static_configs:
+      - targets: [\"localhost:8081\"]
+    http_headers:
+      Address: 
+        values: [\"127.0.0.1\"]
+      Port: 
+        values: [\"8082\"]
+      Sensor:
+        values: [\"Temp\"]" >> ./prometheus.yml
 # checks that the config is valid
 ./promtool check config prometheus.yml
 
