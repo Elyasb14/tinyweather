@@ -31,7 +31,7 @@ scrape_configs:
       Address: 
         values: [\"127.0.0.1\"]
       Port: 
-        values: [\"8082\"]
+        values: [\"8080\"]
       Sensor:
         values: [\"Temp\"]" >> ./prometheus.yml
 
