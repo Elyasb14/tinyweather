@@ -24,16 +24,27 @@ echo "global:
   scrape_interval: 15s
 
 scrape_configs:
-  - job_name: tinyweather-localhost 
+  - job_name: tinyweather-localhost-8082
     static_configs:
       - targets: [\"localhost:8081\"]
     http_headers:
       Address: 
         values: [\"127.0.0.1\"]
       Port: 
-        values: [\"8080\"]
+        values: [\"8082\"]
       Sensor:
-        values: [\"Temp\"]" >> ./prometheus.yml
+        values: [\"Temp\"] 
+
+  - job_name: tinyweather-localhost-8083
+    static_configs:
+      - targets: [\"localhost:8081\"]
+    http_headers:
+      Address: 
+        values: [\"127.0.0.1\"]
+      Port: 
+        values: [\"8083\"]
+      Sensor:
+        values: [\"Hum\"]" >> ./prometheus.yml
 
 # checks that the config is valid
 ./prometheus-3.1.0.linux-amd64/promtool check config prometheus.yml
