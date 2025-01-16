@@ -136,7 +136,7 @@ pub const ProxyConnectionHandler = struct {
 
                 var iter = request.iterateHeaders();
                 while (iter.next()) |h| {
-                    std.debug.print("Headers: {s} {s}\n", .{ h.name, h.value });
+                    std.log.info("\x1b[32mHeader\x1b[0m: {s} {s}", .{ h.name, h.value });
                     if (std.mem.eql(u8, "Sensor", h.name)) {
                         try sensors.append(std.meta.stringToEnum(tcp.SensorType, h.value) orelse {
                             std.log.warn("\x1b[33mIs someone sending incorrect/invalid headers?\x1b[0m: {s}", .{h.value});
