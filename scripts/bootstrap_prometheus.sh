@@ -77,5 +77,6 @@ echo -e "\x1b[32mprometheus service started.\x1b[0m"
 
 mv ./prometheus-3.1.0.linux-amd64/promtool /opt/prometheus/promtool
 
-rm -rf prometheus-3.1.0.linux-amd64
+rm -rf prometheus*
+
 systemctl status prometheus
