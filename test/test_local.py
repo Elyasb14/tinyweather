@@ -42,7 +42,7 @@ if __name__ == "__main__":
         '--parallel',
         'localhost:8081/metrics',
         'localhost:8081/metrics',
-        '-H', 'sensor:Temp',
-        '-H', 'sensor:RainTotalAcc'
+        '-H', 'Sensor:Temp',
+        '-H', 'Sensor:RainTotalAcc'
     ], check=True)
 

@@ -108,11 +108,6 @@ pub const ProxyConnectionHandler = struct {
     }
 
     pub fn handle(self: *ProxyConnectionHandler, allocator: std.mem.Allocator) !void {
-        // Create a struct to hold related data together
-        const GaugeData = struct {
-            gauge: prometheus.Gauge,
-            value: f32,
-        };
         std.log.info("\x1b[32mConnection established with\x1b[0m: {any}", .{self.conn.address});
 
         var buf: [1024]u8 = undefined;
@@ -154,11 +149,6 @@ pub const ProxyConnectionHandler = struct {
                     } else continue;
                 }
 
-                // Initialize array for storing gauge data
-                var gauge_data = std.ArrayList(GaugeData).init(allocator);
-                defer gauge_data.deinit();
-
-                // Get sensor data and create gauges in one pass
                 const sensor_data = get_data(allocator, remote_addr, remote_port, sensors.items) catch |err| {
                     std.log.warn("\x1b[33mFailed to get data\x1b[0m: {s}", .{@errorName(err)});
                     if (err == error.ConnectionError) {
@@ -167,22 +157,14 @@ pub const ProxyConnectionHandler = struct {
                     return err;
                 };
 
-                // Build gauge data in a single loop
-                for (sensors.items, sensor_data) |sensor, data| {
-                    try gauge_data.append(.{
-                        .gauge = prometheus.Gauge.init(@tagName(sensor), @tagName(sensor)),
-                        .value = data.val,
-                    });
-                }
-
-                // Build the prometheus string
                 var prom_string = std.ArrayList(u8).init(allocator);
                 defer prom_string.deinit();
 
-                for (gauge_data.items) |*data| {
-                    data.gauge.set(data.value);
-                    try prom_string.appendSlice(try data.gauge.to_prometheus(allocator));
-                    try prom_string.append('\n');
+                for (sensors.items, sensor_data) |sensor, val| {
+                    var gauge = prometheus.Gauge.init(@tagName(sensor), @tagName(sensor));
+                    gauge.set(val.val);
+                    try prom_string.appendSlice(try gauge.to_prometheus(allocator));
+                    try prom_string.appendSlice("\n");
                 }
 
                 try request.respond(prom_string.items, .{ .extra_headers = &.{.{ .name = "Content-Type", .value = "text/plain; version=0.0.4" }} });
