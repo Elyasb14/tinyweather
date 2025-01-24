@@ -40,7 +40,8 @@ pub fn main() !void {
 
     // epoll initialization
     const epoll_fd = try posix.epoll_create1(0);
-    var epoll_event = std.os.linux.epoll_event{ .events = std.os.linux.EPOLL.IN | std.os.linux.EPOLL.OUT | std.os.linux.EPOLL.ET };
+    var epoll_event = std.os.linux.epoll_event{ .events = std.os.linux.EPOLL.IN | std.os.linux.EPOLL.OUT | std.os.linux.EPOLL.ET, .data = .{ .fd = tcp_server.stream.handle } };
+
     try posix.epoll_ctl(
         epoll_fd,
         std.os.linux.EPOLL.CTL_ADD,
