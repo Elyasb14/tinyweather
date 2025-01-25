@@ -40,6 +40,10 @@ pub fn main() !void {
     defer server.deinit();
     std.log.info("\x1b[32mNode TCP Server listening on\x1b[0m: {any}", .{server_address});
 
+    var pool: std.Thread.Pool = undefined;
+    try pool.init(std.Thread.Pool.Options{ .allocator = allocator, .n_jobs = 5 });
+    defer pool.deinit();
+
     while (true) {
         const connection = server.accept() catch |err| {
             std.log.err("\x1b[31mNode Server failed to connect to client:\x1b[0m {any}", .{err});
