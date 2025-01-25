@@ -22,6 +22,18 @@ fn handle_client(connection: net.Server.Connection, allocator: std.mem.Allocator
     };
 }
 
+fn listen(server: *std.net.Server, allocator: std.mem.Allocator) void {
+    while (true) {
+        const connection = server.accept() catch |err| {
+            std.log.err("\x1b[31mNode Server failed to connect to client:\x1b[0m {any}", .{err});
+            continue;
+        };
+        std.log.info("\x1b[32mConnection established with\x1b[0m: {any}", .{connection.address});
+
+        try handle_client(connection, allocator);
+    }
+}
+
 pub fn main() !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
@@ -44,13 +56,5 @@ pub fn main() !void {
     try pool.init(std.Thread.Pool.Options{ .allocator = allocator, .n_jobs = 5 });
     defer pool.deinit();
 
-    while (true) {
-        const connection = server.accept() catch |err| {
-            std.log.err("\x1b[31mNode Server failed to connect to client:\x1b[0m {any}", .{err});
-            continue;
-        };
-        std.log.info("\x1b[32mConnection established with\x1b[0m: {any}", .{connection.address});
-
-        try handle_client(connection, allocator);
-    }
+    try pool.spawn(listen, .{ &server, allocator });
 }
