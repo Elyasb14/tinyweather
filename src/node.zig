@@ -10,7 +10,7 @@ pub const std_options: std.Options = .{
     .log_level = .debug,
 };
 
-fn handle_client(connection: net.Server.Connection, allocator: std.mem.Allocator) !void {
+pub fn handle_client(connection: net.Server.Connection, allocator: std.mem.Allocator) !void {
     var handler = handlers.NodeConnectionHandler.init(connection.stream);
     defer handler.deinit();
     handler.handle(allocator) catch |e| {
@@ -22,7 +22,7 @@ fn handle_client(connection: net.Server.Connection, allocator: std.mem.Allocator
     };
 }
 
-fn listen(server: *std.net.Server, allocator: std.mem.Allocator) void {
+pub fn listen(server: *std.net.Server, allocator: std.mem.Allocator) void {
     while (true) {
         const connection = server.accept() catch |err| {
             std.log.err("\x1b[31mNode Server failed to connect to client:\x1b[0m {any}", .{err});
