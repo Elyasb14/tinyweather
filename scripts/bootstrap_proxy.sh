@@ -14,7 +14,7 @@ fi
 
 echo -e "\x1b[32mBeginning the bootstrapping of tinyweather-proxy\x1b[0m"
 echo -e "\x1b[33mBuilding tinyweather-proxy with 'zig build'...\x1b[0m"
-zig build -Doptimize=ReleaseSafe
+zig build 
 
 
 echo -e "\x1b[33mPreparing /opt/tinyweather directory...\x1b[0m"
