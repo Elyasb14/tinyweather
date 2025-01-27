@@ -9,24 +9,43 @@ pub const std_options: std.Options = .{
     .log_level = .debug,
 };
 
-pub fn handle_connection(connection: net.Server.Connection, allocator: std.mem.Allocator) !void {
+// Modify handle_connection to return void instead of error
+fn handle_connection(connection: net.Server.Connection, allocator: std.mem.Allocator) void {
     var handler = handlers.ProxyConnectionHandler.init(connection);
     defer handler.deinit();
 
     handler.handle(allocator) catch |e| {
         std.log.warn("\x1b[33mError handling client connection:\x1b[0m {s}", .{@errorName(e)});
-        return;
+        connection.stream.close();
     };
 }
 
-pub fn listen(tcp_server: *std.net.Server, allocator: std.mem.Allocator) void {
-    while (true) {
-        const conn = tcp_server.accept() catch |err| {
-            std.log.err("\x1b[31mProxy Server failed to connect to client:\x1b[0m {any}", .{err});
-            continue;
-        };
+const ServerContext = struct {
+    server: *std.net.Server,
+    pool: *std.Thread.Pool,
+    allocator: std.mem.Allocator,
+};
 
-        try handle_connection(conn, allocator);
+// Modify connection_handler to return void and handle errors internally
+fn connection_handler(context: ServerContext) void {
+    const conn = context.server.accept() catch |err| {
+        std.log.err("\x1b[31mProxy Server failed to connect to client:\x1b[0m {any}", .{err});
+        return;
+    };
+
+    // Now spawning a void function
+    context.pool.spawn(handle_connection, .{ conn, context.allocator }) catch |err| {
+        std.log.err("Failed to spawn connection handler: {any}", .{err});
+        conn.stream.close();
+    };
+}
+
+// Modify listen to return void
+fn listen(server_context: ServerContext) void {
+    while (true) {
+        connection_handler(server_context);
+        // Add a small delay to prevent tight loop on repeated errors
+        std.time.sleep(std.time.ns_per_ms * 10);
     }
 }
 
@@ -44,13 +63,33 @@ pub fn main() !void {
         .reuse_address = true,
         .reuse_port = true,
     });
-
     defer tcp_server.deinit();
+
     std.log.info("\x1b[32mProxy TCP Server listening on\x1b[0m: {any}", .{server_address});
 
     var pool: std.Thread.Pool = undefined;
-    try pool.init(std.Thread.Pool.Options{ .allocator = allocator, .n_jobs = 5 });
+    try pool.init(std.Thread.Pool.Options{ .allocator = allocator, .n_jobs = @min(5, try std.Thread.getCpuCount()) });
     defer pool.deinit();
 
-    try pool.spawn(listen, .{ &tcp_server, allocator });
+    const context = ServerContext{
+        .server = &tcp_server,
+        .pool = &pool,
+        .allocator = allocator,
+    };
+
+    // Start multiple listener threads
+    const listener_count = 2;
+    var i: usize = 0;
+    while (i < listener_count) : (i += 1) {
+        // Handle spawn error
+        pool.spawn(listen, .{context}) catch |err| {
+            std.log.err("Failed to spawn listener: {any}", .{err});
+            continue;
+        };
+    }
+
+    // Wait indefinitely
+    while (true) {
+        std.time.sleep(std.time.ns_per_s);
+    }
 }
