@@ -77,16 +77,11 @@ pub fn main() !void {
         .allocator = allocator,
     };
 
-    // Start multiple listener threads
-    const listener_count = 2;
-    var i: usize = 0;
-    while (i < listener_count) : (i += 1) {
-        // Handle spawn error
-        pool.spawn(listen, .{context}) catch |err| {
-            std.log.err("Failed to spawn listener: {any}", .{err});
-            continue;
-        };
-    }
+    // Handle spawn error
+    pool.spawn(listen, .{context}) catch |err| {
+        std.log.err("Failed to spawn listener: {any}", .{err});
+        return;
+    };
 
     // Wait indefinitely
     while (true) {
