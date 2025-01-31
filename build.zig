@@ -31,14 +31,6 @@ pub fn build(b: *std.Build) void {
     proxy_exe.linkLibrary(tcp_lib);
     proxy_exe.linkLibrary(handlers_lib);
 
-    const web_exe = b.addExecutable(.{
-        .name = "tinyweather-web",
-        .root_source_file = b.path("src/web/server.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-
-    b.installArtifact(web_exe);
     b.installArtifact(node_exe);
     b.installArtifact(proxy_exe);
     b.installArtifact(tcp_lib);
@@ -46,7 +38,6 @@ pub fn build(b: *std.Build) void {
 
     const run_node = b.addRunArtifact(node_exe);
     const run_proxy = b.addRunArtifact(proxy_exe);
-    const run_web = b.addRunArtifact(web_exe);
 
     const run_node_step = b.step("run-node", "Run the Tinyweather node server");
     run_node_step.dependOn(&run_node.step);
@@ -54,13 +45,9 @@ pub fn build(b: *std.Build) void {
     const run_proxy_step = b.step("run-proxy", "Run the Tinyweather proxy");
     run_proxy_step.dependOn(&run_proxy.step);
 
-    const run_web_step = b.step("run-web", "Run the Tinyweather web server");
-    run_web_step.dependOn(&run_web.step);
-
     const run_all_step = b.step("run-all", "Run all Tinyweather executables");
     run_all_step.dependOn(&run_node.step);
     run_all_step.dependOn(&run_proxy.step);
-    run_all_step.dependOn(&run_web.step);
 
     const libtcp_unit_tests = b.addTest(.{
         .root_source_file = b.path("src/lib/tcp.zig"),
