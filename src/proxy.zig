@@ -45,7 +45,10 @@ pub fn main() !void {
     defer pool.deinit();
 
     while (true) {
-        const conn = try tcp_server.accept();
+        const conn = tcp_server.accept() catch |err| {
+            std.log.err("\x1b[31mProxy Server failed to connect to client:\x1b[0m {any}", .{err});
+            continue;
+        };
         try pool.spawn(handle_connection, .{ conn, allocator });
     }
 }
