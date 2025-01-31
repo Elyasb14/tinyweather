@@ -10,28 +10,18 @@ pub const std_options: std.Options = .{
     .log_level = .debug,
 };
 
-pub fn handle_client(connection: net.Server.Connection, allocator: std.mem.Allocator) !void {
+pub fn handle_client(connection: net.Server.Connection, allocator: std.mem.Allocator) void {
     var handler = handlers.NodeConnectionHandler.init(connection.stream);
     defer handler.deinit();
     handler.handle(allocator) catch |e| {
         std.log.warn("\x1b[33mError handling client connection:\x1b[0m {s}", .{@errorName(e)});
+        connection.stream.close();
         return;
     } orelse {
         std.log.warn("\xb1[33mRead 0 bytes from connection\x1b[0m", .{});
+        connection.stream.close();
         return;
     };
-}
-
-pub fn listen(server: *std.net.Server, allocator: std.mem.Allocator) void {
-    while (true) {
-        const connection = server.accept() catch |err| {
-            std.log.err("\x1b[31mNode Server failed to connect to client:\x1b[0m {any}", .{err});
-            continue;
-        };
-        std.log.info("\x1b[32mConnection established with\x1b[0m: {any}", .{connection.address});
-
-        try handle_client(connection, allocator);
-    }
 }
 
 pub fn main() !void {
@@ -56,5 +46,8 @@ pub fn main() !void {
     try pool.init(std.Thread.Pool.Options{ .allocator = allocator, .n_jobs = 5 });
     defer pool.deinit();
 
-    try pool.spawn(listen, .{ &server, allocator });
+    while (true) {
+        const conn = try server.accept();
+        try pool.spawn(handle_client, .{ conn, allocator });
+    }
 }
