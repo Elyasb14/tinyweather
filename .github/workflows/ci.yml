@@ -83,13 +83,15 @@ jobs:
       - name: bootstrap prometheus
         run: sudo ./scripts/bootstrap_prometheus.sh
 
-      - name: test curl end to end parallel
-        run: for i in {1..30}; do curl --parallel localhost:8081/metrics localhost:8081/metrics -H "Sensor:Temp"; done 
-      
+      - name: test curl end to end parallel small number 
+        run: for i in {1..10}; do curl --parallel localhost:8081/metrics localhost:8081/metrics -H "Sensor:Temp"; done 
+
+      - name: test curl end to end parallel large number 
+        run: for i in {1..100}; do curl --parallel localhost:8081/metrics localhost:8081/metrics -H "Sensor:Temp"; done 
+
       - name: query prometheus server
 
         run: |
-          sleep 16
           /opt/prometheus/promtool query instant http://localhost:9090 'Temp'
 
       - name: dump tinyweather-node logs
@@ -107,7 +109,3 @@ jobs:
       - name: test proxy still alive
         run: systemctl status tinyweather-proxy
 
-      # - name: test nginx still alive
-      #   run: systemctl status nginx
-
-      
