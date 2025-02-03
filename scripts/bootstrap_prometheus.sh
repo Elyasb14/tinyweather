@@ -23,7 +23,7 @@ fi
 
 echo -e "\x1b[33mBootstrapping Prometheus on system"
 echo -e "\x1b[33mGet and build prometheus\x1b[0m"
-wget https://github.com/prometheus/prometheus/releases/download/v3.1.0/prometheus-3.1.0.linux-arm64.tar.gz
+wget --quiet https://github.com/prometheus/prometheus/releases/download/v3.1.0/prometheus-3.1.0.linux-arm64.tar.gz
 tar xf prometheus-3.1.0.linux-arm64.tar.gz
 touch prometheus.yml
 # creates a prometheus config
