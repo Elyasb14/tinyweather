@@ -66,6 +66,7 @@ echo -e "\x1b[32mSystemd daemon reloaded successfully.\x1b[0m"
 
 echo -e "\x1b[33mStarting the tinyweather-node service...\x1b[0m"
 systemctl start tinyweather-node
+systemctl enable tinyweather-node
 echo -e "\x1b[32mtinyweather-node service started.\x1b[0m"
 
 systemctl status tinyweather-node

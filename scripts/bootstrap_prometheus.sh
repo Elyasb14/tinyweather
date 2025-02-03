@@ -14,8 +14,8 @@ echo -e "\x1b[33mBootstrapping Prometheus on system"
 
 echo -e "\x1b[33mGet and build prometheus\x1b[0m"
 
-wget https://github.com/prometheus/prometheus/releases/download/v3.1.0/prometheus-3.1.0.linux-amd64.tar.gz
-tar xf prometheus-3.1.0.linux-amd64.tar.gz
+wget https://github.com/prometheus/prometheus/releases/download/v3.1.0/prometheus-3.1.0.linux-arm64.tar.gz
+tar xf prometheus-3.1.0.linux-arm64.tar.gz
 
 touch prometheus.yml
 
@@ -24,30 +24,19 @@ echo "global:
   scrape_interval: 15s
 
 scrape_configs:
-  - job_name: tinyweather-localhost-8082
+  - job_name: node \"10.0.2.13\" 
     static_configs:
-      - targets: [\"localhost:8081\"]
+      - targets: [\"10.0.2.14:8081\"]
     http_headers:
       Address: 
-        values: [\"127.0.0.1\"]
+        values: [\"10.0.2.13\"]
       Port: 
-        values: [\"8082\"]
+        values: [\"8080\"]
       Sensor:
-        values: [\"Temp\"] 
-
-  - job_name: tinyweather-localhost-8083
-    static_configs:
-      - targets: [\"localhost:8081\"]
-    http_headers:
-      Address: 
-        values: [\"127.0.0.1\"]
-      Port: 
-        values: [\"8083\"]
-      Sensor:
-        values: [\"Hum\"]" >> ./prometheus.yml
+        values: [\"Temp\", \"RainTotalAcc\"]" >> ./prometheus.yml
 
 # checks that the config is valid
-./prometheus-3.1.0.linux-amd64/promtool check config prometheus.yml
+./prometheus-3.1.0.linux-arm64/promtool check config prometheus.yml
 
 rm -rf /opt/prometheus
 echo -e "\x1b[33mPreparing /opt/prometheus directory...\x1b[0m"
@@ -56,7 +45,7 @@ mkdir -p /opt/prometheus
 mv ./prometheus.yml /opt/prometheus/prometheus.yml
 
 echo -e "\x1b[33mMoving newly built prometheus executable to /opt/prometheus\x1b[0m"
-mv ./prometheus-3.1.0.linux-amd64/prometheus /opt/prometheus/prometheus
+mv ./prometheus-3.1.0.linux-arm64/prometheus /opt/prometheus/prometheus
 
 echo -e "\x1b[33mCreating systemd service file at /etc/systemd/system/prometheus.service...\x1b[0m"
 touch /etc/systemd/system/prometheus.service
@@ -71,7 +60,7 @@ After=network.target
 Type=simple
 Restart=always
 RestartSec=5s
-ExecStart=/opt/prometheus/prometheus --config.file=./prometheus.yml 
+ExecStart=/opt/prometheus/prometheus --web.listen-address="10.0.2.14:9090" --config.file=./prometheus.yml 
 WorkingDirectory=/opt/prometheus
 
 [Install]
@@ -84,9 +73,10 @@ echo -e "\x1b[32mSystemd daemon reloaded successfully.\x1b[0m"
 
 echo -e "\x1b[33mStarting the prometheus service...\x1b[0m"
 systemctl start prometheus
+systemctl enable prometheus
 echo -e "\x1b[32mprometheus service started.\x1b[0m"
 
-mv ./prometheus-3.1.0.linux-amd64/promtool /opt/prometheus/promtool
+mv ./prometheus-3.1.0.linux-arm64/promtool /opt/prometheus/promtool
 
 rm -rf prometheus*
 
