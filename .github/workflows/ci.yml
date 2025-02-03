@@ -90,9 +90,7 @@ jobs:
         run: for i in {1..100}; do curl --parallel localhost:8081/metrics localhost:8081/metrics -H "Sensor:Temp"; done 
 
       - name: query prometheus server
-
-        run: |
-          /opt/prometheus/promtool query instant http://localhost:9090 'Temp'
+        run: /opt/prometheus/promtool query instant http://localhost:9090 'Temp'
 
       - name: dump tinyweather-node logs
         run: journalctl -u tinyweather-node.service
