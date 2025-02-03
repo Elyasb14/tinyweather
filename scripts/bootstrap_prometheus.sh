@@ -72,6 +72,6 @@ echo -e "\x1b[33mStarting the prometheus service...\x1b[0m"
 systemctl start prometheus
 systemctl enable prometheus
 echo -e "\x1b[32mprometheus service started.\x1b[0m"
-mv ./prometheus-3.1.0.linux-arm64/promtool /opt/prometheus/promtool
+mv ./prometheus-3.1.0.linux-amd64/promtool /opt/prometheus/promtool
 rm -rf prometheus*
 systemctl status prometheus
