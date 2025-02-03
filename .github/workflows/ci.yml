@@ -75,13 +75,13 @@ jobs:
           sudo ln -s "$(which zig)" /usr/local/bin/zig
 
       - name: bootstrap tinyweather-node 
-        run: sudo ./scripts/bootstrap_node.sh
+        run: sudo ./scripts/bootstrap_node.sh 127.0.0.1 8080
 
       - name: bootstrap tinyweather-proxy
-        run: sudo ./scripts/bootstrap_proxy.sh
+        run: sudo ./scripts/bootstrap_proxy.sh 127.0.0.1 8081
 
       - name: bootstrap prometheus
-        run: sudo ./scripts/bootstrap_prometheus.sh
+        run: sudo ./scripts/bootstrap_prometheus.sh 127.0.0.1:9090
 
       - name: test curl end to end parallel small number 
         run: for i in {1..10}; do curl --parallel localhost:8081/metrics localhost:8081/metrics -H "Sensor:Temp"; done 
