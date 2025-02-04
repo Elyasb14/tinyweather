@@ -17,3 +17,19 @@ if [[ -f /etc/systemd/system/grafana.service ]]; then
 fi
 
 touch /etc/systemd/system/grafana.service
+
+echo "
+[Unit]
+Description=Grafana
+After=network.target
+[Service]
+Type=simple
+Restart=always
+RestartSec=5s
+ExecStart=/opt/grafana/bin/grafana-server
+WorkingDirectory=/opt/grafana
+[Install]
+WantedBy=multi-user.target" >> /etc/systemd/system/grafana.service
+
+systemctl start grafana.service
+systemctl enable grafana.service
