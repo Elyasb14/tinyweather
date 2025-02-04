@@ -39,7 +39,7 @@ scrape_configs:
       Port: 
         values: [\"8080\"]
       Sensor:
-        values: [\"Temp\", \"RainTotalAcc\"]" >> ./prometheus.yml
+        values: [\"Temp\", \"RainTotalAcc\", \"Hum\", \"Pres\", \"Gas\"]" >> ./prometheus.yml
 
 ./prometheus-3.1.0.linux-${ARCH}/promtool check config prometheus.yml
 rm -rf /opt/prometheus
