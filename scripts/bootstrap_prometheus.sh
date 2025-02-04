@@ -1,6 +1,6 @@
 #! /bin/bash
 
-ARCH=$uname -m
+ARCH=$(uname -m)
 
 if [ $# -ne 1 ]; then
     echo -e "\x1b[31mError: Please provide the web listen address.\x1b[0m"
