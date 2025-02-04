@@ -4,7 +4,6 @@ if [[ -d /opt/grafana ]]; then
   rm -rf /opt/grafana
 fi
 
-
 wget https://dl.grafana.com/oss/release/grafana-11.5.1.linux-arm64.tar.gz
 tar -zxvf grafana-11.5.1.linux-arm64.tar.gz
 
