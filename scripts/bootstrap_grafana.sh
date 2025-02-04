@@ -30,5 +30,7 @@ WorkingDirectory=/opt/grafana
 [Install]
 WantedBy=multi-user.target" >> /etc/systemd/system/grafana.service
 
+systemctl daemon-reload
 systemctl start grafana.service
 systemctl enable grafana.service
+systemctl status grafana.service
