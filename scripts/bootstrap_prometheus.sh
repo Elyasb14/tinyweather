@@ -1,5 +1,7 @@
 #! /bin/bash
 
+ARCH = uname -m
+
 if [ $# -ne 1 ]; then
     echo -e "\x1b[31mError: Please provide the web listen address.\x1b[0m"
     echo -e "\x1b[33mUsage: $0 <web-listen-address>\x1b[0m"
@@ -19,8 +21,8 @@ else
     echo -e "\x1b[32mNo existing prometheus service file found. Skipping removal steps.\x1b[0m"
 fi
 
-wget --quiet https://github.com/prometheus/prometheus/releases/download/v3.1.0/prometheus-3.1.0.linux-arm64.tar.gz
-tar xf prometheus-3.1.0.linux-arm64.tar.gz
+wget --quiet https://github.com/prometheus/prometheus/releases/download/v3.1.0/prometheus-3.1.0.linux-$ARCH.tar.gz
+tar xf prometheus-3.1.0.linux-$ARCH.tar.gz
 touch prometheus.yml
 
 echo "global:
@@ -37,11 +39,11 @@ scrape_configs:
       Sensor:
         values: [\"Temp\", \"RainTotalAcc\"]" >> ./prometheus.yml
 
-./prometheus-3.1.0.linux-arm64/promtool check config prometheus.yml
+./prometheus-3.1.0.linux-$ARCH/promtool check config prometheus.yml
 rm -rf /opt/prometheus
 mkdir -p /opt/prometheus
 mv ./prometheus.yml /opt/prometheus/prometheus.yml
-mv ./prometheus-3.1.0.linux-arm64/prometheus /opt/prometheus/prometheus
+mv ./prometheus-3.1.0.linux-$ARCH/prometheus /opt/prometheus/prometheus
 touch /etc/systemd/system/prometheus.service
 echo "
 [Unit]
@@ -59,6 +61,6 @@ WantedBy=multi-user.target" >> /etc/systemd/system/prometheus.service
 systemctl daemon-reload
 systemctl start prometheus
 systemctl enable prometheus
-mv ./prometheus-3.1.0.linux-arm64/promtool /opt/prometheus/promtool
+mv ./prometheus-3.1.0.linux-$ARCH/promtool /opt/prometheus/promtool
 rm -rf prometheus*
 systemctl status prometheus
