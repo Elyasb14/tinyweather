@@ -2,9 +2,11 @@
 
 ARCH=$(uname -m)
 
-if [[ $ARCH == $'x86_64' ]]; then
-    $ARCH=$amd64
+if [ "$ARCH" = "x86_64" ]; then
+    ARCH="amd64"
 fi
+
+echo "ARCH is set to: $ARCH"
 
 if [[ -d /opt/grafana ]]; then 
   rm -rf /opt/grafana
