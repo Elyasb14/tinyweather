@@ -71,8 +71,7 @@ jobs:
           version: 0.13.0  
 
       - name: Add Zig to system-wide PATH
-        run: |
-          sudo ln -s "$(which zig)" /usr/local/bin/zig
+        run: sudo ln -s "$(which zig)" /usr/local/bin/zig
 
       - name: bootstrap tinyweather-node 
         run: sudo ./scripts/bootstrap_node.sh 127.0.0.1 8080
@@ -83,6 +82,9 @@ jobs:
       - name: bootstrap prometheus
         run: sudo ./scripts/bootstrap_prometheus.sh 127.0.0.1:9090
 
+      - name: bootstrap grafana
+        run: sudo ./scripts/bootstrap_grafana.sh
+
       - name: test curl end to end parallel small number 
         run: for i in {1..10}; do curl --parallel localhost:8081/metrics localhost:8081/metrics -H "Sensor:Temp"; done 
 
@@ -90,9 +92,7 @@ jobs:
         run: for i in {1..100}; do curl --parallel localhost:8081/metrics localhost:8081/metrics -H "Sensor:Temp"; done 
 
       - name: query prometheus server
-
-        run: |
-          /opt/prometheus/promtool query instant http://localhost:9090 'Temp'
+        run: /opt/prometheus/promtool query instant http://localhost:9090 'Temp'
 
       - name: dump tinyweather-node logs
         run: journalctl -u tinyweather-node.service
@@ -108,4 +108,10 @@ jobs:
 
       - name: test proxy still alive
         run: systemctl status tinyweather-proxy
+
+      - name: test prometheus still alive
+        run: systemctl status prometheus
+
+      - name: test grafana still alive
+        run: systemctl status grafana
 
