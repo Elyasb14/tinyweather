@@ -2,6 +2,10 @@
 
 ARCH=$(uname -m)
 
+if [[ $ARCH == 'x86_64' ]]; then
+    ARCH=$amd64
+fi
+
 if [ $# -ne 1 ]; then
     echo -e "\x1b[31mError: Please provide the web listen address.\x1b[0m"
     echo -e "\x1b[33mUsage: $0 <web-listen-address>\x1b[0m"
@@ -17,8 +21,6 @@ if [[ -f /etc/systemd/system/prometheus.service ]]; then
     rm /etc/systemd/system/prometheus.service
     systemctl daemon-reload
     echo -e "\x1b[32mSystemd daemon reloaded successfully.\x1b[0m"
-else
-    echo -e "\x1b[32mNo existing prometheus service file found. Skipping removal steps.\x1b[0m"
 fi
 
 wget --quiet https://github.com/prometheus/prometheus/releases/download/v3.1.0/prometheus-3.1.0.linux-$ARCH.tar.gz
