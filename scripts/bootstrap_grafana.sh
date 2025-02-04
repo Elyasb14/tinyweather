@@ -10,7 +10,7 @@ if [[ -d /opt/grafana ]]; then
   rm -rf /opt/grafana
 fi
 
-wget https://dl.grafana.com/oss/release/grafana-11.5.1.linux-${ARCH}.tar.gz
+wget --quiet https://dl.grafana.com/oss/release/grafana-11.5.1.linux-${ARCH}.tar.gz
 tar -zxvf grafana-11.5.1.linux-${ARCH}.tar.gz
 
 rm -rf grafana-11.5.1.linux-${ARCH}.tar.gz
