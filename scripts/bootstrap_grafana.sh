@@ -1,6 +1,6 @@
 #! /bin/bash
 
-ARCH = uname -m
+ARCH=$uname -m
 
 if [[ -d /opt/grafana ]]; then 
   rm -rf /opt/grafana
