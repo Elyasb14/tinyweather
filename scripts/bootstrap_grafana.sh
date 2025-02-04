@@ -6,16 +6,14 @@ if [ "$ARCH" = "x86_64" ]; then
     ARCH="amd64"
 fi
 
-echo "ARCH is set to: $ARCH"
-
 if [[ -d /opt/grafana ]]; then 
   rm -rf /opt/grafana
 fi
 
-wget https://dl.grafana.com/oss/release/grafana-11.5.1.linux-$ARCH.tar.gz
-tar -zxvf grafana-11.5.1.linux-$ARCH.tar.gz
+wget https://dl.grafana.com/oss/release/grafana-11.5.1.linux-${ARCH}.tar.gz
+tar -zxvf grafana-11.5.1.linux-${ARCH}.tar.gz
 
-rm -rf grafana-11.5.1.linux-$ARCH.tar.gz
+rm -rf grafana-11.5.1.linux-${ARCH}.tar.gz
 
 mv grafana* /opt/grafana
 
