@@ -43,10 +43,10 @@ pub const Packet = struct {
         if (buf.len < 34) return TCPError.BadPacket; // 1 byte version + 1 byte type + 32 bytes hash
         if (buf[0] != 1) return TCPError.VersionError;
 
+        const version = buf[0];
         const packet_type = @as(PacketType, @enumFromInt(buf[1]));
         var hash: [32]u8 = undefined;
         @memcpy(&hash, buf[2..34]);
-
         const data = buf[34..];
 
         // Verify hash
@@ -57,7 +57,7 @@ pub const Packet = struct {
         }
 
         return Packet{
-            .version = buf[0],
+            .version = version,
             .type = packet_type,
             .hash = hash,
             .data = data,
