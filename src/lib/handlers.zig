@@ -94,6 +94,7 @@ pub const ProxyConnectionHandler = struct {
 
         std.log.info("\x1b[32mBytes read by stream\x1b[0m: {any}", .{n});
         const decoded_packet = try tcp.Packet.decode(buf[0..n]);
+        std.log.info("\x1b[32mPacket recieved\x1b[0m: {any}", .{decoded_packet});
         switch (decoded_packet.type) {
             .SensorResponse => {
                 const decoded_sensor_response = try tcp.SensorResponse.decode(sensor_request, decoded_packet.data, allocator);
