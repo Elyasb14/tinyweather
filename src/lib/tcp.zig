@@ -13,6 +13,7 @@ pub const TCPError = error{ VersionError, InvalidPacketType, InvalidSensorType, 
 pub const Packet = struct {
     version: u8,
     type: PacketType,
+    hash: [32]u8, // Blake3 produces a 32-byte hash
     data: []const u8,
 
     const Self = @This();
@@ -24,26 +25,45 @@ pub const Packet = struct {
             std.log.warn("\x1b[33mTrying to construct a packet with no data, did you forget http headers? Why would we be trying to do this?\x1b[0m", .{});
         }
 
-        return Packet{ .version = version, .type = packet_type, .data = data };
+        var hash: [32]u8 = undefined;
+        std.crypto.hash.Blake3.hash(data, &hash, .{});
+        return Packet{ .version = version, .type = packet_type, .hash = hash, .data = data };
     }
 
     pub fn encode(self: Self, allocator: std.mem.Allocator) Allocator.Error![]u8 {
         var buf = ArrayList(u8).init(allocator);
         try buf.append(self.version);
         try buf.append(@intFromEnum(self.type));
+        try buf.appendSlice(&self.hash);
         try buf.appendSlice(self.data);
         return buf.toOwnedSlice();
     }
 
-    /// takes encoded buffer ([]const u8), constructs a packet
     pub fn decode(buf: []const u8) TCPError!Packet {
-        assert(buf.len > 0);
+        if (buf.len < 34) return TCPError.BadPacket; // 1 byte version + 1 byte type + 32 bytes hash
         if (buf[0] != 1) return TCPError.VersionError;
+
         const packet_type = @as(PacketType, @enumFromInt(buf[1]));
-        return Packet.init(buf[0], packet_type, buf[2..]);
+        var hash: [32]u8 = undefined;
+        @memcpy(&hash, buf[2..34]);
+
+        const data = buf[34..];
+
+        // Verify hash
+        var computed_hash: [32]u8 = undefined;
+        std.crypto.hash.Blake3.hash(data, &computed_hash, .{});
+        if (!std.mem.eql(u8, &hash, &computed_hash)) {
+            return TCPError.BadPacket;
+        }
+
+        return Packet{
+            .version = buf[0],
+            .type = packet_type,
+            .hash = hash,
+            .data = data,
+        };
     }
 };
-
 pub const SensorRequest = struct {
     sensors: []const SensorType,
 
