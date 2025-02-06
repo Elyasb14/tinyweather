@@ -17,7 +17,6 @@ fn handle_connection(connection: net.Server.Connection, allocator: std.mem.Alloc
 
     handler.handle(allocator) catch |e| {
         std.log.warn("\x1b[33mError handling client connection:\x1b[0m {s}", .{@errorName(e)});
-        connection.stream.close();
         return;
     };
 }
