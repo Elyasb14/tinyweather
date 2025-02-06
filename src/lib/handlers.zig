@@ -19,7 +19,7 @@ pub const NodeConnectionHandler = struct {
     }
 
     pub fn handle(self: *NodeConnectionHandler, allocator: Allocator) !?void {
-        var buf: [50]u8 = undefined;
+        var buf: [100]u8 = undefined;
         const bytes_read = try self.stream.read(&buf);
         if (bytes_read == 0) return null;
         std.log.info("\x1b[32mBytes read by connection\x1b[0m: {any}", .{bytes_read});
@@ -81,7 +81,7 @@ pub const ProxyConnectionHandler = struct {
         const packet = tcp.Packet.init(1, tcp.PacketType.SensorRequest, sensor_request_encoded);
         const encoded_packet = try packet.encode(allocator);
 
-        var buf: [50]u8 = undefined;
+        var buf: [100]u8 = undefined;
         std.log.info("\x1b[32mPacket Sent\x1b[0m: {any}", .{packet});
         _ = node_stream.write(encoded_packet) catch |err| {
             std.log.warn("\x1b[33mCan't write to the node\x1b[0m: {s}", .{@errorName(err)});
