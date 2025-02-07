@@ -5,6 +5,7 @@ const tcp = @import("lib/tcp.zig");
 const handlers = @import("lib/handlers.zig");
 const Args = @import("lib/Args.zig");
 const builtin = @import("builtin");
+const xev = @import("xev");
 
 pub const std_options: std.Options = .{
     .log_level = .debug,

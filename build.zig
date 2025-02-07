@@ -32,7 +32,7 @@ pub fn build(b: *std.Build) void {
     proxy_exe.addIncludePath(b.path("src"));
     proxy_exe.linkLibrary(tcp_lib);
     proxy_exe.linkLibrary(handlers_lib);
-    proxy_exe.addModule("xev", xev.module("xev"));
+    proxy_exe.root_module.addImport("xev", xev.module("xev"));
 
     b.installArtifact(node_exe);
     b.installArtifact(proxy_exe);
