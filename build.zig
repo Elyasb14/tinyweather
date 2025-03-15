@@ -37,7 +37,6 @@ pub fn build(b: *std.Build) void {
         b.getInstallStep().dependOn(&node_exe.step);
         b.getInstallStep().dependOn(&tcp_lib.step);
         b.getInstallStep().dependOn(&handlers_lib.step);
-
     } else {
         b.installArtifact(proxy_exe);
         b.installArtifact(node_exe);
