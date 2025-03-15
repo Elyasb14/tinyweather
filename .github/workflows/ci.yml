@@ -38,7 +38,7 @@ jobs:
       - name: Run size script
         run: python size.py
 
-  run_local_test:
+  run_infra_tests:
     runs-on: ubuntu-latest
 
     steps:
@@ -60,8 +60,10 @@ jobs:
       - name: Run test_local 
         run: python test/test_local.py 
 
-      - name: Run hotswap_twnode.sh and test it
+      - name: test hotswap_node.sh 
         run: |
+          sudo ./scripts/bootstrap_node.sh
+          mkdir /opt/tinyweather
           chmod +x scripts/hotswap_twnode.sh
           sudo ./scripts/hotswap_twnode.sh
 
