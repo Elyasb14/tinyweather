@@ -8,3 +8,5 @@ zig build
 
 mv zig-out/bin/tinyweather-node /opt/tinyweather/
 systemctl restart tinyweather-node.service
+systemctl enable tinyweather-node.service
+systemctl status tinyweather-node.service 
