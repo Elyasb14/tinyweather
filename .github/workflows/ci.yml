@@ -60,6 +60,11 @@ jobs:
       - name: Run test_local 
         run: python test/test_local.py 
 
+      - name: Run hotswap_twnode.sh and test it
+        run: |
+          chmod +x scripts/hotswap_twnode.sh
+          sudo ./scripts/hotswap_twnode.sh
+
   test_end_to_end:
     runs-on: ubuntu-latest
 
