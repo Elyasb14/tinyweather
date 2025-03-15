@@ -6,6 +6,5 @@ fi
 
 zig build
 
-mv ../zig-out/bin/tinyweather-node
-
+mv zig-out/bin/tinyweather-node /opt/tinyweather/
 systemctl restart tinyweather-node.service
