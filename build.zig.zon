@@ -1,6 +1,7 @@
 .{
-    .name = "tinyweather",
+    .name = .tinyweather, 
     .version = "0.0.0",
-    .minimum_zig_version = "0.13.0",
+    .minimum_zig_version = "0.14.0",
     .paths = .{ "build.zig", "build.zig.zon", "src", "README" },
+    .fingerprint = 0xfe8c63ba12aef272,
 }
