@@ -12,7 +12,7 @@ jobs:
     - name: Set up Zig
       uses: mlugg/setup-zig@v1 
       with:
-        version: 0.13.0  
+        version: 0.14.0  
 
     
     - name: Build
@@ -46,7 +46,7 @@ jobs:
       - name: Install zig 
         uses: mlugg/setup-zig@v1 
         with:
-          version: 0.13.0  
+          version: 0.14.0  
 
       - name: Add Zig to system-wide PATH
         run: |
@@ -68,7 +68,7 @@ jobs:
       - name: Install zig 
         uses: mlugg/setup-zig@v1 
         with:
-          version: 0.13.0  
+          version: 0.14.0  
 
       - name: Add Zig to system-wide PATH
         run: sudo ln -s "$(which zig)" /usr/local/bin/zig
