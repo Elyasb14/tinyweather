@@ -48,20 +48,17 @@ jobs:
         with:
           version: 0.14.0  
 
-      - name: Add Zig to system-wide PATH
-        run: |
-          sudo ln -s "$(which zig)" /usr/local/bin/zig
-
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
           python-version: 3.12
+
+      - name: Add Zig to system-wide PATH
+        run: |
+          sudo ln -s "$(which zig)" /usr/local/bin/zig
     
       - name: Run test_local 
         run: python test/test_local.py 
-
-      - name: Add Zig to system-wide PATH
-        run: sudo ln -s "$(which zig)" /usr/local/bin/zig
 
       - name: test hotswap_node.sh 
         run: |
