@@ -6,7 +6,6 @@ const device = @import("device.zig");
 const helpers = @import("helpers.zig");
 const net = std.net;
 
-
 pub const PacketType = enum(u8) { SensorRequest, SensorResponse };
 pub const SensorType = enum(u8) { Temp, Pres, Hum, Gas, RainAcc, RainEventAcc, RainTotalAcc, RainRInt };
 pub const TCPError = error{ VersionError, InvalidPacketType, InvalidSensorType, DeviceError, BadPacket, ConnectionError };
