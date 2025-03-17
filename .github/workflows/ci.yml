@@ -66,6 +66,7 @@ jobs:
           sudo mkdir /opt/tinyweather
           chmod +x scripts/hotswap_twnode.sh
           sudo ./scripts/hotswap_twnode.sh
+          journalctl -u tinyweather-node.service
 
   test_end_to_end:
     runs-on: ubuntu-latest
