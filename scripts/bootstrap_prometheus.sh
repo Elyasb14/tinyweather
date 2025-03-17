@@ -30,7 +30,7 @@ touch prometheus.yml
 echo "global:
   scrape_interval: 15s
 scrape_configs:
-  - job_name: node \"10.0.2.13\" 
+  - job_name: node 10.0.2.13
     static_configs:
       - targets: [\"10.0.2.14:8081\"]
     http_headers:
