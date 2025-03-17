@@ -63,7 +63,7 @@ jobs:
       - name: test hotswap_node.sh 
         run: |
           sudo ./scripts/bootstrap_node.sh 127.0.0.1 8080
-          mkdir /opt/tinyweather
+          sudo mkdir /opt/tinyweather
           chmod +x scripts/hotswap_twnode.sh
           sudo ./scripts/hotswap_twnode.sh
 
