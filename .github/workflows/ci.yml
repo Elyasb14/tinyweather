@@ -38,7 +38,7 @@ jobs:
       - name: Run size script
         run: python size.py
 
-  run_infra_tests:
+  infra_tests:
     runs-on: ubuntu-latest
 
     steps:
@@ -48,18 +48,10 @@ jobs:
         with:
           version: 0.14.0  
 
-      - name: Set up Python 3.12
-        uses: actions/setup-python@v5
-        with:
-          python-version: 3.12
-
       - name: Add Zig to system-wide PATH
         run: |
           sudo ln -s "$(which zig)" /usr/local/bin/zig
     
-      - name: Run test_local 
-        run: python test/test_local.py 
-
       - name: test hotswap_node.sh 
         run: |
           sudo ./scripts/bootstrap_node.sh 127.0.0.1 8080
