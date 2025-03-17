@@ -60,13 +60,14 @@ jobs:
       - name: Run test_local 
         run: python test/test_local.py 
 
+      - name: Add Zig to system-wide PATH
+        run: sudo ln -s "$(which zig)" /usr/local/bin/zig
+
       - name: test hotswap_node.sh 
         run: |
           sudo ./scripts/bootstrap_node.sh 127.0.0.1 8080
-          sudo mkdir /opt/tinyweather
           chmod +x scripts/hotswap_twnode.sh
           sudo ./scripts/hotswap_twnode.sh
-          journalctl -u tinyweather-node.service
 
   test_end_to_end:
     runs-on: ubuntu-latest
