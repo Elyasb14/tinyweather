@@ -4,6 +4,7 @@ usage() {
     echo -e "\x1b[33mUsage: $0 \\"
     echo -e "  --prom-listen-address <prom-listen-address> \\"
     echo -e "\x1b[33mExample: $0 \\"
+    exit 1
 }
 
 ARCH=$(uname -m)
