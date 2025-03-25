@@ -3,10 +3,18 @@
 usage() {
     echo -e "\x1b[33mUsage: $0 \\"
     echo -e "  --prom-listen-address <prom-listen-address> \\"
+    echo -e "  --proxy-address <proxy-address> \\"
+    echo -e "  --node-address <node-address> \\"
+    echo -e "  --node-port <node-port> \\"
+    echo -e "  --sensors <sensor1,sensor2,...>\x1b[0m"
     echo -e "\x1b[33mExample: $0 \\"
+    echo -e "  --prom-listen-address 127.0.0.1:9090 \\"
+    echo -e "  --proxy-address 127.0.0.1:8081 \\"
+    echo -e "  --node-address 127.0.0.1 \\"
+    echo -e "  --node-port 8080 \\"
+    echo -e "  --sensors \"Temp,RainTotalAcc,Hum,Pres,Gas\"\x1b[0m"
     exit 1
 }
-
 ARCH=$(uname -m)
 
 if [ "$ARCH" = "x86_64" ]; then
