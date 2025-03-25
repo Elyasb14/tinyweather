@@ -1,19 +1,51 @@
 #! /bin/bash
 
+usage() {
+    echo -e "\x1b[33mUsage: $0 \\"
+    echo -e "  --prom-listen-address <prom-listen-address> \\"
+    echo -e "\x1b[33mExample: $0 \\"
+}
+
 ARCH=$(uname -m)
 
 if [ "$ARCH" = "x86_64" ]; then
     ARCH="amd64"
 fi
 
-if [ $# -ne 1 ]; then
-    echo -e "\x1b[31mError: Please provide the web listen address.\x1b[0m"
-    echo -e "\x1b[33mUsage: $0 <web-listen-address>\x1b[0m"
-    echo -e "\x1b[33mExample: $0 10.0.2.14:9090\x1b[0m"
-    exit 1
-fi
+PROM_LISTEN_ADDRESS=""
+PROXY_ADDRESS=""
+NODE_ADDRESS=""
+NODE_PORT=""
+SENSORS=""
 
-WEB_LISTEN_ADDRESS=$1
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --prom-listen-address)
+            PROM_LISTEN_ADDRESS="$2"
+            shift 2
+            ;;
+        --proxy-address)
+            PROXY_ADDRESS="$2"
+            shift 2
+            ;;
+        --node-address)
+            NODE_ADDRESS="$2"
+            shift 2
+            ;;
+        --node-port)
+            NODE_PORT="$2"
+            shift 2
+            ;;
+        --sensors)
+            SENSORS="$2"
+            shift 2
+            ;;
+        *)
+            echo -e "\x1b[31mError: Unknown argument $1\x1b[0m"
+            usage
+            ;;
+    esac
+done
 
 if [[ -f /etc/systemd/system/prometheus.service ]]; then 
     systemctl stop prometheus.service
@@ -32,12 +64,12 @@ echo "global:
 scrape_configs:
   - job_name: node 10.0.2.13
     static_configs:
-      - targets: [\"10.0.2.14:8081\"]
+      - targets: [\"$PROXY_ADDRESS\"]
     http_headers:
       Address: 
-        values: [\"10.0.2.13\"]
+        values: [\"$NODE_ADDRESS\"]
       Port: 
-        values: [\"8080\"]
+        values: [\"$NODE_PORT\"]
       Sensor:
         values: [\"Temp\", \"RainTotalAcc\", \"Hum\", \"Pres\", \"Gas\"]" >> ./prometheus.yml
 
@@ -55,7 +87,7 @@ After=network.target
 Type=simple
 Restart=always
 RestartSec=5s
-ExecStart=/opt/prometheus/prometheus --web.listen-address=\"$WEB_LISTEN_ADDRESS\" --config.file=./prometheus.yml 
+ExecStart=/opt/prometheus/prometheus --web.listen-address=\"$PROM_LISTEN_ADDRESS\" --config.file=./prometheus.yml 
 WorkingDirectory=/opt/prometheus
 [Install]
 WantedBy=multi-user.target" >> /etc/systemd/system/prometheus.service
