@@ -7,13 +7,13 @@ usage() {
     echo -e "  --node-address <node-address> \\"
     echo -e "  --target-address <target-address> \\"
     echo -e "  --node-port <node-port> \\"
-    echo -e "  --sensors <sensor1,sensor2,...>\x1b[0m"
+    echo -e "  --node-sensors <sensor1,sensor2,...>\x1b[0m"
     echo -e "\x1b[33mExample: $0 \\"
     echo -e "  --web-listen-address 10.0.2.14:9090 \\"
     echo -e "  --node-address 10.0.2.13 \\"
     echo -e "  --target-address 10.0.2.14:8081 \\"
     echo -e "  --node-port 8080 \\"
-    echo -e "  --sensors \"Temp,RainTotalAcc,Hum,Pres,Gas\"\x1b[0m"
+    echo -e "  --node-sensors \"Temp,RainTotalAcc,Hum,Pres,Gas\"\x1b[0m"
     exit 1
 }
 
@@ -43,7 +43,7 @@ while [[ $# -gt 0 ]]; do
             NODE_PORT="$2"
             shift 2
             ;;
-        --sensors)
+        --node-sensors)
             NODE_SENSORS="$2"
             shift 2
             ;;
