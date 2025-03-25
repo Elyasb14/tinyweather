@@ -79,11 +79,11 @@ jobs:
 
       - name: bootstrap prometheus
         run: sudo ./scripts/bootstrap_prometheus.sh \
-              --web-listen-address 127.0.0.1:9090 \
+              --prom-listen-address 127.0.0.1:9090 \
+              --proxy-address 127.0.0.1:8081 \ 
               --node-address 127.0.0.1 \
               --node-port 8080 \
-              --target-address 127.0.0.1:8081 \
-              --node-sensors "Temp,RainTotalAcc,Hum,Pres,Gas"
+              --sensors "Temp,RainTotalAcc,Hum,Pres,Gas" \ 
 
       - name: bootstrap grafana
         run: sudo ./scripts/bootstrap_grafana.sh
