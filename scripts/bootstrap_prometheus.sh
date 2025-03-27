@@ -69,7 +69,8 @@ tar xf prometheus-3.1.0.linux-${ARCH}.tar.gz
 
 touch prometheus.yml
 IFS=',' read -ra SENSOR_ARRAY <<< "$SENSORS"
-SENSOR_VALUES=$(printf '        values: ["%s"]\n' "${SENSOR_ARRAY[@]}")
+SENSOR_LIST=$(printf '"%s",' "${SENSOR_ARRAY[@]}")
+SENSOR_LIST=${SENSOR_LIST%,}
 
 echo "global:
   scrape_interval: 15s
@@ -83,7 +84,7 @@ scrape_configs:
       Port: 
         values: [\"$NODE_PORT\"]
       Sensor:
-$SENSOR_VALUES" >> ./prometheus.yml
+        values: [$SENSOR_LIST]" >> ./prometheus.yml
 
 ./prometheus-3.1.0.linux-${ARCH}/promtool check config prometheus.yml
 rm -rf /opt/prometheus
