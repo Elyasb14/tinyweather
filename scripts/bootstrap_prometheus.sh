@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
 usage() {
     echo -e "\x1b[33mUsage: $0 \\"
@@ -15,8 +15,8 @@ usage() {
     echo -e "  --sensors \"Temp,RainTotalAcc,Hum,Pres,Gas\"\x1b[0m"
     exit 1
 }
-ARCH=$(uname -m)
 
+ARCH=$(uname -m)
 if [ "$ARCH" = "x86_64" ]; then
     ARCH="amd64"
 fi
@@ -66,7 +66,10 @@ fi
 
 wget --quiet https://github.com/prometheus/prometheus/releases/download/v3.1.0/prometheus-3.1.0.linux-${ARCH}.tar.gz
 tar xf prometheus-3.1.0.linux-${ARCH}.tar.gz
+
 touch prometheus.yml
+IFS=',' read -ra SENSOR_ARRAY <<< "$SENSORS"
+SENSOR_VALUES=$(printf '        values: ["%s"]\n' "${SENSOR_ARRAY[@]}")
 
 echo "global:
   scrape_interval: 15s
@@ -80,13 +83,14 @@ scrape_configs:
       Port: 
         values: [\"$NODE_PORT\"]
       Sensor:
-        values: [\"Temp\", \"RainTotalAcc\", \"Hum\", \"Pres\", \"Gas\"]" >> ./prometheus.yml
+$SENSOR_VALUES" >> ./prometheus.yml
 
 ./prometheus-3.1.0.linux-${ARCH}/promtool check config prometheus.yml
 rm -rf /opt/prometheus
 mkdir -p /opt/prometheus
 mv ./prometheus.yml /opt/prometheus/prometheus.yml
 mv ./prometheus-3.1.0.linux-${ARCH}/prometheus /opt/prometheus/prometheus
+
 touch /etc/systemd/system/prometheus.service
 echo "
 [Unit]
@@ -104,6 +108,8 @@ WantedBy=multi-user.target" >> /etc/systemd/system/prometheus.service
 systemctl daemon-reload
 systemctl start prometheus
 systemctl enable prometheus
+
 mv ./prometheus-3.1.0.linux-${ARCH}/promtool /opt/prometheus/promtool
 rm -rf prometheus*
+
 systemctl status prometheus
