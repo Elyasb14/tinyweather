@@ -13,7 +13,7 @@ sudo ./scripts/bootstrap_prometheus.sh \
 --prom-listen-address 127.0.0.1:9090 \
 --proxy-address 127.0.0.1:8081 \
 --node-address 127.0.0.1 \
---node-port 8080\
+--node-port 8080 \
 --sensors "Temp,RainTotalAcc,Hum,Pres,Gas"
 ```
 
