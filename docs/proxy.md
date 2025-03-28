@@ -6,7 +6,16 @@ You will need to install the following dependencies
 
 ## Installing Prometheus
 
-There is a script, `scripts/bootstrap_prometheus.sh`. This pulls a prometheus release and installs it in a reasponable place. See script for details. This installs a basic `prometheus.yml` config file, you should edit it to do what you want.  
+There is a script, `scripts/bootstrap_prometheus.sh`. This pulls a prometheus release and installs it in a reasponable place. See script for details. There are some flags you need to pass, here is an example for a very local setup, you can extrapolate further:
+
+```bash
+sudo ./scripts/bootstrap_prometheus.sh \
+--prom-listen-address 127.0.0.1:9090 \
+--proxy-address 127.0.0.1:8081 \
+--node-address 127.0.0.1 \
+--node-port 8080 \
+--sensors "Temp,RainTotalAcc,Hum,Pres,Gas"
+```
 
 ## Installing the proxy
 
