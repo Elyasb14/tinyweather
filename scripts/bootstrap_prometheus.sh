@@ -27,6 +27,12 @@ NODE_ADDRESS=""
 NODE_PORT=""
 SENSORS=""
 
+if [ "$#" -lt 10 ]; then
+  echo -e "\x1b[31m10 arguments are needed, $# provided.\x1b[0m"
+  usage
+  exit 1
+fi
+
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --prom-listen-address)
