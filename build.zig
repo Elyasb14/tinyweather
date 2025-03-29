@@ -31,6 +31,19 @@ pub fn build(b: *std.Build) void {
     proxy_exe.linkLibrary(tcp_lib);
     proxy_exe.linkLibrary(handlers_lib);
 
+    const no_bin = b.option(bool, "no-bin", "skip emitting binary") orelse false;
+    if (no_bin) {
+        b.getInstallStep().dependOn(&proxy_exe.step);
+        b.getInstallStep().dependOn(&node_exe.step);
+        b.getInstallStep().dependOn(&tcp_lib.step);
+        b.getInstallStep().dependOn(&handlers_lib.step);
+    } else {
+        b.installArtifact(proxy_exe);
+        b.installArtifact(node_exe);
+        b.installArtifact(tcp_lib);
+        b.installArtifact(handlers_lib);
+    }
+
     b.installArtifact(node_exe);
     b.installArtifact(proxy_exe);
     b.installArtifact(tcp_lib);

@@ -8,3 +8,4 @@ zig-*
 *.swp
 package-lock.json
 main
+prometheus*
