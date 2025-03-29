@@ -29,7 +29,6 @@ while [[ $# -gt 0 ]]; do
             PORT="$2"
             shift 2
             ;;
-            ;;
         *)
             echo -e "\x1b[31mError: Unknown argument $1\x1b[0m"
             usage
