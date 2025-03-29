@@ -19,4 +19,8 @@ sudo ./scripts/bootstrap_prometheus.sh \
 
 ## Installing the proxy
 
-There is a sript `scripts/bootstrap_proxy.sh`. This will start `tinyweather-proxy` as a systemd service. 
+There is a sript `scripts/bootstrap_proxy.sh`. This will start `tinyweather-proxy` as a systemd service. Run the following command from the tinyweather root to run a proxy listening on 127.0.0.1:8081 
+
+```bash
+sudo ./scripts/bootstrap_proxy.sh --address 127.0.0.1 --port 8081
+```
