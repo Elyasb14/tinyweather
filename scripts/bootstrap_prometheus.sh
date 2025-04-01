@@ -6,13 +6,15 @@ usage() {
     echo -e "  --proxy-address <proxy-address> \\"
     echo -e "  --node-address <node-address> \\"
     echo -e "  --node-port <node-port> \\"
-    echo -e "  --sensors <sensor1,sensor2,...>\x1b[0m"
+    echo -e "  --sensors <sensor1,sensor2,...>\x1b[0m \\"
+    echo -e "  --tsdb-retention <time>"
     echo -e "\x1b[33mExample: $0 \\"
     echo -e "  --prom-listen-address 127.0.0.1:9090 \\"
     echo -e "  --proxy-address 127.0.0.1:8081 \\"
     echo -e "  --node-address 127.0.0.1 \\"
     echo -e "  --node-port 8080 \\"
-    echo -e "  --sensors \"Temp,RainTotalAcc,Hum,Pres,Gas\"\x1b[0m"
+    echo -e "  --sensors \"Temp,RainTotalAcc,Hum,Pres,Gas\"\x1b[0m \\"
+    echo -e "  --tsdb-retention 15d"
     exit 1
 }
 
@@ -26,6 +28,7 @@ PROXY_ADDRESS=""
 NODE_ADDRESS=""
 NODE_PORT=""
 SENSORS=""
+TSDB_RETENTION_TIME=""
 
 if [ "$#" -lt 10 ]; then
   echo -e "\x1b[31m10 arguments are needed, $# provided.\x1b[0m"
@@ -53,6 +56,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --sensors)
             SENSORS="$2"
+            shift 2
+            ;;
+        --tsdb-retention)
+            TSDB_RETENTION_TIME="$2"
             shift 2
             ;;
         *)
@@ -107,7 +114,7 @@ After=network.target
 Type=simple
 Restart=always
 RestartSec=5s
-ExecStart=/opt/prometheus/prometheus --web.listen-address=\"$PROM_LISTEN_ADDRESS\" --config.file=./prometheus.yml 
+ExecStart=/opt/prometheus/prometheus --web.listen-address=\"$PROM_LISTEN_ADDRESS\" -- --storage.tsdb.retention.time $TSDB_RETENTION_TIME --config.file=./prometheus.yml 
 WorkingDirectory=/opt/prometheus
 [Install]
 WantedBy=multi-user.target" >> /etc/systemd/system/prometheus.service
