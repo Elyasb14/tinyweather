@@ -114,7 +114,7 @@ After=network.target
 Type=simple
 Restart=always
 RestartSec=5s
-ExecStart=/opt/prometheus/prometheus --web.listen-address=\"$PROM_LISTEN_ADDRESS\" -- --storage.tsdb.retention.time $TSDB_RETENTION_TIME --config.file=./prometheus.yml 
+ExecStart=/opt/prometheus/prometheus --web.listen-address=\"$PROM_LISTEN_ADDRESS\" --storage.tsdb.retention.time $TSDB_RETENTION_TIME --config.file=./prometheus.yml 
 WorkingDirectory=/opt/prometheus
 [Install]
 WantedBy=multi-user.target" >> /etc/systemd/system/prometheus.service
