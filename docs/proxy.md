@@ -14,7 +14,9 @@ sudo ./scripts/bootstrap_prometheus.sh \
 --proxy-address 127.0.0.1:8081 \
 --node-address 127.0.0.1 \
 --node-port 8080 \
---sensors "Temp,RainTotalAcc,Hum,Pres,Gas"
+--sensors "Temp,RainTotalAcc,Hum,Pres,Gas" \
+--tsdb-retention 15d
+
 ```
 
 ## Installing the proxy

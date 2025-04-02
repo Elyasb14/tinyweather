@@ -78,7 +78,7 @@ jobs:
         run: sudo ./scripts/bootstrap_proxy.sh --address 127.0.0.1 --port 8081
 
       - name: bootstrap prometheus
-        run: sudo ./scripts/bootstrap_prometheus.sh --prom-listen-address 127.0.0.1:9090 --proxy-address 127.0.0.1:8081 --node-address 127.0.0.1 --node-port 8080 --sensors "Temp,RainTotalAcc,Hum,Pres,Gas"
+        run: sudo ./scripts/bootstrap_prometheus.sh --prom-listen-address 127.0.0.1:9090 --proxy-address 127.0.0.1:8081 --node-address 127.0.0.1 --node-port 8080 --sensors "Temp,RainTotalAcc,Hum,Pres,Gas" --tsdb-retention 36d
 
       - name: bootstrap grafana
         run: sudo ./scripts/bootstrap_grafana.sh
