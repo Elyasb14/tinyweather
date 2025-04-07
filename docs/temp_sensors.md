@@ -5,6 +5,8 @@ We have a problem. I hate how we have to go to python and download a ton of libs
 This code should work?
 
 ```c
+// sudo apt-get install libi2c-dev i2c-tools
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -98,3 +100,5 @@ int main() {
     return 0;
 }
 ```
+
+[this](https://raspberrypihobbyist.blogspot.com/2015/02/using-am2315-temperaturehumidity-sensor.html) looks like an interesting temp sensor option too. 
