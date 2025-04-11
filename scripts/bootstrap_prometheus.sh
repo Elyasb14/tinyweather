@@ -13,7 +13,7 @@ usage() {
     echo -e "  --proxy-address 127.0.0.1:8081 \\"
     echo -e "  --node-address 127.0.0.1 \\"
     echo -e "  --node-port 8080 \\"
-    echo -e "  --sensors \"Temp,RainTotalAcc,Hum,Pres,Gas\"\x1b[0m \\"
+    echo -e "  --sensors \"RG15,BME680\"\x1b[0m \\"
     echo -e "  --tsdb-retention 15d"
     exit 1
 }

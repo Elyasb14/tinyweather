@@ -78,7 +78,7 @@ jobs:
         run: sudo ./scripts/bootstrap_proxy.sh --address 127.0.0.1 --port 8081
 
       - name: bootstrap prometheus
-        run: sudo ./scripts/bootstrap_prometheus.sh --prom-listen-address 127.0.0.1:9090 --proxy-address 127.0.0.1:8081 --node-address 127.0.0.1 --node-port 8080 --sensors "Temp,RainTotalAcc,Hum,Pres,Gas" --tsdb-retention 36d
+        run: sudo ./scripts/bootstrap_prometheus.sh --prom-listen-address 127.0.0.1:9090 --proxy-address 127.0.0.1:8081 --node-address 127.0.0.1 --node-port 8080 --sensors "RG15,BME680" --tsdb-retention 36d
 
       - name: bootstrap grafana
         run: sudo ./scripts/bootstrap_grafana.sh
@@ -87,7 +87,7 @@ jobs:
         run: for i in {1..10}; do curl --parallel localhost:8081/metrics localhost:8081/metrics -H "Sensor:BME680" -H "Sensor:RG15"; done 
 
       - name: test curl end to end parallel large number 
-        run: for i in {1..100}; do curl --parallel localhost:8081/metrics localhost:8081/metrics -H "Sensor:Temp"; done 
+        run: for i in {1..100}; do curl --parallel localhost:8081/metrics localhost:8081/metrics -H "Sensor:BME680" -H "Sensor:RG15"; done 
 
       - name: query prometheus server
         run: /opt/prometheus/promtool query instant http://localhost:9090 'Temp'
