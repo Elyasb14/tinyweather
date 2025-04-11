@@ -12,7 +12,7 @@ jobs:
     - name: Set up Zig
       uses: mlugg/setup-zig@v1 
       with:
-        version: 0.13.0  
+        version: 0.14.0  
 
     
     - name: Build
@@ -38,7 +38,7 @@ jobs:
       - name: Run size script
         run: python size.py
 
-  run_local_test:
+  infra_tests:
     runs-on: ubuntu-latest
 
     steps:
@@ -46,19 +46,17 @@ jobs:
       - name: Install zig 
         uses: mlugg/setup-zig@v1 
         with:
-          version: 0.13.0  
+          version: 0.14.0  
 
       - name: Add Zig to system-wide PATH
         run: |
           sudo ln -s "$(which zig)" /usr/local/bin/zig
-
-      - name: Set up Python 3.12
-        uses: actions/setup-python@v5
-        with:
-          python-version: 3.12
     
-      - name: Run test_local 
-        run: python test/test_local.py 
+      - name: test hotswap_node.sh 
+        run: |
+          sudo ./scripts/bootstrap_node.sh --address 127.0.0.1 --port 8080
+          chmod +x scripts/hotswap_twnode.sh
+          sudo ./scripts/hotswap_twnode.sh
 
   test_end_to_end:
     runs-on: ubuntu-latest
@@ -68,19 +66,19 @@ jobs:
       - name: Install zig 
         uses: mlugg/setup-zig@v1 
         with:
-          version: 0.13.0  
+          version: 0.14.0  
 
       - name: Add Zig to system-wide PATH
         run: sudo ln -s "$(which zig)" /usr/local/bin/zig
 
       - name: bootstrap tinyweather-node 
-        run: sudo ./scripts/bootstrap_node.sh 127.0.0.1 8080
+        run: sudo ./scripts/bootstrap_node.sh --address 127.0.0.1 --port 8080
 
       - name: bootstrap tinyweather-proxy
-        run: sudo ./scripts/bootstrap_proxy.sh 127.0.0.1 8081
+        run: sudo ./scripts/bootstrap_proxy.sh --address 127.0.0.1 --port 8081
 
       - name: bootstrap prometheus
-        run: sudo ./scripts/bootstrap_prometheus.sh 127.0.0.1:9090
+        run: sudo ./scripts/bootstrap_prometheus.sh --prom-listen-address 127.0.0.1:9090 --proxy-address 127.0.0.1:8081 --node-address 127.0.0.1 --node-port 8080 --sensors "Temp,RainTotalAcc,Hum,Pres,Gas" --tsdb-retention 36d
 
       - name: bootstrap grafana
         run: sudo ./scripts/bootstrap_grafana.sh
