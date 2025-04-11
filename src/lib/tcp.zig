@@ -94,7 +94,7 @@ pub const SensorResponse = struct {
             switch (sensor) {
                 .RG15 => {
                     const rain_data: []const f32 = (try device.parse_rain(allocator)) orelse &[_]f32{std.math.nan(f32)} ** 4;
-                    std.debug.print("{any}\n", .{});
+                    std.debug.print("{any}\n", .{rain_data});
                     for (rain_data) |x| {
                         try buf.appendSlice(&helpers.f32_to_bytes(x));
                     }
