@@ -7,7 +7,8 @@ const helpers = @import("helpers.zig");
 const net = std.net;
 
 pub const PacketType = enum(u8) { SensorRequest, SensorResponse };
-pub const SensorType = enum(u8) { Temp, Pres, Hum, Gas, RainAcc, RainEventAcc, RainTotalAcc, RainRInt };
+pub const Sensors = enum(u8) { BME680, RG15, BFROBOT };
+pub const SensorVals = enum(u8) { BMETempemp, BMEPresres, BMEHumHum, BMEGasGas, RG15RainAccnAcc, RG15RainEventAcctAcc, RG15RainTotalAcclAcc, RG15RainRInt };
 pub const TCPError = error{ VersionError, InvalidPacketType, InvalidSensorType, DeviceError, BadPacket, ConnectionError };
 
 pub const Packet = struct {
@@ -45,11 +46,11 @@ pub const Packet = struct {
 };
 
 pub const SensorRequest = struct {
-    sensors: []const SensorType,
+    sensors: []const Sensors,
 
     const Self = @This();
 
-    pub fn init(sensors: []const SensorType) SensorRequest {
+    pub fn init(sensors: []const Sensors) SensorRequest {
         return SensorRequest{ .sensors = sensors };
     }
 
@@ -62,16 +63,16 @@ pub const SensorRequest = struct {
     }
 
     pub fn decode(buf: []const u8, allocator: std.mem.Allocator) Allocator.Error!SensorRequest {
-        var sensors = ArrayList(SensorType).init(allocator);
+        var sensors = ArrayList(Sensors).init(allocator);
         for (buf) |x| {
-            const sensor = @as(SensorType, @enumFromInt(x));
+            const sensor = @as(Sensors, @enumFromInt(x));
             try sensors.append(sensor);
         }
         return SensorRequest.init(try sensors.toOwnedSlice());
     }
 };
 
-pub const SensorData = struct { sensor_type: SensorType, val: f32 };
+pub const SensorData = struct { sensor_type: SensorVals, val: f32 };
 
 pub const SensorResponse = struct {
     request: SensorRequest,
@@ -93,14 +94,14 @@ pub const SensorResponse = struct {
         var buf = ArrayList(u8).init(allocator);
         for (self.request.sensors) |sensor| {
             switch (sensor) {
-                .Gas => try buf.appendSlice(&helpers.f32_to_bytes(bme_data[3])),
-                .Temp => try buf.appendSlice(&helpers.f32_to_bytes(bme_data[0])),
-                .Pres => try buf.appendSlice(&helpers.f32_to_bytes(bme_data[1])),
-                .Hum => try buf.appendSlice(&helpers.f32_to_bytes(bme_data[2])),
-                .RainAcc => try buf.appendSlice(&helpers.f32_to_bytes(rain_data[0])),
-                .RainEventAcc => try buf.appendSlice(&helpers.f32_to_bytes(rain_data[1])),
-                .RainTotalAcc => try buf.appendSlice(&helpers.f32_to_bytes(rain_data[2])),
-                .RainRInt => try buf.appendSlice(&helpers.f32_to_bytes(rain_data[3])),
+                .BMEGas => try buf.appendSlice(&helpers.f32_to_bytes(bme_data[3])),
+                .BMETemp => try buf.appendSlice(&helpers.f32_to_bytes(bme_data[0])),
+                .BMEPres => try buf.appendSlice(&helpers.f32_to_bytes(bme_data[1])),
+                .BMEHum => try buf.appendSlice(&helpers.f32_to_bytes(bme_data[2])),
+                .RG15RainAcc => try buf.appendSlice(&helpers.f32_to_bytes(rain_data[0])),
+                .RG15RainEventAcc => try buf.appendSlice(&helpers.f32_to_bytes(rain_data[1])),
+                .RG15RainTotalAcc => try buf.appendSlice(&helpers.f32_to_bytes(rain_data[2])),
+                .RG15RainRInt => try buf.appendSlice(&helpers.f32_to_bytes(rain_data[3])),
             }
         }
         return try buf.toOwnedSlice();
@@ -140,7 +141,7 @@ test "Packet encoding and decoding" {
 test "sensor request encoding and decoding" {
     const allocator = testing.allocator;
 
-    const original_request = SensorRequest.init(&[_]SensorType{ SensorType.Hum, SensorType.Temp });
+    const original_request = SensorRequest.init(&[_]SensorVals{ SensorVals.BMEHum, SensorVals.BMETemp });
     const encoded_request = try original_request.encode(allocator);
     defer allocator.free(encoded_request);
 
@@ -149,19 +150,19 @@ test "sensor request encoding and decoding" {
         allocator.free(decoded_request.sensors);
     }
 
-    try testing.expectEqualSlices(SensorType, original_request.sensors, decoded_request.sensors);
+    try testing.expectEqualSlices(SensorVals, original_request.sensors, decoded_request.sensors);
     try testing.expectEqualDeep(original_request, decoded_request);
 }
 
 test "sensor response encoding and decoding" {
     const allocator = testing.allocator;
-    const original_request = SensorRequest.init(&[_]SensorType{ SensorType.Hum, SensorType.Temp });
+    const original_request = SensorRequest.init(&[_]SensorVals{ SensorVals.BMEHum, SensorVals.BMETemp });
     const encoded_request = try original_request.encode(allocator);
     defer allocator.free(encoded_request);
 
     const decoded_request = try SensorRequest.decode(encoded_request, allocator);
     defer allocator.free(decoded_request.sensors);
 
-    try testing.expectEqualSlices(SensorType, original_request.sensors, decoded_request.sensors);
+    try testing.expectEqualSlices(SensorVals, original_request.sensors, decoded_request.sensors);
     try testing.expectEqualDeep(original_request, decoded_request);
 }
