@@ -142,23 +142,6 @@ pub const SensorResponse = struct {
             }
         }
 
-        // const rain_data: []const f32 = (try device.parse_rain(allocator)) orelse &[_]f32{std.math.nan(f32)} ** 4;
-        // const bme_data: []const f32 = (try device.parse_bme(allocator)) orelse &[_]f32{std.math.nan(f32)} ** 4;
-
-        // var buf = ArrayList(u8).init(allocator);
-
-        // for (self.request.sensors) |sensor| {
-        //     switch (sensor) {
-        //         .BMEGas => try buf.appendSlice(&helpers.f32_to_bytes(bme_data[3])),
-        //         .BMETemp => try buf.appendSlice(&helpers.f32_to_bytes(bme_data[0])),
-        //         .BMEPres => try buf.appendSlice(&helpers.f32_to_bytes(bme_data[1])),
-        //         .BMEHum => try buf.appendSlice(&helpers.f32_to_bytes(bme_data[2])),
-        //         .RG15RainAcc => try buf.appendSlice(&helpers.f32_to_bytes(rain_data[0])),
-        //         .RG15RainEventAcc => try buf.appendSlice(&helpers.f32_to_bytes(rain_data[1])),
-        //         .RG15RainTotalAcc => try buf.appendSlice(&helpers.f32_to_bytes(rain_data[2])),
-        //         .RG15RainRInt => try buf.appendSlice(&helpers.f32_to_bytes(rain_data[3])),
-        //     }
-        // }
         return try buf.toOwnedSlice();
     }
     pub fn decode(request: SensorRequest, buf: []const u8, allocator: std.mem.Allocator) Allocator.Error!SensorResponse {
