@@ -84,7 +84,7 @@ jobs:
         run: sudo ./scripts/bootstrap_grafana.sh
 
       - name: test curl end to end parallel small number 
-        run: for i in {1..10}; do curl --parallel localhost:8081/metrics localhost:8081/metrics -H "Sensor:Temp"; done 
+        run: for i in {1..10}; do curl --parallel localhost:8081/metrics localhost:8081/metrics -H "Sensor:BME680" -H "Sensor:RG15"; done 
 
       - name: test curl end to end parallel large number 
         run: for i in {1..100}; do curl --parallel localhost:8081/metrics localhost:8081/metrics -H "Sensor:Temp"; done 
