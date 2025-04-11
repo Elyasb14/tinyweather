@@ -207,7 +207,7 @@ test "Packet encoding and decoding" {
 test "sensor request encoding and decoding" {
     const allocator = testing.allocator;
 
-    const original_request = SensorRequest.init(&[_]SensorVals{ SensorVals.BMEHum, SensorVals.BMETemp });
+    const original_request = SensorRequest.init(&[_]Sensors{ .RG15, .BME680 });
     const encoded_request = try original_request.encode(allocator);
     defer allocator.free(encoded_request);
 
@@ -216,19 +216,20 @@ test "sensor request encoding and decoding" {
         allocator.free(decoded_request.sensors);
     }
 
-    try testing.expectEqualSlices(SensorVals, original_request.sensors, decoded_request.sensors);
+    try testing.expectEqualSlices(Sensors, original_request.sensors, decoded_request.sensors);
     try testing.expectEqualDeep(original_request, decoded_request);
 }
 
 test "sensor response encoding and decoding" {
     const allocator = testing.allocator;
-    const original_request = SensorRequest.init(&[_]SensorVals{ SensorVals.BMEHum, SensorVals.BMETemp });
+    const original_request = SensorRequest.init(&[_]Sensors{ .BME680, .RG15 });
+
     const encoded_request = try original_request.encode(allocator);
     defer allocator.free(encoded_request);
 
     const decoded_request = try SensorRequest.decode(encoded_request, allocator);
     defer allocator.free(decoded_request.sensors);
 
-    try testing.expectEqualSlices(SensorVals, original_request.sensors, decoded_request.sensors);
+    try testing.expectEqualSlices(Sensors, original_request.sensors, decoded_request.sensors);
     try testing.expectEqualDeep(original_request, decoded_request);
 }
