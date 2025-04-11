@@ -67,7 +67,7 @@ pub const ProxyConnectionHandler = struct {
         self.conn.stream.close();
     }
 
-    fn get_data(allocator: std.mem.Allocator, remote_addr: []const u8, remote_port: u16, sensors: []const tcp.SensorVals) ![]tcp.SensorData {
+    fn get_data(allocator: std.mem.Allocator, remote_addr: []const u8, remote_port: u16, sensors: []const tcp.Sensors) ![]tcp.SensorData {
         const node_address = try net.Address.parseIp4(remote_addr, remote_port);
         const node_stream = net.tcpConnectToAddress(node_address) catch {
             std.log.warn("\x1b[33mCan't connect to address\x1b[0m: {any}", .{node_address});
@@ -126,14 +126,14 @@ pub const ProxyConnectionHandler = struct {
 
             const target = request.head.target;
             if (std.mem.eql(u8, target, "/metrics")) {
-                var sensors = std.ArrayList(tcp.SensorVals).init(allocator);
+                var sensors = std.ArrayList(tcp.Sensors).init(allocator);
                 defer sensors.deinit();
 
                 var iter = request.iterateHeaders();
                 while (iter.next()) |h| {
                     std.log.info("\x1b[32mHeader\x1b[0m: {s} {s}", .{ h.name, h.value });
                     if (std.mem.eql(u8, "Sensor", h.name)) {
-                        try sensors.append(std.meta.stringToEnum(tcp.SensorVals, h.value) orelse {
+                        try sensors.append(std.meta.stringToEnum(tcp.Sensors, h.value) orelse {
                             std.log.warn("\x1b[33mIs someone sending incorrect/invalid headers?\x1b[0m: {s}", .{h.value});
                             continue;
                         });
