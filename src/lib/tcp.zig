@@ -8,7 +8,7 @@ const net = std.net;
 
 pub const PacketType = enum(u8) { SensorRequest, SensorResponse };
 pub const Sensors = enum(u8) { BME680, RG15, BFROBOT };
-pub const SensorVals = enum(u8) { BMETempemp, BMEPresres, BMEHumHum, BMEGasGas, RG15RainAccnAcc, RG15RainEventAcctAcc, RG15RainTotalAcclAcc, RG15RainRInt };
+pub const SensorVals = enum(u8) { BMETemp, BMEPres, BMEHum, BMEGas, RG15RainAcc, RG15RainEventAcc, RG15RainTotalAcc, RG15RainRInt };
 pub const TCPError = error{ VersionError, InvalidPacketType, InvalidSensor, DeviceError, BadPacket, ConnectionError };
 
 pub const Packet = struct {
@@ -72,7 +72,32 @@ pub const SensorRequest = struct {
     }
 };
 
-pub const SensorData = struct { sensor_type: Sensors, val: f32 };
+pub const SensorData = struct {
+    sensor_type: Sensors,
+    val: []const f32,
+
+    const Self = @This();
+
+    pub fn get_sensor_value_names(self: *Self) []const SensorVals {
+        return switch (self.sensor_type) {
+            .BME680 => &[_]SensorVals{
+                .BMETemp,
+                .BMEPres,
+                .BMEHum,
+                .BMEGas,
+            },
+            .RG15 => &[_]SensorVals{
+                .RG15RainAcc,
+                .RG15RainEvent,
+                .RG15RainTotalAcc,
+                .RG15RainRInt,
+            },
+            .BFROBOT => &[_]SensorVals{
+                // Define BFROBOT's value names
+            },
+        };
+    }
+};
 
 pub const SensorResponse = struct {
     request: SensorRequest,
@@ -138,14 +163,25 @@ pub const SensorResponse = struct {
     }
     pub fn decode(request: SensorRequest, buf: []const u8, allocator: std.mem.Allocator) Allocator.Error!SensorResponse {
         var dec_buf = ArrayList(SensorData).init(allocator);
+
         var offset: usize = 0;
         for (request.sensors) |sensor| {
-            if (offset + 4 > buf.len) break;
-            const chunk = buf[offset .. offset + 4];
-            const data = helpers.bytes_to_f32(chunk);
-            try dec_buf.append(SensorData{ .sensor_type = sensor, .val = data });
-            offset += 4;
+            // Check if we have enough bytes for 4 f32 values (16 bytes total)
+            if (offset + 16 > buf.len) break;
+
+            // Allocate array for 4 f32 values
+            var values = try allocator.alloc(f32, 4);
+
+            // Parse 4 f32 values for this sensor
+            for (0..4) |i| {
+                const chunk = buf[offset + (i * 4) .. offset + (i * 4) + 4];
+                values[i] = helpers.bytes_to_f32(chunk);
+            }
+
+            try dec_buf.append(SensorData{ .sensor_type = sensor, .val = values });
+            offset += 16; // Move offset by 16 bytes (4 f32 values)
         }
+
         const data = try dec_buf.toOwnedSlice();
         return SensorResponse.init(request, data);
     }

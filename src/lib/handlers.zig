@@ -97,6 +97,7 @@ pub const ProxyConnectionHandler = struct {
         switch (decoded_packet.type) {
             .SensorResponse => {
                 const decoded_sensor_response = try tcp.SensorResponse.decode(sensor_request, decoded_packet.data, allocator);
+                std.debug.print("{any}\n", .{decoded_sensor_response});
                 const sensor_data = decoded_sensor_response.data;
                 return sensor_data;
             },
@@ -160,11 +161,19 @@ pub const ProxyConnectionHandler = struct {
                 var prom_string = std.ArrayList(u8).init(allocator);
                 defer prom_string.deinit();
 
-                for (sensors.items, sensor_data) |sensor, val| {
-                    var gauge = prometheus.Gauge.init(@tagName(sensor), @tagName(sensor));
-                    gauge.set(val.val);
-                    try prom_string.appendSlice(try gauge.to_prometheus(allocator));
-                    try prom_string.appendSlice("\n");
+                var counter: u7 = 0;
+
+                for (sensor_data) |*sd| {
+                    const sensor_vals = sd.get_sensor_value_names();
+                    for (sd.val) |val| {
+                        const sensor_val = sensor_vals[counter];
+                        var gauge = prometheus.Gauge.init(@tagName(sensor_val), @tagName(sensor_val));
+                        gauge.set(val);
+                        try prom_string.appendSlice(try gauge.to_prometheus(allocator));
+                        try prom_string.appendSlice("\n");
+
+                        counter += 1;
+                    }
                 }
 
                 try request.respond(prom_string.items, .{ .extra_headers = &.{.{ .name = "Content-Type", .value = "text/plain; version=0.0.4" }} });
