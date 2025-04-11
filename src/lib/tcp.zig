@@ -88,7 +88,7 @@ pub const SensorData = struct {
             },
             .RG15 => &[_]SensorVals{
                 .RG15RainAcc,
-                .RG15RainEvent,
+                .RG15RainEventAcc,
                 .RG15RainTotalAcc,
                 .RG15RainRInt,
             },

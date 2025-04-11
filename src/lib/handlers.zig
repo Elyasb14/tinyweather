@@ -174,6 +174,7 @@ pub const ProxyConnectionHandler = struct {
 
                         counter += 1;
                     }
+                    counter = 0;
                 }
 
                 try request.respond(prom_string.items, .{ .extra_headers = &.{.{ .name = "Content-Type", .value = "text/plain; version=0.0.4" }} });
