@@ -35,7 +35,7 @@ int read_sensor_reg(int file, int reg, unsigned char *buffer, size_t length) {
     return length;
 }
 
-int main() {
+char* get_data() {
     unsigned char buf[4];
     uint data, data1;
     float temp, hum;
@@ -56,6 +56,7 @@ int main() {
         // Read temperature and humidity registers
         if (read_sensor_reg(i2c_file, 0x00, buf, 4) < 0) {
             printf("Error reading sensor data\n");
+            return NULL;
         } else {
             // Calculate temperature and humidity like in the Arduino code
             data = (buf[0] << 8) | buf[1];
