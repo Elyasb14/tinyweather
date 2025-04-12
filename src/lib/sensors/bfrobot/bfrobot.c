@@ -41,7 +41,7 @@ int read_sensor_reg(int file, int reg, unsigned char *buffer, size_t length) {
   return length;
 }
 
-char* get_data() {
+char* get_bfrobot() {
     // Select appropriate device based on platform
     #ifdef __APPLE__
         return NULL;

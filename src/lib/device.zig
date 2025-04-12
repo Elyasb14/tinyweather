@@ -54,7 +54,7 @@ pub fn parse_rg15(allocator: Allocator) !?[]const f32 {
 pub fn parse_bfrobot(allocator: Allocator) !?[]const f32 {
     if (builtin.target.os.tag.isDarwin()) return null;
 
-    const bf_data: []const u8 = std.mem.span(c.get_data());
+    const bf_data: []const u8 = std.mem.span(c.get_bfrobot());
 
     var buf = ArrayList(f32).init(allocator);
 
