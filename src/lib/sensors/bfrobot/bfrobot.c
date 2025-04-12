@@ -1,5 +1,8 @@
 #include <fcntl.h>
-#include <linux/i2c-dev.h>
+
+#ifdef __unix__
+    #include <linux/i2c-dev.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/ioctl.h>
@@ -39,6 +42,11 @@ int read_sensor_reg(int file, int reg, unsigned char *buffer, size_t length) {
 }
 
 char* get_data() {
+
+    // Select appropriate device based on platform
+    #ifdef __APPLE__
+        return NULL;
+    #endif
   unsigned char buf[4];
   uint data, data1;
   float temp, hum;
@@ -76,4 +84,5 @@ char* get_data() {
     close(i2c_file);
     return result_string;
   }
+
 }
