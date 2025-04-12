@@ -4,7 +4,6 @@
 #include <termios.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include "rg15.h"
 
 #define MAX_BUFFER 1024
 #define DEFAULT_DEVICE "/dev/ttyUSB0"
@@ -131,21 +130,23 @@ void rg15_cleanup(RG15Device* dev) {
     }
 }
 
-char* get_rg15() {
+int main() {
     RG15Device* dev = rg15_init(NULL);
     if (!dev) {
         fprintf(stderr, "Failed to initialize device\n");
-        return NULL;
+        return 1;
     }
     
     char* data = rg15_get_data(dev);
     if (data) {
         rg15_cleanup(dev);
-        return data; 
+        printf("%s", data); 
+        return 0;
     } else {
         printf("Failed to get data\n");
-        return NULL;
+        return 1;
     }
     
 }
+
 

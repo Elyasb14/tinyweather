@@ -67,7 +67,7 @@ pub const ProxyConnectionHandler = struct {
         self.conn.stream.close();
     }
 
-    fn get_data(allocator: std.mem.Allocator, remote_addr: []const u8, remote_port: u16, sensors: []const tcp.SensorType) ![]tcp.SensorData {
+    fn get_data(allocator: std.mem.Allocator, remote_addr: []const u8, remote_port: u16, sensors: []const tcp.Sensors) ![]tcp.SensorData {
         const node_address = try net.Address.parseIp4(remote_addr, remote_port);
         const node_stream = net.tcpConnectToAddress(node_address) catch {
             std.log.warn("\x1b[33mCan't connect to address\x1b[0m: {any}", .{node_address});
@@ -126,14 +126,14 @@ pub const ProxyConnectionHandler = struct {
 
             const target = request.head.target;
             if (std.mem.eql(u8, target, "/metrics")) {
-                var sensors = std.ArrayList(tcp.SensorType).init(allocator);
+                var sensors = std.ArrayList(tcp.Sensors).init(allocator);
                 defer sensors.deinit();
 
                 var iter = request.iterateHeaders();
                 while (iter.next()) |h| {
                     std.log.info("\x1b[32mHeader\x1b[0m: {s} {s}", .{ h.name, h.value });
                     if (std.mem.eql(u8, "Sensor", h.name)) {
-                        try sensors.append(std.meta.stringToEnum(tcp.SensorType, h.value) orelse {
+                        try sensors.append(std.meta.stringToEnum(tcp.Sensors, h.value) orelse {
                             std.log.warn("\x1b[33mIs someone sending incorrect/invalid headers?\x1b[0m: {s}", .{h.value});
                             continue;
                         });
@@ -160,11 +160,26 @@ pub const ProxyConnectionHandler = struct {
                 var prom_string = std.ArrayList(u8).init(allocator);
                 defer prom_string.deinit();
 
-                for (sensors.items, sensor_data) |sensor, val| {
-                    var gauge = prometheus.Gauge.init(@tagName(sensor), @tagName(sensor));
-                    gauge.set(val.val);
-                    try prom_string.appendSlice(try gauge.to_prometheus(allocator));
-                    try prom_string.appendSlice("\n");
+                var counter: u8 = 0;
+
+                for (sensor_data) |*sd| {
+                    const sensor_vals = sd.get_sensor_value_names();
+                    counter = 0; // Reset counter at the beginning of each sensor data item
+
+                    for (sd.val) |val| {
+                        if (counter >= sensor_vals.len) {
+                            std.log.warn("More values than sensor value names for sensor {s}", .{@tagName(sd.sensor_type)});
+                            break; // Skip extra values
+                        }
+
+                        const sensor_val = sensor_vals[counter];
+                        var gauge = prometheus.Gauge.init(@tagName(sensor_val), @tagName(sensor_val));
+                        gauge.set(val);
+                        try prom_string.appendSlice(try gauge.to_prometheus(allocator));
+                        try prom_string.appendSlice("\n");
+
+                        counter += 1;
+                    }
                 }
 
                 try request.respond(prom_string.items, .{ .extra_headers = &.{.{ .name = "Content-Type", .value = "text/plain; version=0.0.4" }} });
