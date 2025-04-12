@@ -93,8 +93,8 @@ pub const SensorData = struct {
                 .RG15RainRInt,
             },
             .BFROBOT => &[_]SensorVals{
-                .BFRobotHum,
                 .BFRobotTemp,
+                .BFRobotHum,
             },
         };
     }
