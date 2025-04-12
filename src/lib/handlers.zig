@@ -161,11 +161,18 @@ pub const ProxyConnectionHandler = struct {
                 var prom_string = std.ArrayList(u8).init(allocator);
                 defer prom_string.deinit();
 
-                var counter: u7 = 0;
+                var counter: u8 = 0;
 
                 for (sensor_data) |*sd| {
                     const sensor_vals = sd.get_sensor_value_names();
+                    counter = 0; // Reset counter at the beginning of each sensor data item
+
                     for (sd.val) |val| {
+                        if (counter >= sensor_vals.len) {
+                            std.log.warn("More values than sensor value names for sensor {s}", .{@tagName(sd.sensor_type)});
+                            break; // Skip extra values
+                        }
+
                         const sensor_val = sensor_vals[counter];
                         var gauge = prometheus.Gauge.init(@tagName(sensor_val), @tagName(sensor_val));
                         gauge.set(val);
@@ -174,7 +181,6 @@ pub const ProxyConnectionHandler = struct {
 
                         counter += 1;
                     }
-                    counter = 0;
                 }
 
                 try request.respond(prom_string.items, .{ .extra_headers = &.{.{ .name = "Content-Type", .value = "text/plain; version=0.0.4" }} });

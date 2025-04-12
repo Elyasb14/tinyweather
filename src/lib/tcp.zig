@@ -8,7 +8,7 @@ const net = std.net;
 
 pub const PacketType = enum(u8) { SensorRequest, SensorResponse };
 pub const Sensors = enum(u8) { BME680, RG15, BFROBOT };
-pub const SensorVals = enum(u8) { BMETemp, BMEPres, BMEHum, BMEGas, RG15RainAcc, RG15RainEventAcc, RG15RainTotalAcc, RG15RainRInt };
+pub const SensorVals = enum(u8) { BMETemp, BMEPres, BMEHum, BMEGas, RG15RainAcc, RG15RainEventAcc, RG15RainTotalAcc, RG15RainRInt, BFRobotTemp, BFRobotHum };
 pub const TCPError = error{ VersionError, InvalidPacketType, InvalidSensor, DeviceError, BadPacket, ConnectionError };
 
 pub const Packet = struct {
@@ -93,7 +93,8 @@ pub const SensorData = struct {
                 .RG15RainRInt,
             },
             .BFROBOT => &[_]SensorVals{
-                // Define BFROBOT's value names
+                .BFRobotHum,
+                .BFRobotTemp,
             },
         };
     }
@@ -131,7 +132,7 @@ pub const SensorResponse = struct {
                     }
                 },
                 .BFROBOT => {
-                    const bfrobot_data: []const f32 = (try device.parse_bme(allocator)) orelse &[_]f32{std.math.nan(f32)} ** 4;
+                    const bfrobot_data: []const f32 = (try device.parse_bfrobot(allocator)) orelse &[_]f32{std.math.nan(f32)} ** 4;
                     for (bfrobot_data) |x| {
                         try buf.appendSlice(&helpers.f32_to_bytes(x));
                     }

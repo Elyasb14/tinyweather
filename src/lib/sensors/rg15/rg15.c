@@ -131,7 +131,7 @@ void rg15_cleanup(RG15Device* dev) {
     }
 }
 
-char* get_rain() {
+char* get_rg15() {
     RG15Device* dev = rg15_init(NULL);
     if (!dev) {
         fprintf(stderr, "Failed to initialize device\n");

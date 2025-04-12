@@ -38,7 +38,7 @@ pub fn parse_rg15(allocator: Allocator) !?[]const f32 {
     };
 
     var buf = ArrayList(f32).init(allocator);
-    const rain_data: []const u8 = std.mem.span(c.get_rain());
+    const rain_data: []const u8 = std.mem.span(c.get_rg15());
     if (rain_data.len < 4) return null;
 
     var split = std.mem.splitAny(u8, rain_data, " ,{}");
@@ -51,6 +51,24 @@ pub fn parse_rg15(allocator: Allocator) !?[]const f32 {
     return data;
 }
 
-// pub fn parse_bfrobot(allocator: Allocator) !?[]const f32 {
-//
-// }
+pub fn parse_bfrobot(allocator: Allocator) !?[]const f32 {
+    if (builtin.target.os.tag.isDarwin()) return null;
+
+    const bf_data: []const u8 = std.mem.span(c.get_data());
+
+    var buf = ArrayList(f32).init(allocator);
+
+    var split = std.mem.splitAny(u8, bf_data, " ");
+    while (split.next()) |token| {
+        const val = std.fmt.parseFloat(f32, token) catch continue;
+        try buf.append(val);
+    }
+
+    if (bf_data.len < 2) {
+        return null;
+    }
+
+    const data = try buf.toOwnedSlice();
+
+    return data;
+}
