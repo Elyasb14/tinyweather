@@ -42,47 +42,51 @@ int read_sensor_reg(int file, int reg, unsigned char *buffer, size_t length) {
 }
 
 char* get_data() {
-
     // Select appropriate device based on platform
     #ifdef __APPLE__
         return NULL;
-    #endif
-  unsigned char buf[4];
-  uint data, data1;
-  float temp, hum;
-    char* result_string = NULL;
-
-  // Open the I2C device
-  if ((i2c_file = open(I2C_DEVICE, O_RDWR)) < 0) {
-    printf("Failed to open the I2C bus\n");
-    return NULL;
-  }
-
-  // Set the I2C slave address for all subsequent I/O
-  if (ioctl(i2c_file, I2C_SLAVE, SENSOR_ADDR) < 0) {
-    printf("Failed to acquire bus access and/or talk to slave\n");
-    return NULL;
-  }
-
-  // Read temperature and humidity registers
-  if (read_sensor_reg(i2c_file, 0x00, buf, 4) < 0) {
-    printf("Error reading sensor data\n");
-    return NULL;
-  } else {
-    // Calculate temperature and humidity like in the Arduino code
-    data = (buf[0] << 8) | buf[1];
-    data1 = (buf[2] << 8) | buf[3];
-
-    temp = ((float)data * 165.0 / 65535.0) - 40.0;
-    hum = ((float)data1 / 65535.0) * 100.0;
-
-    sprintf(result_string, "%.2f %.2f\n", temp, hum);
-    
-
-    usleep(500000); // 500ms delay
-
-    close(i2c_file);
-    return result_string;
-  }
-
+    #else
+      unsigned char buf[4];
+      uint16_t data, data1;  // Changed to uint16_t for clarity
+      float temp, hum;
+      char* result_string = malloc(32);  // Allocate memory for the result string
+      
+      if (result_string == NULL) {
+          printf("Memory allocation failed\n");
+          return NULL;
+      }
+      
+      // Open the I2C device
+      if ((i2c_file = open(I2C_DEVICE, O_RDWR)) < 0) {
+        printf("Failed to open the I2C bus\n");
+        free(result_string);  // Free memory before returning
+        return NULL;
+      }
+      
+      // Set the I2C slave address for all subsequent I/O
+      if (ioctl(i2c_file, I2C_SLAVE, SENSOR_ADDR) < 0) {
+        printf("Failed to acquire bus access and/or talk to slave\n");
+        free(result_string);  // Free memory before returning
+        return NULL;
+      }
+      
+      // Read temperature and humidity registers
+      if (read_sensor_reg(i2c_file, 0x00, buf, 4) < 0) {
+        printf("Error reading sensor data\n");
+        free(result_string);  // Free memory before returning
+        return NULL;
+      } else {
+        // Calculate temperature and humidity like in the Arduino code
+        data = (buf[0] << 8) | buf[1];
+        data1 = (buf[2] << 8) | buf[3];
+        temp = ((float)data * 165.0 / 65535.0) - 40.0;
+        hum = ((float)data1 / 65535.0) * 100.0;
+        sprintf(result_string, "%.2f %.2f", temp, hum);
+        
+        usleep(500000); // 500ms delay
+        close(i2c_file);
+        return result_string;
+      }
+#endif
 }
+
