@@ -135,9 +135,6 @@ pub const SensorResponse = struct {
                     for (bfrobot_data) |x| {
                         try buf.appendSlice(&helpers.f32_to_bytes(x));
                     }
-
-                    try buf.appendSlice(&helpers.f32_to_bytes(std.math.nan(f32)));
-                    try buf.appendSlice(&helpers.f32_to_bytes(std.math.nan(f32)));
                 },
             }
         }
