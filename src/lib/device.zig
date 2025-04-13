@@ -61,6 +61,7 @@ pub fn parse_bfrobot(allocator: Allocator) !?[]const f32 {
     var split = std.mem.splitAny(u8, bf_data, " ");
     while (split.next()) |token| {
         const val = std.fmt.parseFloat(f32, token) catch continue;
+        std.debug.print("DEBUG: {any}\n", .{val});
         try buf.append(val);
     }
 

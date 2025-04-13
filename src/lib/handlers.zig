@@ -168,8 +168,7 @@ pub const ProxyConnectionHandler = struct {
 
                     for (sd.val) |val| {
                         if (counter >= sensor_vals.len) {
-                            std.log.warn("More values than sensor value names for sensor {s}", .{@tagName(sd.sensor_type)});
-                            break; // Skip extra values
+                            break;
                         }
 
                         const sensor_val = sensor_vals[counter];
