@@ -158,7 +158,8 @@ pub const SensorResponse = struct {
         var offset: usize = 0;
         for (request.sensors) |sensor| {
             const buf_len = sensor.get_len_sensor_values() * 4;
-            if (offset + buf_len > buf.len) break;
+            // THIS IS A BUG, WHEN YOU PASS -H "Sensor:BFROBOT" as a header, it triggers this break so anything after it will not get parsed
+            // if (offset + buf_len > buf.len) break;
 
             // Allocate array for 4 f32 values
             var values = try allocator.alloc(f32, buf_len / 4);
