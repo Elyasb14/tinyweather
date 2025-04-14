@@ -162,6 +162,7 @@ pub const ProxyConnectionHandler = struct {
 
                 for (sensor_data) |*sd| {
                     const sensor_vals = sd.get_sensor_value_names();
+                    std.log.info("\x1b[32mData received from node\x1b[0m: {d}", .{sd.val});
 
                     for (sd.val, 0..) |val, i| {
                         if (i >= sensor_vals.len) {
