@@ -160,24 +160,20 @@ pub const ProxyConnectionHandler = struct {
                 var prom_string = std.ArrayList(u8).init(allocator);
                 defer prom_string.deinit();
 
-                var counter: u8 = 0;
-
                 for (sensor_data) |*sd| {
                     const sensor_vals = sd.get_sensor_value_names();
-                    counter = 0; // Reset counter at the beginning of each sensor data item
 
-                    for (sd.val) |val| {
-                        if (counter >= sensor_vals.len) {
+                    for (sd.val, 0..) |val, i| {
+                        if (i >= sensor_vals.len) {
+                            std.log.warn("\x1b[33mMore values than sensor value names for sensor\x1b[0m: {s}", .{@tagName(sd.sensor_type)});
                             break;
                         }
 
-                        const sensor_val = sensor_vals[counter];
+                        const sensor_val = sensor_vals[i];
                         var gauge = prometheus.Gauge.init(@tagName(sensor_val), @tagName(sensor_val));
                         gauge.set(val);
                         try prom_string.appendSlice(try gauge.to_prometheus(allocator));
                         try prom_string.appendSlice("\n");
-
-                        counter += 1;
                     }
                 }
 
