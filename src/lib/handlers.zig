@@ -81,7 +81,7 @@ pub const ProxyConnectionHandler = struct {
         const packet = tcp.Packet.init(1, tcp.PacketType.SensorRequest, sensor_request_encoded);
         const encoded_packet = try packet.encode(allocator);
 
-        var buf: [50]u8 = undefined;
+        var buf: [100]u8 = undefined;
         std.log.info("\x1b[32mPacket Sent\x1b[0m: {any}", .{packet});
         _ = node_stream.write(encoded_packet) catch |err| {
             std.log.warn("\x1b[33mCan't write to the node\x1b[0m: {s}", .{@errorName(err)});
@@ -97,6 +97,7 @@ pub const ProxyConnectionHandler = struct {
         switch (decoded_packet.type) {
             .SensorResponse => {
                 const decoded_sensor_response = try tcp.SensorResponse.decode(sensor_request, decoded_packet.data, allocator);
+                std.log.info("\x1b[32mDecoded sensor response\x1b[0m: {any}", .{decoded_sensor_response});
                 const sensor_data = decoded_sensor_response.data;
                 return sensor_data;
             },
