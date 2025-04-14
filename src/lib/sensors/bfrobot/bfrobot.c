@@ -30,7 +30,7 @@ int read_sensor_reg(int file, int reg, unsigned char *buffer, size_t length) {
   }
 
   // Wait a bit for the sensor to process
-  usleep(2000); 
+  usleep(20000); 
 
   // Read the data from the specified register
   if (read(file, buffer, length) != length) {
