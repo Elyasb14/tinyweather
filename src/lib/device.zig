@@ -19,6 +19,9 @@ pub fn parse_bme(allocator: Allocator) !?[]const f32 {
         std.log.warn("\x1b[33mCouldn't read bme sensor, sending nan to the client\x1b[0m", .{});
         return null;
     };
+
+    std.log.info("\x1b[32m Raw data read by bme680\x1b[0m: {s}", .{bme_data});
+
     var split = std.mem.splitAny(u8, bme_data, " \n");
     while (split.next()) |token| {
         const val = std.fmt.parseFloat(f32, token) catch continue;
@@ -39,6 +42,7 @@ pub fn parse_rg15(allocator: Allocator) !?[]const f32 {
 
     var buf = ArrayList(f32).init(allocator);
     const rain_data: []const u8 = std.mem.span(c.get_rg15());
+    std.log.info("\x1b[32m Raw data read by RG15\x1b[0m: {s}", .{rain_data});
     if (rain_data.len < 4) return null;
 
     var split = std.mem.splitAny(u8, rain_data, " ,{}");
@@ -57,6 +61,7 @@ pub fn parse_bfrobot(allocator: Allocator) !?[]const f32 {
     if (builtin.target.os.tag.isDarwin()) return null;
 
     const bf_data: []const u8 = std.mem.span(c.get_bfrobot());
+    std.log.info("\x1b[32m Raw data read by BFROBOT temp & humidity sensor\x1b[0m: {s}", .{bf_data});
     if (bf_data.len < 2) return null;
     var buf = ArrayList(f32).init(allocator);
 
