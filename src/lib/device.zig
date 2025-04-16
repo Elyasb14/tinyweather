@@ -58,7 +58,7 @@ pub fn parse_bfrobot(allocator: Allocator) !?[]const f32 {
 
     var buf = ArrayList(f32).init(allocator);
 
-    var split = std.mem.splitAny(u8, bf_data, "");
+    var split = std.mem.splitAny(u8, bf_data, " ");
     while (split.next()) |token| {
         const val = std.fmt.parseFloat(f32, token) catch continue;
         try buf.append(val);
