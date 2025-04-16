@@ -42,7 +42,7 @@ if __name__ == "__main__":
         '--parallel',
         'localhost:8081/metrics',
         'localhost:8081/metrics',
-        '-H', 'Sensor:BMETemp',
-        '-H', 'Sensor:RG15RInt'
+        '-H', 'Sensor:BME680',
+        '-H', 'Sensor:RG15'
     ], check=True)
 

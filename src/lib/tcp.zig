@@ -7,7 +7,18 @@ const helpers = @import("helpers.zig");
 const net = std.net;
 
 pub const PacketType = enum(u8) { SensorRequest, SensorResponse };
-pub const Sensors = enum(u8) { BME680, RG15, BFROBOT };
+pub const Sensors = enum(u8) {
+    BME680,
+    RG15,
+    BFROBOT,
+    pub fn get_len_sensor_values(self: Sensors) u8 {
+        switch (self) {
+            .BME680 => return 4,
+            .RG15 => return 4,
+            .BFROBOT => return 2,
+        }
+    }
+};
 pub const SensorVals = enum(u8) { BMETemp, BMEPres, BMEHum, BMEGas, RG15RainAcc, RG15RainEventAcc, RG15RainTotalAcc, RG15RainRInt, BFRobotTemp, BFRobotHum };
 pub const TCPError = error{ VersionError, InvalidPacketType, InvalidSensor, DeviceError, BadPacket, ConnectionError };
 
@@ -131,7 +142,7 @@ pub const SensorResponse = struct {
                     }
                 },
                 .BFROBOT => {
-                    const bfrobot_data: []const f32 = (try device.parse_bfrobot(allocator)) orelse &[_]f32{std.math.nan(f32)} ** 4;
+                    const bfrobot_data: []const f32 = (try device.parse_bfrobot(allocator)) orelse &[_]f32{std.math.nan(f32)} ** 2;
                     for (bfrobot_data) |x| {
                         try buf.appendSlice(&helpers.f32_to_bytes(x));
                     }
@@ -146,20 +157,21 @@ pub const SensorResponse = struct {
 
         var offset: usize = 0;
         for (request.sensors) |sensor| {
-            // Check if we have enough bytes for 4 f32 values (16 bytes total)
-            if (offset + 16 > buf.len) break;
+            const buf_len = sensor.get_len_sensor_values() * 4;
+            // THIS IS A BUG, WHEN YOU PASS -H "Sensor:BFROBOT" as a header, it triggers this break so anything after it will not get parsed
+            if (offset + buf_len > 4 + buf.len) break;
 
             // Allocate array for 4 f32 values
-            var values = try allocator.alloc(f32, 4);
+            var values = try allocator.alloc(f32, buf_len / 4);
 
             // Parse 4 f32 values for this sensor
-            for (0..4) |i| {
+            for (0..buf_len / 4) |i| {
                 const chunk = buf[offset + (i * 4) .. offset + (i * 4) + 4];
                 values[i] = helpers.bytes_to_f32(chunk);
             }
 
             try dec_buf.append(SensorData{ .sensor_type = sensor, .val = values });
-            offset += 16; // Move offset by 16 bytes (4 f32 values)
+            offset += buf_len; // Move offset by 16 bytes (4 f32 values)
         }
 
         const data = try dec_buf.toOwnedSlice();

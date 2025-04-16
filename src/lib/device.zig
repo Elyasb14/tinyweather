@@ -64,10 +64,6 @@ pub fn parse_bfrobot(allocator: Allocator) !?[]const f32 {
         try buf.append(val);
     }
 
-    if (bf_data.len < 2) {
-        return null;
-    }
-
     const data = try buf.toOwnedSlice();
 
     return data;
