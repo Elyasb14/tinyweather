@@ -162,18 +162,12 @@ pub const ProxyConnectionHandler = struct {
                 defer prom_string.deinit();
 
                 for (sensor_data) |*sd| {
-                    const sensor_vals = sd.get_sensor_value_names();
-                    std.log.info("\x1b[32mData received from node\x1b[0m: {d}", .{sd.val});
-
-                    for (sd.val, 0..) |val, i| {
-                        if (i >= sensor_vals.len) {
-                            std.log.warn("\x1b[33mMore values than sensor value names for sensor\x1b[0m: {s}", .{@tagName(sd.sensor_type)});
-                            break;
-                        }
-
-                        const sensor_val = sensor_vals[i];
-                        var gauge = prometheus.Gauge.init(@tagName(sensor_val), @tagName(sensor_val));
-                        gauge.set(val);
+                    const sensor_value_names = sd.get_sensor_value_names();
+                    std.log.info("\x1b[32mData received from node\x1b[0m: {d}\n\x1b[32mFrom sensor\x1b[0m: {s}", .{ sd.val, @tagName(sd.sensor_type) });
+                    for (sd.val, 0..) |x, i| {
+                        const curr_sensor_value_name = @tagName(sensor_value_names[i]);
+                        var gauge = prometheus.Gauge.init(curr_sensor_value_name, @tagName((sd.sensor_type)));
+                        gauge.set(x);
                         try prom_string.appendSlice(try gauge.to_prometheus(allocator));
                         try prom_string.appendSlice("\n");
                     }
