@@ -8,7 +8,6 @@
 #include <sys/ioctl.h>
 #include <stdint.h>
 #include <unistd.h>
-#include "bfrobot.h"
 
 #define I2C_DEVICE                                                             \
   "/dev/i2c-1" // Change this to the appropriate I2C bus on your system
