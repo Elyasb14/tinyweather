@@ -51,11 +51,13 @@ pub fn parse_rg15(allocator: Allocator) !?[]const f32 {
     return data;
 }
 
+/// this functions returns null when the sensor returns no data or partial data
+/// in the case we do return null, the caller should "orelse" the bytearrray representing nan in f32 (helpers.f32_to_bytes(std.math.nan(f32)))
 pub fn parse_bfrobot(allocator: Allocator) !?[]const f32 {
     if (builtin.target.os.tag.isDarwin()) return null;
 
     const bf_data: []const u8 = std.mem.span(c.get_bfrobot());
-
+    if (bf_data.len < 2) return null;
     var buf = ArrayList(f32).init(allocator);
 
     var split = std.mem.splitAny(u8, bf_data, " ");
@@ -65,6 +67,7 @@ pub fn parse_bfrobot(allocator: Allocator) !?[]const f32 {
     }
 
     const data = try buf.toOwnedSlice();
+    if (data.len < 2) return null;
 
     return data;
 }
