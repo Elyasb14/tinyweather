@@ -140,7 +140,7 @@ int main() {
     char* data = rg15_get_data(dev);
     if (data) {
         rg15_cleanup(dev);
-        printf("%s", data); 
+        printf("%s\n", data); 
         return 0;
     } else {
         printf("Failed to get data\n");
