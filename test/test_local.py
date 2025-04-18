@@ -1,48 +1,54 @@
 import subprocess
 import time
-import os
-import platform
 
+def start_process(cmd):
+    print(f"Starting: {' '.join(cmd)}")
+    return subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
 
-if __name__ == "__main__":
-    # Get the current working directory
-    cwd = os.getcwd()
-    # Path to the activation script
-    activation_script = os.path.join(cwd, ".venv/bin/activate")
-    venv_python = os.path.join(cwd, ".venv/bin/python")
-    venv_pip = os.path.join(cwd, ".venv/bin/pip")
+def read_stdout(proc):
+    if proc.stdout:
+        return proc.stdout.read()
+    return ""
 
-    # Ensure the virtual environment exists
-    if not os.path.exists(activation_script):
-        print("\x1b[32mCreating Python3 virtual environment...\x1b[0m")
-        subprocess.run(["python3", "-m", "venv", ".venv"], check=True)
+def main():
+    # Start tinyweather-node
+    node_proc = start_process(["./zig-out/bin/tinyweather-node"])
+    time.sleep(1)  # Give it time to start (adjust as needed)
 
-    if platform.system == "Linux":
-        # Use the virtual environment's pip to install dependencies
-        subprocess.run([venv_pip, "install", "adafruit-circuitpython-bme680", "adafruit-blinka", "RPi.GPIO"], check=True)
-
-    # Run zig build
-    result = subprocess.run(["zig", "build"], check=True)
-    assert result.returncode == 0, "zig build failed"
-    print("\x1b[32mzig build ran successfully\x1b[0m")
-
-    # Start the tinyweather-node
-    subprocess.Popen(["./zig-out/bin/tinyweather-node"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    time.sleep(1)
-    print("\x1b[32mNode started...\x1b[0m")
-
-    # Start the tinyweather-proxy
-    subprocess.Popen(["./zig-out/bin/tinyweather-proxy"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    time.sleep(1)
-    print("\x1b[32mProxy started...\x1b[0m")
+    # Start tinyweather-proxy
+    proxy_proc = start_process(["./zig-out/bin/tinyweather-proxy"])
+    time.sleep(1)  # Give it time to start too
 
     # Run the curl command
-    subprocess.run([
-        'curl',
-        '--parallel',
-        'localhost:8081/metrics',
-        'localhost:8081/metrics',
-        '-H', 'Sensor:BME680',
-        '-H', 'Sensor:RG15'
-    ], check=True)
+    print("Running curl...")
+    try:
+        curl_output = subprocess.check_output([
+            "curl", "localhost:8081/metrics",
+            "-H", "Sensor:RG15",
+            "-H", "Sensor:BFROBOT",
+            "-H", "Sensor:BME680"
+        ], text=True)
+        print("Curl output:")
+        print(curl_output)
+    except subprocess.CalledProcessError as e:
+        print("Curl failed:")
+        print(e.output)
+
+    # Terminate the node and proxy processes
+    node_proc.terminate()
+    proxy_proc.terminate()
+
+    # Wait for them to exit
+    node_proc.wait()
+    proxy_proc.wait()
+
+    # Read their outputs
+    print("\n--- tinyweather-node stdout ---")
+    print(read_stdout(node_proc))
+
+    print("\n--- tinyweather-proxy stdout ---")
+    print(read_stdout(proxy_proc))
+
+if __name__ == "__main__":
+    main()
 
