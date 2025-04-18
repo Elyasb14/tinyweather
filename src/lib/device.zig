@@ -20,7 +20,7 @@ pub fn parse_bme(allocator: Allocator) !?[]const f32 {
         return null;
     };
 
-    std.log.info("\x1b[32m Raw data read by bme680\x1b[0m: {s}", .{bme_data});
+    std.log.info("\x1b[32mRaw data read by bme680\x1b[0m: {s}", .{bme_data});
 
     var split = std.mem.splitAny(u8, bme_data, " \n");
     while (split.next()) |token| {
@@ -42,7 +42,7 @@ pub fn parse_rg15(allocator: Allocator) !?[]const f32 {
 
     var buf = ArrayList(f32).init(allocator);
     const rain_data: []const u8 = std.mem.span(c.get_rg15());
-    std.log.info("\x1b[32m Raw data read by RG15\x1b[0m: {s}", .{rain_data});
+    std.log.info("\x1b[32mRaw data read by RG15\x1b[0m: {s}", .{rain_data});
     if (rain_data.len < 4) return null;
 
     var split = std.mem.splitAny(u8, rain_data, " ,{}");
