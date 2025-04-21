@@ -15,7 +15,6 @@ typedef struct {
     struct termios tty;
 } RG15Device;
 
-// Initialize the 
 RG15Device* rg15_init(const char* device) {
     RG15Device* dev = malloc(sizeof(RG15Device));
     if (!dev) {
