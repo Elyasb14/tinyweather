@@ -15,7 +15,6 @@ typedef struct {
     struct termios tty;
 } RG15Device;
 
-// Initialize the 
 RG15Device* rg15_init(const char* device) {
     RG15Device* dev = malloc(sizeof(RG15Device));
     if (!dev) {
@@ -140,7 +139,7 @@ int main() {
     char* data = rg15_get_data(dev);
     if (data) {
         rg15_cleanup(dev);
-        printf("%s", data); 
+        printf("%s\n", data); 
         return 0;
     } else {
         printf("Failed to get data\n");

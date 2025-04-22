@@ -155,23 +155,22 @@ pub const SensorResponse = struct {
     pub fn decode(request: SensorRequest, buf: []const u8, allocator: std.mem.Allocator) Allocator.Error!SensorResponse {
         var dec_buf = ArrayList(SensorData).init(allocator);
 
+        // TODO: this feels hacky can we do better
         var offset: usize = 0;
         for (request.sensors) |sensor| {
-            const buf_len = sensor.get_len_sensor_values() * 4;
-            // THIS IS A BUG, WHEN YOU PASS -H "Sensor:BFROBOT" as a header, it triggers this break so anything after it will not get parsed
+            const len_sensor_values = sensor.get_len_sensor_values();
+            const buf_len = len_sensor_values * 4;
             if (offset + buf_len > 4 + buf.len) break;
 
-            // Allocate array for 4 f32 values
-            var values = try allocator.alloc(f32, buf_len / 4);
+            var values = try allocator.alloc(f32, len_sensor_values);
 
-            // Parse 4 f32 values for this sensor
             for (0..buf_len / 4) |i| {
                 const chunk = buf[offset + (i * 4) .. offset + (i * 4) + 4];
                 values[i] = helpers.bytes_to_f32(chunk);
             }
 
             try dec_buf.append(SensorData{ .sensor_type = sensor, .val = values });
-            offset += buf_len; // Move offset by 16 bytes (4 f32 values)
+            offset += buf_len;
         }
 
         const data = try dec_buf.toOwnedSlice();
