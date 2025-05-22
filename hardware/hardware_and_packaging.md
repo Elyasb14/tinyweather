@@ -21,6 +21,8 @@ We’ll probably need a **10Ah 12V battery** to ensure we have enough power.
 
 We should likely go with a **15-watt solar panel** to be on the safe side, as power demands could increase at times.
 
-So the solar controller will be something like [this](https://www.amazon.com/dp/B075NQH3QW?ref_=ppx_hzsearch_conn_dt_b_fed_asin_title_1). Inside the power distribution box we will have a fuse for the main solar and battery inputs. For the solar panels, we can probably use like a 2-3A fuse. For the battery we could use like a 1A fuse or something. Then we will use a 1A circuit breaker for the device itself. Also we need a 12v-5v voltage converter like [this](https://www.amazon.com/DROK-Converter-5-3V-32V-Regulator-Transformer/dp/B078Q1624B/ref=sr_1_3_pp?dib=eyJ2IjoiMSJ9.XY9uGiTaz5fdKvfbmGO5vkNmR-oPPXF2n8V6dS83RhXQFEimYVdrZf-ffny1bM8fysH1vl5iMyUm5JExsVD5oalPugkkDP-9UM0ByEaJmfUL3xzyTHUXFsQC8I89BpMMf6LlnGhDNcMlhLcChpvZcTQdobg2GRQtptzpCy1r7tnV1YTjDi27x80XoPcu2iAS5neloO5D5Ekt6Cap63kFIUJasKXI5_89huCgMlp4H3c.WilOZ2vwJ-dgDV9wT127ervuGGX6rgVOdWRB5s0JAEI&dib_tag=se&keywords=dc-dc%2Bconverter&qid=1745446732&sr=8-3&th=1) maybe 
+### Solar Controller
+So the solar controller will be something like [this](https://www.amazon.com/dp/B075NQH3QW?ref_=ppx_hzsearch_conn_dt_b_fed_asin_title_1). 
 
-
+### Further Work
+We also need circuit protection. Like fuses and breakers. However, I've dragged my feet long enough and this thing needs to be put to long term testing. Therefore, we will go as bare bones as possible. 
