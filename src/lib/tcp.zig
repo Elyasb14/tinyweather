@@ -11,6 +11,7 @@ pub const Sensors = enum(u8) {
     BME680,
     RG15,
     BFROBOT,
+
     pub fn get_len_sensor_values(self: Sensors) u8 {
         switch (self) {
             .BME680 => return 4,

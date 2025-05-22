@@ -19,7 +19,7 @@ pub const NodeConnectionHandler = struct {
     }
 
     pub fn handle(self: *NodeConnectionHandler, allocator: Allocator) !?void {
-        var buf: [50]u8 = undefined;
+        var buf: [100]u8 = undefined;
         const bytes_read = try self.stream.read(&buf);
         if (bytes_read == 0) return null;
         std.log.info("\x1b[32mBytes read by connection\x1b[0m: {any}", .{bytes_read});

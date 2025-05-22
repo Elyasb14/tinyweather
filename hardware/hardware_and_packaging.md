@@ -21,3 +21,8 @@ We’ll probably need a **10Ah 12V battery** to ensure we have enough power.
 
 We should likely go with a **15-watt solar panel** to be on the safe side, as power demands could increase at times.
 
+### Solar Controller
+So the solar controller will be something like [this](https://www.amazon.com/dp/B075NQH3QW?ref_=ppx_hzsearch_conn_dt_b_fed_asin_title_1). 
+
+### Further Work
+We also need circuit protection. Like fuses and breakers. However, I've dragged my feet long enough and this thing needs to be put to long term testing. Therefore, we will go as bare bones as possible. 

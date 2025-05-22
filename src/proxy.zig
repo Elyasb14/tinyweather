@@ -10,7 +10,6 @@ pub const std_options: std.Options = .{
     .log_level = .debug,
 };
 
-// Modify handle_connection to return void instead of error
 fn handle_connection(connection: net.Server.Connection, allocator: std.mem.Allocator) void {
     var handler = handlers.ProxyConnectionHandler.init(connection);
     defer handler.deinit();
