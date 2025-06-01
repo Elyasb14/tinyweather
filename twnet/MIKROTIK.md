@@ -24,8 +24,8 @@ Make a bridge called loopback address by running
 ```
 # make bridge interface called loopback0, give it an address, make it a routing id
 /interface bridge add name=loopback0 disabled=no
-/ip address add address=10.0.1.0/32 interface=loopback
-/routing/id add name=loopback0 id=10.0.14.1 select-from-vrf=main select-dynamic-id=only-loopback
+/ip address add address=10.0.1.0/32 interface=loopback0
+/routing/id add name=loopback0 id=10.0.1.0 select-from-vrf=main select-dynamic-id=only-loopback
 
 #verification
 /interface bridge print
@@ -45,7 +45,7 @@ Wireguard is used for vpn. First step is to make a wireguard interface called `w
 Then we need to set up our peers with address 10.0.3.2/32 and port 14008
 
 ```
-/interface wireguard peers add allowed-address=10.0.3.2/32 endpoint-port=14008 interface=wg0 name=wg0 persistent-keepalive=25s public-key={peer_publickey}
+/interface wireguard peers add allowed-address=10.0.3.2/32 endpoint-port=14008 interface=wg0 name=wg0 persistent-keepalive=25s public-key=<peer_publickey>
 ```
 
 Generate `peer_publickey` by running `wg genkey | tee privatekey | wg pubkey > publickey` on the peer. Verify with `/interface wireguard print`.
@@ -58,5 +58,27 @@ Ospf is used for dynamic routing. Create an area and ospf instance by running
 /routing/ospf/area/ add name=backbone instance=backbone area-id=0.0.0.0 type=default
 /routing/ospf/instance/add name=backbone version=2 vrf=main router-id=10.0.1.0
 ```
+
+Create your peers
+
+```
+/routing/ospf/interface-template/add interfaces=bridge area=backbone networks=10.0.2.0/24 type=broadcast
+/routing/ospf/interface-template/add interfaces=wg0 area=backbone networks=10.0.3.0/24 type=broadcast
+/routing/ospf/interface-template/add interfaces=loopback0 area=backbone networks=10.0.1.0/32 type=broadcast
+```
+
+## Firewall
+
+These rules are for wireguard
+
+```
+/ip firewall filter add chain=input protocol=udp dst-port=13231 action=accept comment="Allow WireGuard"
+/ip firewall filter add chain=input connection-state=established,related action=accept comment="Allow established/related"
+/ip firewall filter add chain=input src-address=10.0.3.0/24 action=accept comment="Allow WG subnet"
+/ip/firewall/filter/add chain=input protocol=udp dst-port=13231 in-interface=bridge action=accept comment="Allow WireGuard UDP"
+/ip firewall filter add chain=input protocol=udp dst-port=13231 action=accept comment="Allow WireGuard UDP regardless of interface"
+/ip firewall filter add chain=input action=drop in-interface-list=!LAN log=no log-prefix=""
+```
+
 
 
