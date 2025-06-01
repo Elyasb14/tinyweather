@@ -83,11 +83,6 @@ sudo rm -rf /etc/wireguard/*
 
 To view an in depth wireguard mikrotk config, you can view [MIKROTIK.md](https://github.com/Elyasb14/tinyweather/blob/main/twnet/MIKROTIK.md). The summary being is that it exposes a wireguard interface for nodes to connect to and for proxies and tsdbs to get data from nodes. 
 
-
-## Future Options 
-
-- Add a second core router using a new subnet like `10.0.4.0/24`.
-
 ## Network Diagram
 
 ```plaintext
