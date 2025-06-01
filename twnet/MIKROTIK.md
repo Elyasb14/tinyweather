@@ -110,5 +110,3 @@ add chain=forward action=drop connection-state=new connection-nat-state=!dstnat 
 
 ```
 
-
-
