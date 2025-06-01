@@ -69,15 +69,29 @@ Create your peers
 
 ## Firewall
 
-These rules are for wireguard
+Add the following rules to the firewall 
 
 ```
-/ip firewall filter add chain=input protocol=udp dst-port=13231 action=accept comment="Allow WireGuard"
-/ip firewall filter add chain=input connection-state=established,related action=accept comment="Allow established/related"
-/ip firewall filter add chain=input src-address=10.0.3.0/24 action=accept comment="Allow WG subnet"
-/ip/firewall/filter/add chain=input protocol=udp dst-port=13231 in-interface=bridge action=accept comment="Allow WireGuard UDP"
-/ip firewall filter add chain=input protocol=udp dst-port=13231 action=accept comment="Allow WireGuard UDP regardless of interface"
-/ip firewall filter add chain=input action=drop in-interface-list=!LAN log=no log-prefix=""
+# INPUT CHAIN
+/ip firewall filter
+add chain=input action=accept connection-state=established,related,untracked comment="defconf: accept established,related,untracked"
+add chain=input action=accept protocol=udp dst-port=4500 comment="allow IPsec NAT"
+add chain=input action=accept protocol=udp dst-port=500 comment="allow IKE"
+add chain=input action=accept protocol=udp dst-port=1701 comment="allow l2tp"
+add chain=input action=drop connection-state=invalid comment="defconf: drop invalid"
+add chain=input action=accept protocol=icmp comment="defconf: accept ICMP"
+add chain=input action=accept dst-address=127.0.0.1 comment="defconf: accept to local loopback (for CAPsMAN)"
+add chain=input action=accept protocol=udp dst-port=13231 comment="Allow WireGuard"
+add chain=input action=accept src-address=10.0.3.0/24 comment="Allow WG subnet"
+
+# FORWARD CHAIN
+add chain=forward action=accept ipsec-policy=in,ipsec comment="defconf: accept in ipsec policy"
+add chain=forward action=accept ipsec-policy=out,ipsec comment="defconf: accept out ipsec policy"
+add chain=forward action=fasttrack-connection connection-state=established,related hw-offload=yes comment="defconf: fasttrack"
+add chain=forward action=accept connection-state=established,related,untracked comment="defconf: accept established,related, untracked"
+add chain=forward action=drop connection-state=invalid comment="defconf: drop invalid"
+add chain=forward action=drop connection-state=new connection-nat-state=!dstnat in-interface-list=WAN comment="defconf: drop all from WAN not DSTNATed"
+
 ```
 
 
