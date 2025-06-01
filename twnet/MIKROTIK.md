@@ -2,16 +2,8 @@
 
 This is an in detail doc about configuring routers for twnet. The first thing to do is start with a fresh router by running `/system/reset-configuration`.  
 
-## Interface Lists (Minimal additions)
 
-Create interface lists used in firewall rules. Adjust interfaces accordingly:
-
-```
-/interface list add name=LAN
-/interface list member add interface=bridge1 list=LAN
-```
-
-## Bridge & Loopback
+## Bridge & Loopback and some other misc stuff
 
 We need a bridge for a LAN and a loopback address for future dynamic routing purposes. Make a bridge with address `10.0.2.1/24` by running
 
@@ -42,6 +34,34 @@ Make a bridge called loopback address by running
 /routing/id print
 ```
 
+Create interface lists used in firewall rules. Adjust interfaces accordingly:
+
+```
+/interface list add name=LAN
+/interface list member add interface=bridge1 list=LAN
+/interface list add name=WAN
+/interface list member add interface=ether1 list=WAN
+
+# IF YOU HAVE A STATIC PUBLIC IP
+/ip address add address=<your_public_ip>/24 interface=ether1
+/ip route add gateway=<your_gateway_ip>
+
+# IF USING DHCP
+/ip dhcp-client add interface=ether1 use-peer-dns=no add-default-route=yes
+```
+
+set correct NTP by running
+
+```
+/system clock set time-zone-name=UTC
+/system ntp client set enabled=yes primary-ntp=132.163.96.1 secondary-ntp=132.163.97.1
+```
+
+Set dns addresses
+
+```
+/ip dns set servers=1.1.1.1,8.8.8.8 allow-remote-requests=yes
+```
 ## Wireguard
 
 Wireguard is used for vpn. First step is to make a wireguard interface called `wg0` and give it an address of `10.0.3.1/24`
@@ -86,6 +106,7 @@ Add the following rules to the firewall
 
 # INPUT CHAIN
 /ip firewall filter
+/ip firewall nat add chain=srcnat out-interface=ether1 action=masquerade comment="NAT for internet access"
 add chain=input action=accept connection-state=established,related,untracked comment="defconf: accept established,related,untracked"
 add chain=input action=accept protocol=udp dst-port=4500 comment="allow IPsec NAT"
 add chain=input action=accept protocol=udp dst-port=500 comment="allow IKE"
@@ -108,5 +129,8 @@ add chain=forward action=accept connection-state=established,related,untracked c
 add chain=forward action=drop connection-state=invalid comment="defconf: drop invalid"
 add chain=forward action=drop connection-state=new connection-nat-state=!dstnat in-interface-list=WAN comment="defconf: drop all from WAN not DSTNATed"
 
+# Get rid of unused services
+/ip service disable telnet
+/ip service disable ftp
 ```
 
