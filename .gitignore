@@ -9,3 +9,5 @@ zig-*
 package-lock.json
 main
 prometheus*
+*key
+*.conf
