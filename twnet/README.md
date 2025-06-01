@@ -131,7 +131,7 @@ This allows the router to route traffic between nodes and to shared services (e.
 - Nodes can be reassigned to new subnets if load balancing or failover is needed.
 - Possible use of dynamic routing (e.g., BGP) if multi-core support becomes complex.
 
-## Optional: Network Diagram
+## Network Diagram
 
 ```plaintext
             +-------------+
