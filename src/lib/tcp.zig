@@ -241,7 +241,7 @@ test "sensor response encoding and decoding" {
 test "give bad enum number" {
     const allocator = testing.allocator;
 
-    const original_packet = Packet.init(1, .SensorRequest, &[_]u8{ 1, 2, 3, 17 });
+    const original_packet = Packet.init(1, .SensorRequest, &[_]u8{17});
     const encoded = try original_packet.encode(allocator);
     defer allocator.free(encoded);
 
