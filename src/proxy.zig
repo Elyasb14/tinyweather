@@ -7,7 +7,7 @@ const Args = @import("lib/Args.zig");
 const builtin = @import("builtin");
 
 pub const std_options: std.Options = .{
-    .log_level = .debug,
+    .log_level = .warn,
 };
 
 fn handle_connection(connection: net.Server.Connection, allocator: std.mem.Allocator) void {

@@ -7,7 +7,7 @@ const handlers = @import("lib/handlers.zig");
 const Args = @import("lib/Args.zig");
 
 pub const std_options: std.Options = .{
-    .log_level = .debug,
+    .log_level = .warn,
 };
 
 pub fn handle_client(connection: net.Server.Connection, allocator: std.mem.Allocator) void {
