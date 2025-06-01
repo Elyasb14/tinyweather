@@ -68,7 +68,7 @@ Ospf is used for dynamic routing. Create an area and ospf instance by running
 /routing/ospf/instance/add name=backbone version=2 vrf=main router-id=10.0.1.0
 ```
 
-Create your peers
+Create your interface templates 
 
 ```
 /routing/ospf/interface-template/add interfaces=bridge area=backbone networks=10.0.2.0/24 type=broadcast
