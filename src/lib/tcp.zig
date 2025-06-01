@@ -196,7 +196,7 @@ const testing = std.testing;
 test "Packet encoding and decoding" {
     const allocator = testing.allocator;
 
-    const original_packet = Packet.init(1, .SensorRequest, &[_]u8{ 1, 2, 3 });
+    const original_packet = Packet.init(1, .SensorRequest, &[_]u8{ 1, 2, 3, 18 });
     const encoded = try original_packet.encode(allocator);
     defer allocator.free(encoded);
 
@@ -236,4 +236,19 @@ test "sensor response encoding and decoding" {
 
     try testing.expectEqualSlices(Sensors, original_request.sensors, decoded_request.sensors);
     try testing.expectEqualDeep(original_request, decoded_request);
+}
+
+test "give bad enum number" {
+    const allocator = testing.allocator;
+
+    const original_packet = Packet.init(1, .SensorRequest, &[_]u8{ 1, 2, 3, 17 });
+    const encoded = try original_packet.encode(allocator);
+    defer allocator.free(encoded);
+
+    const decoded = try Packet.decode(encoded);
+
+    try testing.expectEqual(original_packet.version, decoded.version);
+    try testing.expectEqual(original_packet.type, decoded.type);
+    try testing.expectEqualSlices(u8, original_packet.data, decoded.data);
+    try testing.expectEqualDeep(original_packet, decoded);
 }
