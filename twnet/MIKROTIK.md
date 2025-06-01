@@ -2,6 +2,15 @@
 
 This is an in detail doc about configuring routers for twnet. The first thing to do is start with a fresh router by running `/system/reset-configuration`.  
 
+## Interface Lists (Minimal additions)
+
+Create interface lists used in firewall rules. Adjust interfaces accordingly:
+
+```
+/interface list add name=LAN
+/interface list member add interface=bridge1 list=LAN
+```
+
 ## Bridge & Loopback
 
 We need a bridge for a LAN and a loopback address for future dynamic routing purposes. Make a bridge with address `10.0.2.1/24` by running
@@ -72,6 +81,9 @@ Create your peers
 Add the following rules to the firewall 
 
 ```
+# delete all rules before
+/ip firewall filter remove [find where dynamic=no]
+
 # INPUT CHAIN
 /ip firewall filter
 add chain=input action=accept connection-state=established,related,untracked comment="defconf: accept established,related,untracked"
@@ -83,6 +95,10 @@ add chain=input action=accept protocol=icmp comment="defconf: accept ICMP"
 add chain=input action=accept dst-address=127.0.0.1 comment="defconf: accept to local loopback (for CAPsMAN)"
 add chain=input action=accept protocol=udp dst-port=13231 comment="Allow WireGuard"
 add chain=input action=accept src-address=10.0.3.0/24 comment="Allow WG subnet"
+add chain=input action=accept in-interface-list=LAN protocol=tcp dst-port=8291 comment="Allow Winbox from LAN"
+add chain=input action=accept in-interface-list=LAN protocol=tcp dst-port=22 comment="Allow SSH from LAN"
+add chain=input action=accept in-interface-list=LAN protocol=tcp dst-port=23 comment="Allow Telnet from LAN"
+add chain=input action=drop in-interface-list=!LAN comment="Drop all input not from LAN"
 
 # FORWARD CHAIN
 add chain=forward action=accept ipsec-policy=in,ipsec comment="defconf: accept in ipsec policy"
