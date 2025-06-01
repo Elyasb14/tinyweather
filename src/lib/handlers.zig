@@ -51,6 +51,10 @@ pub const NodeConnectionHandler = struct {
                 std.log.err("\x1b[31mExpected SensorRequest packet, got SensorResponse\x1b[0m: {any}", .{received_packet.type});
                 return tcp.TCPError.InvalidPacketType;
             },
+            .Error => {
+                std.log.err("\x1b[31mExpected SensorRequest packet, got Error\x1b[0m: {any}", .{received_packet.type});
+                return tcp.TCPError.InvalidPacketType;
+            },
         }
     }
 };
@@ -103,6 +107,11 @@ pub const ProxyConnectionHandler = struct {
             },
             .SensorRequest => {
                 std.log.err("\x1b[31mExpected SensorResponse, got SensorRequest\x1b[0m: {any}", .{decoded_packet});
+                return tcp.TCPError.InvalidPacketType;
+            },
+
+            .Error => {
+                std.log.err("\x1b[31mExpected SensorResponse, got Error\x1b[0m: {any}", .{decoded_packet});
                 return tcp.TCPError.InvalidPacketType;
             },
         }
