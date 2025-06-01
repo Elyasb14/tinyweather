@@ -6,21 +6,23 @@ const device = @import("device.zig");
 const helpers = @import("helpers.zig");
 const net = std.net;
 
-pub const PacketType = enum(u8) { SensorRequest, SensorResponse };
+pub const PacketType = enum(u8) { SensorRequest, SensorResponse, Error };
 pub const Sensors = enum(u8) {
     BME680,
     RG15,
     BFROBOT,
+    ERROR,
 
     pub fn get_len_sensor_values(self: Sensors) u8 {
         switch (self) {
             .BME680 => return 4,
             .RG15 => return 4,
             .BFROBOT => return 2,
+            .ERROR => return 0,
         }
     }
 };
-pub const SensorVals = enum(u8) { BMETemp, BMEPres, BMEHum, BMEGas, RG15RainAcc, RG15RainEventAcc, RG15RainTotalAcc, RG15RainRInt, BFRobotTemp, BFRobotHum };
+pub const SensorVals = enum(u8) { BMETemp, BMEPres, BMEHum, BMEGas, RG15RainAcc, RG15RainEventAcc, RG15RainTotalAcc, RG15RainRInt, BFRobotTemp, BFRobotHum, Error };
 pub const TCPError = error{ VersionError, InvalidPacketType, InvalidSensor, DeviceError, BadPacket, ConnectionError };
 
 pub const Packet = struct {
@@ -52,7 +54,8 @@ pub const Packet = struct {
     pub fn decode(buf: []const u8) TCPError!Packet {
         assert(buf.len > 0);
         if (buf[0] != 1) return TCPError.VersionError;
-        const packet_type = @as(PacketType, @enumFromInt(buf[1]));
+        const packet_type = std.meta.intToEnum(PacketType, buf[1]) catch PacketType.Error;
+        // const packet_type = @as(PacketType, @enumFromInt(buf[1]));
         return Packet.init(buf[0], packet_type, buf[2..]);
     }
 };
@@ -77,7 +80,8 @@ pub const SensorRequest = struct {
     pub fn decode(buf: []const u8, allocator: std.mem.Allocator) Allocator.Error!SensorRequest {
         var sensors = ArrayList(Sensors).init(allocator);
         for (buf) |x| {
-            const sensor = @as(Sensors, @enumFromInt(x));
+            // const sensor = @as(Sensors, @enumFromInt(x));
+            const sensor = std.meta.intToEnum(Sensors, x) catch Sensors.ERROR;
             try sensors.append(sensor);
         }
         return SensorRequest.init(try sensors.toOwnedSlice());
@@ -107,6 +111,10 @@ pub const SensorData = struct {
             .BFROBOT => &[_]SensorVals{
                 .BFRobotTemp,
                 .BFRobotHum,
+            },
+            .ERROR => {
+                std.log.err("\x1b[33mTried to decode error sensor\x1b[0m", .{});
+                return &[_]SensorVals{.Error};
             },
         };
     }
@@ -148,6 +156,10 @@ pub const SensorResponse = struct {
                         try buf.appendSlice(&helpers.f32_to_bytes(x));
                     }
                 },
+                .ERROR => {
+                    std.log.err("\x1b[33mTried to decode error sensor\x1b[0m", .{});
+                    continue;
+                },
             }
         }
 
@@ -184,7 +196,7 @@ const testing = std.testing;
 test "Packet encoding and decoding" {
     const allocator = testing.allocator;
 
-    const original_packet = Packet.init(1, .SensorRequest, &[_]u8{ 1, 2, 3 });
+    const original_packet = Packet.init(1, .SensorRequest, &[_]u8{ 1, 2, 3, 18 });
     const encoded = try original_packet.encode(allocator);
     defer allocator.free(encoded);
 
@@ -224,4 +236,19 @@ test "sensor response encoding and decoding" {
 
     try testing.expectEqualSlices(Sensors, original_request.sensors, decoded_request.sensors);
     try testing.expectEqualDeep(original_request, decoded_request);
+}
+
+test "give bad enum number" {
+    const allocator = testing.allocator;
+
+    const original_packet = Packet.init(1, .SensorRequest, &[_]u8{17});
+    const encoded = try original_packet.encode(allocator);
+    defer allocator.free(encoded);
+
+    const decoded = try Packet.decode(encoded);
+
+    try testing.expectEqual(original_packet.version, decoded.version);
+    try testing.expectEqual(original_packet.type, decoded.type);
+    try testing.expectEqualSlices(u8, original_packet.data, decoded.data);
+    try testing.expectEqualDeep(original_packet, decoded);
 }
