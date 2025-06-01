@@ -153,4 +153,3 @@ This allows the router to route traffic between nodes and to shared services (e.
 - Always keep private keys secret.
 - Use `AllowedIPs` carefully—setting it to `0.0.0.0/0` routes **all** traffic through the VPN, including DNS.
 - Consider firewall rules on the router to isolate nodes if needed.
-
