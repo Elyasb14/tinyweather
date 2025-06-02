@@ -57,7 +57,7 @@ set correct NTP by running
 /system ntp client set enabled=yes primary-ntp=132.163.96.1 secondary-ntp=132.163.97.1
 ```
 
-Set dns addresses
+Set dns up 
 
 ```
 /ip dns set servers=1.1.1.1,8.8.8.8 allow-remote-requests=yes
@@ -95,6 +95,13 @@ Create your interface templates
 /routing/ospf/interface-template/add interfaces=wg0 area=backbone networks=10.0.3.0/24 type=broadcast
 /routing/ospf/interface-template/add interfaces=loopback0 area=backbone networks=10.0.1.0/32 type=broadcast
 ```
+## IP services
+
+```
+/ip service disable telnet
+/ip service disable ftp
+/
+```
 
 ## Firewall
 
@@ -128,9 +135,5 @@ add chain=forward action=fasttrack-connection connection-state=established,relat
 add chain=forward action=accept connection-state=established,related,untracked comment="defconf: accept established,related, untracked"
 add chain=forward action=drop connection-state=invalid comment="defconf: drop invalid"
 add chain=forward action=drop connection-state=new connection-nat-state=!dstnat in-interface-list=WAN comment="defconf: drop all from WAN not DSTNATed"
-
-# Get rid of unused services
-/ip service disable telnet
-/ip service disable ftp
 ```
 
