@@ -55,7 +55,6 @@ pub const Packet = struct {
         assert(buf.len > 0);
         if (buf[0] != 1) return TCPError.VersionError;
         const packet_type = std.meta.intToEnum(PacketType, buf[1]) catch PacketType.Error;
-        // const packet_type = @as(PacketType, @enumFromInt(buf[1]));
         return Packet.init(buf[0], packet_type, buf[2..]);
     }
 };
@@ -80,7 +79,6 @@ pub const SensorRequest = struct {
     pub fn decode(buf: []const u8, allocator: std.mem.Allocator) Allocator.Error!SensorRequest {
         var sensors = ArrayList(Sensors).init(allocator);
         for (buf) |x| {
-            // const sensor = @as(Sensors, @enumFromInt(x));
             const sensor = std.meta.intToEnum(Sensors, x) catch Sensors.ERROR;
             try sensors.append(sensor);
         }
