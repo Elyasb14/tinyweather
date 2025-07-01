@@ -128,10 +128,8 @@ pub const ProxyConnectionHandler = struct {
         var http_server = std.http.Server.init(self.conn, &buf);
         while (http_server.state == .ready) {
             var request = http_server.receiveHead() catch |err| {
-                if (err != error.HttpConnectionClosing) {
-                    std.log.warn("\x1b[33mConnection error\x1b[0m: {s}\n", .{@errorName(err)});
-                }
-                continue;
+                std.log.err("\x1b[32mCant receive headers from http server\x1b[0m: {s}", .{@errorName(err)});
+                return err;
             };
 
             const target = request.head.target;
