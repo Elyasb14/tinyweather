@@ -10,9 +10,14 @@ pub const std_options: std.Options = .{
     .log_level = .warn,
 };
 
-pub fn handle_client(connection: net.Server.Connection, allocator: std.mem.Allocator) void {
+pub fn handle_client(connection: net.Server.Connection) void {
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+    const allocator = arena.allocator();
+
     var handler = handlers.NodeConnectionHandler.init(connection.stream);
     defer handler.deinit();
+
     handler.handle(allocator) catch |e| {
         std.log.warn("\x1b[33mError handling client connection:\x1b[0m {s}", .{@errorName(e)});
         return;
@@ -50,6 +55,6 @@ pub fn main() !void {
             continue;
         };
 
-        try pool.spawn(handle_client, .{ conn, allocator });
+        try pool.spawn(handle_client, .{conn});
     }
 }
