@@ -3,18 +3,34 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    const tcp_lib = b.addStaticLibrary(.{ .name = "tcp", .root_source_file = b.path("src/lib/tcp.zig"), .target = target, .optimize = optimize });
+    // const tcp_lib = b.addLibrary(.{ .name = "tcp", .root_source_file = b.path("src/lib/tcp.zig"), .target = target, .optimize = optimize });
+    const tcp_lib = b.addLibrary(.{
+        .name = "tcp",
+        .root_module = b.createModule(.{ // this line was added
+            .root_source_file = b.path("src/lib/tcp.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
     tcp_lib.addCSourceFile(.{ .file = b.path("src/lib/sensors/rg15/rg15.c"), .flags = &.{} });
     tcp_lib.addCSourceFile(.{ .file = b.path("src/lib/sensors/bfrobot/bfrobot.c"), .flags = &.{} });
     tcp_lib.linkLibC();
 
-    const handlers_lib = b.addStaticLibrary(.{ .name = "handlers", .root_source_file = b.path("src/lib/handlers.zig"), .target = target, .optimize = optimize });
-
+    const handlers_lib = b.addLibrary(.{
+        .name = "handlers",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/lib/handlers.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
     const node_exe = b.addExecutable(.{
         .name = "tinyweather-node",
-        .root_source_file = b.path("src/node.zig"),
-        .target = target,
-        .optimize = optimize,
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/node.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
     });
 
     node_exe.addIncludePath(b.path("src"));
@@ -23,9 +39,11 @@ pub fn build(b: *std.Build) void {
 
     const proxy_exe = b.addExecutable(.{
         .name = "tinyweather-proxy",
-        .root_source_file = b.path("src/proxy.zig"),
-        .target = target,
-        .optimize = optimize,
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/proxy.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
     });
 
     proxy_exe.addIncludePath(b.path("src"));
@@ -64,18 +82,18 @@ pub fn build(b: *std.Build) void {
     run_all_step.dependOn(&run_proxy.step);
 
     const libtcp_unit_tests = b.addTest(.{
-        .root_source_file = b.path("src/lib/tcp.zig"),
-        .target = target,
-        .optimize = optimize,
+        .root_module = b.createModule(.{ // this line was added
+            .root_source_file = b.path("src/lib/tcp.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
     });
     libtcp_unit_tests.addIncludePath(b.path("src"));
     libtcp_unit_tests.linkLibrary(tcp_lib);
     libtcp_unit_tests.linkLibC();
 
     const helpers_unit_tests = b.addTest(.{
-        .root_source_file = b.path("src/lib/helpers.zig"),
-        .target = target,
-        .optimize = optimize,
+        .root_module = b.createModule(.{ .root_source_file = b.path("src/lib/helpers.zig"), .target = target, .optimize = optimize }),
     });
 
     const run_exe_unit_tests = b.addRunArtifact(libtcp_unit_tests);
