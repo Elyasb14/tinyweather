@@ -120,7 +120,6 @@ pub const ProxyConnectionHandler = struct {
     pub fn handle(self: *ProxyConnectionHandler, allocator: std.mem.Allocator) !void {
         std.log.info("\x1b[32mConnection established with\x1b[0m: {any}", .{self.conn.address});
 
-        // var buf: [1024]u8 = undefined;
         var recv_buffer: [4000]u8 = undefined;
         var send_buffer: [4000]u8 = undefined;
         var conn_reader = self.conn.stream.reader(&recv_buffer);
