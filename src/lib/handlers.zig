@@ -120,75 +120,77 @@ pub const ProxyConnectionHandler = struct {
     pub fn handle(self: *ProxyConnectionHandler, allocator: std.mem.Allocator) !void {
         std.log.info("\x1b[32mConnection established with\x1b[0m: {any}", .{self.conn.address});
 
-        var buf: [1024]u8 = undefined;
-
+        // var buf: [1024]u8 = undefined;
+        var recv_buffer: [4000]u8 = undefined;
+        var send_buffer: [4000]u8 = undefined;
+        var conn_reader = self.conn.stream.reader(&recv_buffer);
+        var conn_writer = self.conn.stream.writer(&send_buffer);
         var remote_addr: []const u8 = "127.0.0.1";
         var remote_port: u16 = 8080;
 
-        var http_server = std.http.Server.init(self.conn, &buf);
-        while (http_server.state == .ready) {
-            var request = http_server.receiveHead() catch |err| {
-                if (err != error.HttpConnectionClosing) {
-                    std.log.warn("\x1b[33mConnection error\x1b[0m: {s}\n", .{@errorName(err)});
+        var http_server = std.http.Server.init(conn_reader.interface(), &conn_writer.interface);
+
+        var request = http_server.receiveHead() catch |err| {
+            if (err != error.HttpConnectionClosing) {
+                std.log.warn("\x1b[33mConnection error\x1b[0m: {s}\n", .{@errorName(err)});
+            }
+            return;
+        };
+
+        const target = request.head.target;
+        if (std.mem.eql(u8, target, "/metrics")) {
+            var sensors = try std.ArrayList(tcp.Sensors).initCapacity(allocator, 1024);
+            defer sensors.deinit(allocator);
+
+            var iter = request.iterateHeaders();
+            while (iter.next()) |h| {
+                std.log.info("\x1b[32mHeader\x1b[0m: {s} {s}", .{ h.name, h.value });
+                if (std.mem.eql(u8, "Sensor", h.name)) {
+                    try sensors.append(allocator, std.meta.stringToEnum(tcp.Sensors, h.value) orelse {
+                        std.log.warn("\x1b[33mIs someone sending incorrect/invalid headers?\x1b[0m: {s}", .{h.value});
+                        continue;
+                    });
+                } else if (std.mem.eql(u8, "Address", h.name)) {
+                    std.log.info("\x1b[32mNode address requested\x1b[0m: {s}", .{h.value});
+                    remote_addr = h.value;
+                    continue;
+                } else if (std.mem.eql(u8, "Port", h.name)) {
+                    const port = try std.fmt.parseInt(u16, h.value, 10);
+                    std.log.info("\x1b[32mNode port requested\x1b[0m: {s}", .{h.value});
+                    remote_port = port;
+                    continue;
+                } else continue;
+            }
+
+            const sensor_data = get_data(allocator, remote_addr, remote_port, sensors.items) catch |err| {
+                std.log.warn("\x1b[33mFailed to get data\x1b[0m: {s}", .{@errorName(err)});
+                if (err == error.ConnectionError) {
+                    return request.respond("Could not connect to the address and port that you requested\n", .{ .status = .not_found });
                 }
-                continue;
+                return err;
             };
 
-            const target = request.head.target;
-            if (std.mem.eql(u8, target, "/metrics")) {
-                var sensors = std.ArrayList(tcp.Sensors).init(allocator);
-                defer sensors.deinit();
+            var prom_string = try std.ArrayList(u8).initCapacity(allocator, 1024);
+            defer prom_string.deinit(allocator);
 
-                var iter = request.iterateHeaders();
-                while (iter.next()) |h| {
-                    std.log.info("\x1b[32mHeader\x1b[0m: {s} {s}", .{ h.name, h.value });
-                    if (std.mem.eql(u8, "Sensor", h.name)) {
-                        try sensors.append(std.meta.stringToEnum(tcp.Sensors, h.value) orelse {
-                            std.log.warn("\x1b[33mIs someone sending incorrect/invalid headers?\x1b[0m: {s}", .{h.value});
-                            continue;
-                        });
-                    } else if (std.mem.eql(u8, "Address", h.name)) {
-                        std.log.info("\x1b[32mNode address requested\x1b[0m: {s}", .{h.value});
-                        remote_addr = h.value;
-                        continue;
-                    } else if (std.mem.eql(u8, "Port", h.name)) {
-                        const port = try std.fmt.parseInt(u16, h.value, 10);
-                        std.log.info("\x1b[32mNode port requested\x1b[0m: {s}", .{h.value});
-                        remote_port = port;
-                        continue;
-                    } else continue;
+            for (sensor_data) |*sd| {
+                const sensor_value_names = sd.get_sensor_value_names();
+                std.log.info("\x1b[32mData received from node\x1b[0m: {d}\n\x1b[32mFrom sensor\x1b[0m: {s}", .{ sd.val, @tagName(sd.sensor_type) });
+                for (sd.val, 0..) |x, i| {
+                    const curr_sensor_value_name = @tagName(sensor_value_names[i]);
+                    var gauge = prometheus.Gauge.init(curr_sensor_value_name, @tagName((sd.sensor_type)));
+                    gauge.set(x);
+                    try prom_string.appendSlice(allocator, try gauge.to_prometheus(allocator));
+                    try prom_string.appendSlice(allocator, "\n");
                 }
-
-                const sensor_data = get_data(allocator, remote_addr, remote_port, sensors.items) catch |err| {
-                    std.log.warn("\x1b[33mFailed to get data\x1b[0m: {s}", .{@errorName(err)});
-                    if (err == error.ConnectionError) {
-                        return request.respond("Could not connect to the address and port that you requested\n", .{ .status = .not_found });
-                    }
-                    return err;
-                };
-
-                var prom_string = std.ArrayList(u8).init(allocator);
-                defer prom_string.deinit();
-
-                for (sensor_data) |*sd| {
-                    const sensor_value_names = sd.get_sensor_value_names();
-                    std.log.info("\x1b[32mData received from node\x1b[0m: {d}\n\x1b[32mFrom sensor\x1b[0m: {s}", .{ sd.val, @tagName(sd.sensor_type) });
-                    for (sd.val, 0..) |x, i| {
-                        const curr_sensor_value_name = @tagName(sensor_value_names[i]);
-                        var gauge = prometheus.Gauge.init(curr_sensor_value_name, @tagName((sd.sensor_type)));
-                        gauge.set(x);
-                        try prom_string.appendSlice(try gauge.to_prometheus(allocator));
-                        try prom_string.appendSlice("\n");
-                    }
-                }
-
-                try request.respond(prom_string.items, .{ .extra_headers = &.{.{ .name = "Content-Type", .value = "text/plain; version=0.0.4" }} });
-                std.log.info("\x1b[32mPrometeus string being sent\x1b[0m:\n\x1b[36m{s}\x1b[0m", .{prom_string.items});
-                return;
-            } else {
-                try request.respond("404 content not found", .{ .status = .not_found });
-                continue;
             }
+
+            try request.respond(prom_string.items, .{ .extra_headers = &.{.{ .name = "Content-Type", .value = "text/plain; version=0.0.4" }} });
+            std.log.info("\x1b[32mPrometeus string being sent\x1b[0m:\n\x1b[36m{s}\x1b[0m", .{prom_string.items});
+            return;
+        } else {
+            try request.respond("404 content not found", .{ .status = .not_found });
+            return;
         }
     }
 };

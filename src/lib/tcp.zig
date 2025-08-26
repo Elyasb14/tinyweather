@@ -43,11 +43,12 @@ pub const Packet = struct {
     }
 
     pub fn encode(self: Self, allocator: std.mem.Allocator) Allocator.Error![]u8 {
-        var buf = ArrayList(u8).init(allocator);
-        try buf.append(self.version);
-        try buf.append(@intFromEnum(self.type));
-        try buf.appendSlice(self.data);
-        return buf.toOwnedSlice();
+        var buf = try ArrayList(u8).initCapacity(allocator, 1024);
+
+        try buf.append(allocator, self.version);
+        try buf.append(allocator, @intFromEnum(self.type));
+        try buf.appendSlice(allocator, self.data);
+        return buf.toOwnedSlice(allocator);
     }
 
     /// takes encoded buffer ([]const u8), constructs a packet
@@ -69,20 +70,22 @@ pub const SensorRequest = struct {
     }
 
     pub fn encode(self: Self, allocator: std.mem.Allocator) Allocator.Error![]const u8 {
-        var sensors = ArrayList(u8).init(allocator);
+        var sensors = try ArrayList(u8).initCapacity(allocator, self.sensors.len);
+
         for (self.sensors) |sensor| {
-            try sensors.append(@intFromEnum(sensor));
+            try sensors.append(allocator, @intFromEnum(sensor));
         }
-        return try sensors.toOwnedSlice();
+        return try sensors.toOwnedSlice(allocator);
     }
 
     pub fn decode(buf: []const u8, allocator: std.mem.Allocator) Allocator.Error!SensorRequest {
-        var sensors = ArrayList(Sensors).init(allocator);
+        var sensors = try ArrayList(Sensors).initCapacity(allocator, buf.len);
+        defer sensors.deinit(allocator);
         for (buf) |x| {
             const sensor = std.meta.intToEnum(Sensors, x) catch Sensors.ERROR;
-            try sensors.append(sensor);
+            try sensors.append(allocator, sensor);
         }
-        return SensorRequest.init(try sensors.toOwnedSlice());
+        return SensorRequest.init(try sensors.toOwnedSlice(allocator));
     }
 };
 
@@ -132,26 +135,26 @@ pub const SensorResponse = struct {
     }
 
     pub fn encode(self: Self, allocator: std.mem.Allocator) ![]const u8 {
-        var buf = ArrayList(u8).init(allocator);
+        var buf = try ArrayList(u8).initCapacity(allocator, 1024);
 
         for (self.request.sensors) |sensor| {
             switch (sensor) {
                 .RG15 => {
                     const rain_data: []const f32 = (try device.parse_rg15(allocator)) orelse &[_]f32{std.math.nan(f32)} ** 4;
                     for (rain_data) |x| {
-                        try buf.appendSlice(&helpers.f32_to_bytes(x));
+                        try buf.appendSlice(allocator, &helpers.f32_to_bytes(x));
                     }
                 },
                 .BME680 => {
                     const bme_data: []const f32 = (try device.parse_bme(allocator)) orelse &[_]f32{std.math.nan(f32)} ** 4;
                     for (bme_data) |x| {
-                        try buf.appendSlice(&helpers.f32_to_bytes(x));
+                        try buf.appendSlice(allocator, &helpers.f32_to_bytes(x));
                     }
                 },
                 .BFROBOT => {
                     const bfrobot_data: []const f32 = (try device.parse_bfrobot(allocator)) orelse &[_]f32{std.math.nan(f32)} ** 2;
                     for (bfrobot_data) |x| {
-                        try buf.appendSlice(&helpers.f32_to_bytes(x));
+                        try buf.appendSlice(allocator, &helpers.f32_to_bytes(x));
                     }
                 },
                 .ERROR => {
@@ -161,10 +164,10 @@ pub const SensorResponse = struct {
             }
         }
 
-        return try buf.toOwnedSlice();
+        return try buf.toOwnedSlice(allocator);
     }
     pub fn decode(request: SensorRequest, buf: []const u8, allocator: std.mem.Allocator) Allocator.Error!SensorResponse {
-        var dec_buf = ArrayList(SensorData).init(allocator);
+        var dec_buf = try ArrayList(SensorData).initCapacity(allocator, 1024);
 
         // TODO: this feels hacky can we do better
         var offset: usize = 0;
@@ -180,11 +183,11 @@ pub const SensorResponse = struct {
                 values[i] = helpers.bytes_to_f32(chunk);
             }
 
-            try dec_buf.append(SensorData{ .sensor_type = sensor, .val = values });
+            try dec_buf.append(allocator, SensorData{ .sensor_type = sensor, .val = values });
             offset += buf_len;
         }
 
-        const data = try dec_buf.toOwnedSlice();
+        const data = try dec_buf.toOwnedSlice(allocator);
         return SensorResponse.init(request, data);
     }
 };
